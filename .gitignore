@@ -1,0 +1,19 @@
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+
+# Editor and operating-system files
+.DS_Store
+.idea/
+.vscode/
+
+# Temporary output
+*.log
+tmp/
+temp/
