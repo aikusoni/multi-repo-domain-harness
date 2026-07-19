@@ -7,7 +7,7 @@
 
 - `critical` 또는 `major`이면서 `open` 또는 `in-progress`인 관련 이슈는 착수 게이트다.
 - `resolved`, 종료 상태, `minor` 이슈는 일반 작업을 막지 않는다.
-- 게이트는 `target`, `from`, `관련 프로젝트`에 현재 프로젝트가 포함될 때만 적용한다.
+- 게이트는 `target`, `from`, `관련 주체`에 현재 프로젝트 또는 관련 operator가 포함될 때만 적용한다.
 
 ## 상태
 
@@ -27,7 +27,7 @@
 
 ## Proposals
 
-| level | status | 파일 | 관련 프로젝트·문서 | 요약 |
+| level | status | 파일 | 관련 프로젝트·operator·문서 | 요약 |
 |---|---|---|---|---|
 
 ## 갱신 규칙

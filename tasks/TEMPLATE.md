@@ -1,6 +1,7 @@
 ---
 task_id: t-xxxxxxxx
-project: <project-id>
+project: <owner-project-id>
+operator:
 opened: YYYY-MM-DD
 related_issue:
 related_request:

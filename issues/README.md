@@ -8,7 +8,7 @@
 - 이슈: requests/... 또는 proposals/...
 - 상태: <before 또는 created> -> <after>
 - 레벨: critical | major | minor
-- 관련 프로젝트: project-a, project-b 또는 전체
+- 관련 주체: project-a, project-b, operator:operator-id 또는 전체
 - 요약: 현재 남은 일
 - 위치: 관련 파일 또는 커밋
 ```
