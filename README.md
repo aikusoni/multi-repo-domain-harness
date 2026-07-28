@@ -10,11 +10,13 @@
 
 1. 다른 파일을 읽거나 수정하기 전에 [`INDEX.md`](INDEX.md) 전체를 반드시 읽고 숙지한다.
 2. [`PROJECTS.md`](PROJECTS.md)에 참여 저장소 또는 역할을 등록한다.
-3. 실행 자동화가 있으면 [`OPERATORS.md`](OPERATORS.md)와 `operators/`에 등록한다.
-4. 프로젝트와 도메인 간 관계를 `docs/`에 작성한다.
-5. 저장소 내부 실행 작업은 `tasks/<project>/`, operator 유지보수는 `tasks/operator-<id>/`에서 관리한다.
-6. 다른 저장소 또는 operator의 작업이 필요하면 `requests/`와 `ISSUES.md`에 등록한다.
-7. 여러 저장소나 operator에 영향을 주는 변경은 `changed/`에 기록한다.
+3. 프로젝트별 상세 책임과 계약 포인터는 `projects/<project-id>.md`에 기록한다.
+4. 실행 자동화가 있으면 [`OPERATORS.md`](OPERATORS.md)와 `operators/`에 등록한다.
+5. 프로젝트와 도메인 간 관계를 `docs/`에 작성한다.
+6. 저장소 내부 실행 작업은 `tasks/<project>/`, operator 유지보수는 `tasks/operator-<id>/`에서 관리한다.
+7. 다른 저장소 또는 operator의 작업이 필요하면 `requests/`와 `ISSUES.md`에 등록한다.
+8. 사람의 결정·리뷰·합의를 기다리는 주제는 [`AGENDA.md`](AGENDA.md)에 등재한다.
+9. 여러 저장소나 operator에 영향을 주는 변경은 `changed/`에 기록한다.
 
 ## 설계 원칙
 

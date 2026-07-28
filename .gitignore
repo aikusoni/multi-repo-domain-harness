@@ -17,3 +17,7 @@
 *.log
 tmp/
 temp/
+
+# Private local overlays
+.harness.local.*
+local/

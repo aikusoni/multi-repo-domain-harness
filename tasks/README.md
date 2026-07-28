@@ -20,3 +20,7 @@ operator 작업은 `tasks/operator-<id>/`에 같은 구조를 사용한다.
 - operator의 정상 반복 실행은 task로 만들지 않는다. 구현·수정·복구처럼 완료 기준이 있는 작업만 관리한다.
 - 시작 시 `pending`과 `in-progress`의 제목만 보고 필요한 파일만 연다.
 - `completed`는 이력 확인이 필요할 때만 읽는다.
+- 요청을 받아 구현하는 작업은 `related_request`로 연결한다. 완료 시 task 결과와 request 처리 결과를
+  같은 변경에서 갱신하되, 두 상태를 하나로 간주하지 않는다.
+- `in-progress` 이동 시 진행 기록에 착수 시각과 이유, `completed` 이동 전에는 완료 내용·검증·관련
+  커밋을 반드시 기록한다.
