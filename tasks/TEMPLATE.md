@@ -3,6 +3,7 @@ task_id: t-xxxxxxxx
 project: <owner-project-id>
 operator:
 opened: YYYY-MM-DD
+initiative:
 related_issue:
 related_request:
 ---

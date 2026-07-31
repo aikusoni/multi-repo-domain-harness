@@ -34,17 +34,18 @@ request의 `blocking`은 요청자의 현재 작업이 실제로 막혔는지 �
 
 ## Requests
 
-| level | status | 파일 | target | from | 요약 |
-|---|---|---|---|---|---|
+| level | status | 파일 | target | from | 관련 initiative | 요약 |
+|---|---|---|---|---|---|---|
 
 ## Proposals
 
-| level | status | 파일 | 관련 프로젝트·operator·문서 | 요약 |
-|---|---|---|---|---|
+| level | status | 파일 | 관련 프로젝트·operator·문서 | 관련 initiative | 요약 |
+|---|---|---|---|---|---|
 
 ## 갱신 규칙
 
 - 생성 또는 상태·레벨 변경 시 이 표와 당일 이슈 이벤트를 같은 변경에서 갱신한다.
 - 종료 시 표의 행을 제거하고 최종 상태 이벤트를 남긴다.
 - request/proposal 파일 자체에는 status나 level을 중복 기록하지 않는다.
+- initiative와 무관한 행의 `관련 initiative`는 `-`로 기록한다.
 - operator 실패는 수정 책임 프로젝트 또는 operator를 대상으로 한 request를 먼저 만들고 그 행을 등록한다.

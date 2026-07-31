@@ -23,6 +23,7 @@ target: project-b
 from: project-a
 opened: YYYY-MM-DD
 blocking: false
+initiative:
 ---
 
 # 요청 제목
@@ -43,6 +44,9 @@ blocking: false
 ```
 
 요청 파일에는 status와 level을 쓰지 않는다.
+
+공동 이니셔티브에서 파생된 요청이면 `initiative: initiative:<id>`를 기록한다. initiative는 요청의
+`target`·`from`과 상태를 대체하지 않는다.
 
 `blocking`은 요청자의 현재 작업이 직접 막혔는지를 설명할 뿐 전체 게이트를 결정하지 않는다. 전체 게이트는
 `ISSUES.md`의 level·status·관련 주체 조합이 정본이다.

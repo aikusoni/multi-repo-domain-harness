@@ -1,4 +1,4 @@
-# Project: <project-id>
+# Project Profile: <project-id>
 
 ## 개요와 책임
 

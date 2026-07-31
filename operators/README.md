@@ -31,6 +31,7 @@ operator도 기존 하네스 흐름을 사용한다.
 
 | 상황 | 기록 위치 |
 |---|---|
+| 여러 프로젝트·operator가 공유하는 결과 | `INITIATIVES.md` + `initiatives/` |
 | 신규 개발, 수정, 수동 실행 요청 | `requests/` |
 | 실패, 계약 위반, 반복 장애, 작업 차단 | `ISSUES.md` + `issues/` |
 | 동작 계약·권한·영향 범위 변경 | `changed/` |
@@ -46,6 +47,7 @@ operator도 기존 하네스 흐름을 사용한다.
 - operator 대상: `target: operator:<id>`
 - operator가 감지해 생성한 요청: `from: operator:<id>`와 실제 실행 owner를 본문에 기록
 - 관련 이슈: operator 식별자와 영향을 받는 프로젝트를 모두 기록
+- 관련 initiative: operator 상세 문서의 `related_initiatives`와 initiative 상세 문서를 서로 연결
 - 파일명과 디렉터리에서는 콜론 대신 `operator-<id>` 사용
 
 operator가 자동으로 하네스 파일을 수정할 때도 `INDEX.md`의 공개 위험 정보 검토와 Git 규칙을 동일하게

@@ -4,6 +4,7 @@ owner: <project-id>
 implementation: <path-or-command>
 affected_projects:
   - <project-id>
+related_initiatives: []
 ---
 
 # Operator: 이름

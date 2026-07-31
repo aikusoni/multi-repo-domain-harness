@@ -10,19 +10,21 @@
 
 1. 다른 파일을 읽거나 수정하기 전에 [`INDEX.md`](INDEX.md) 전체를 반드시 읽고 숙지한다.
 2. [`PROJECTS.md`](PROJECTS.md)에 참여 저장소 또는 역할을 등록한다.
-3. 프로젝트별 상세 책임과 계약 포인터는 `projects/<project-id>.md`에 기록한다.
-4. 실행 자동화가 있으면 [`OPERATORS.md`](OPERATORS.md)와 `operators/`에 등록한다.
-5. 프로젝트와 도메인 간 관계를 `docs/`에 작성한다.
-6. 저장소 내부 실행 작업은 `tasks/<project>/`, operator 유지보수는 `tasks/operator-<id>/`에서 관리한다.
-7. 다른 저장소 또는 operator의 작업이 필요하면 `requests/`와 `ISSUES.md`에 등록한다.
-8. 사람의 결정·리뷰·합의를 기다리는 주제는 [`AGENDA.md`](AGENDA.md)에 등재한다.
-9. 여러 저장소나 operator에 영향을 주는 변경은 `changed/`에 기록한다.
+3. 프로젝트 자기소개인 Project Profile은 `projects/<project-id>.md`에 기록한다.
+4. 여러 프로젝트가 공유하는 목표는 [`INITIATIVES.md`](INITIATIVES.md)와 `initiatives/`에 등록한다.
+5. 실행 자동화가 있으면 [`OPERATORS.md`](OPERATORS.md)와 `operators/`에 등록한다.
+6. 프로젝트와 도메인 간 관계를 `docs/`에 작성한다.
+7. 저장소 내부 실행 작업은 `tasks/<project>/`, operator 유지보수는 `tasks/operator-<id>/`에서 관리한다.
+8. 다른 저장소 또는 operator의 작업이 필요하면 `requests/`와 `ISSUES.md`에 등록한다.
+9. 사람의 결정·리뷰·합의를 기다리는 주제는 [`AGENDA.md`](AGENDA.md)에 등재한다.
+10. 여러 저장소나 operator에 영향을 주는 변경은 `changed/`에 기록한다.
 
 ## 설계 원칙
 
 - 현재 상태의 정본과 시간순 이력을 분리한다.
 - 세션·사람·도구가 아니라 프로젝트 식별자를 작업 주체로 사용한다.
 - 실행 자동화는 `operator:<id>`로 등록하되 이를 에이전트 정체성과 혼동하지 않는다.
+- 공동 목표는 `initiative:<id>`로 등록하되 프로젝트·task·request의 정체성과 상태를 대체하지 않는다.
 - 전체 문서를 매번 읽지 않고 현재 작업에 관련된 문서만 선택한다.
 - 검증되지 않은 판단은 `[미검증]`으로 표시한다.
 - 기준 문서는 보호하고 변경 제안과 작업 로그를 별도로 남긴다.
@@ -30,3 +32,14 @@
 
 완료한 변경은 공개 위험 정보 검토를 통과한 뒤 자동 커밋한다. 위험하거나 공개 가능 여부가 불확실한
 정보가 발견되면 커밋하지 않고 사용자 확인을 먼저 받는다. 원격 저장소로 자동 push하지 않는다.
+
+## 핵심 용어
+
+| 용어 | 답하는 질문 | 예시 |
+|---|---|---|
+| Project Profile | 누가 참여하며 무엇을 소유하는가? | 재고 API 프로젝트의 책임과 제공 계약 |
+| Initiative | 왜 여러 주체가 함께 일하며 어떤 결과를 달성하는가? | 재고 복구 서비스 완성과 통합 검증 |
+| Task | 한 프로젝트가 직접 수행할 일은 무엇인가? | 복구 worker 구현 |
+| Request | 다른 주체에 무엇을 요청하고 어떻게 확인하는가? | API에 복구 endpoint 요청 |
+| Issue | 무엇이 위험하거나 작업을 막는가? | 이벤트 계약 불일치 |
+| Operator | 어떤 반복 실행을 자동화하는가? | 복구 시나리오 검증 실행기 |

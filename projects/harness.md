@@ -1,4 +1,4 @@
-# Project: harness
+# Project Profile: harness
 
 ## 개요와 책임
 
@@ -7,14 +7,15 @@
 ## 소유 도메인과 주요 기능
 
 - 규칙 버전과 세션 시작 절차
-- 프로젝트·operator 식별 등록부
+- 프로젝트·operator 식별 등록부와 프로젝트 프로필
+- 공동 이니셔티브의 목표·참여 주체·완료 기준
 - request·issue·changed·task 상태 모델
 - 기준 문서·제안·저널·아젠다의 생명주기
 
 ## 제공 계약
 
 - `INDEX.md`
-- `ISSUES.md`, `PROJECTS.md`, `OPERATORS.md`, `AGENDA.md`
+- `ISSUES.md`, `PROJECTS.md`, `INITIATIVES.md`, `OPERATORS.md`, `AGENDA.md`
 - 각 운영 폴더의 `README.md`와 템플릿
 
 ## 소비 계약
@@ -29,6 +30,7 @@
 
 - 운영 규칙: `INDEX.md`
 - 프로젝트 식별: `PROJECTS.md`
+- 활성 공동 이니셔티브: `INITIATIVES.md`
 - 실행 자동화 식별: `OPERATORS.md`
 
 ## 현재 제약과 후속 작업

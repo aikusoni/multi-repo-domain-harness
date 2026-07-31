@@ -12,7 +12,7 @@
 - 변경: 한 줄 요약
 - 위치: 문서, 브랜치 또는 커밋
 - 영향: project-a, project-b, operator:operator-id 또는 전체
-- 관련: request, issue, decision 링크
+- 관련: initiative, request, issue, decision 링크
 ```
 
 ## 주체별 확인

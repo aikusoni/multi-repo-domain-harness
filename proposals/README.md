@@ -7,6 +7,7 @@
 
 - 대상: docs/... 또는 신규
 - 관련 프로젝트: project-a, project-b
+- 관련 initiative: initiative:initiative-id (있으면)
 
 ## 변경 내용
 
