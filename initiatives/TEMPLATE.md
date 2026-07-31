@@ -4,8 +4,8 @@ lead: <project-id 또는 role-id>
 participants:
   - <project-id>
 operators: []
-opened: YYYY-MM-DD
-target_date:
+opened: YYYY-MM-DD HH:MM:SS UTC
+target_date: YYYY-MM-DD UTC
 ---
 
 # Initiative: 공동 목표 이름
@@ -45,7 +45,7 @@ target_date:
 
 ## 진행 요약
 
-- YYYY-MM-DD HH:MM KST - 생성
+- YYYY-MM-DD HH:MM:SS UTC - 생성
 
 ## 완료 결과
 

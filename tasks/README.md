@@ -13,7 +13,7 @@ operator 작업은 `tasks/operator-<id>/`에 같은 구조를 사용한다.
 
 - 폴더 위치가 유일한 상태 정본이다.
 - 파일 내부에 status를 쓰지 않는다.
-- 파일명은 `YYYY-MM-DD-<short-topic>.md`다.
+- 파일명은 UTC 날짜 기준 `YYYY-MM-DD-<short-topic>.md`다.
 - 상태가 바뀌어도 `task_id`와 파일명은 유지하고 파일만 이동한다.
 - operator 작업 파일의 `project`에는 owner 프로젝트, `operator`에는 `operator:<id>`를 기록한다.
 - 공동 이니셔티브에서 파생된 작업은 `initiative: initiative:<id>`로 연결한다.
@@ -23,5 +23,5 @@ operator 작업은 `tasks/operator-<id>/`에 같은 구조를 사용한다.
 - `completed`는 이력 확인이 필요할 때만 읽는다.
 - 요청을 받아 구현하는 작업은 `related_request`로 연결한다. 완료 시 task 결과와 request 처리 결과를
   같은 변경에서 갱신하되, 두 상태를 하나로 간주하지 않는다.
-- `in-progress` 이동 시 진행 기록에 착수 시각과 이유, `completed` 이동 전에는 완료 내용·검증·관련
-  커밋을 반드시 기록한다.
+- `in-progress` 이동 시 진행 기록에 `YYYY-MM-DD HH:MM:SS UTC` 형식의 착수 시각과 이유,
+  `completed` 이동 전에는 완료 내용·검증·관련 커밋을 반드시 기록한다.

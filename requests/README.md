@@ -9,19 +9,19 @@
 
 - 대상 프로젝트는 착수 시 `in-progress`, 처리 후 `resolved`로 바꾸고 `## 처리 결과`를 append한다.
 - 요청 프로젝트는 결과를 검토한 뒤 `done`으로 닫고 `## 확인 (요청자)`를 append한다.
-- 상태 변경은 `ISSUES.md`와 당일 이슈 이벤트에 함께 반영한다.
+- 상태 변경은 `ISSUES.md`와 UTC 날짜의 당일 이슈 이벤트에 함께 반영한다.
 - operator 대상 요청은 `target: operator:<id>`를 사용한다. 파일명에서는 `operator-<id>`로 쓴다.
 - operator 실행을 담당한 에이전트는 처리 결과에 자기 `project-id`와 실행 증거를 함께 남긴다.
 
 ## 파일 형식
 
-파일명: `YYYY-MM-DD-<target>-<short-topic>.md`
+파일명: UTC 날짜 기준 `YYYY-MM-DD-<target>-<short-topic>.md`
 
 ```markdown
 ---
 target: project-b
 from: project-a
-opened: YYYY-MM-DD
+opened: YYYY-MM-DD HH:MM:SS UTC
 blocking: false
 initiative:
 ---

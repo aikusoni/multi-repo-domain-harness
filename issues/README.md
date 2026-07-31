@@ -1,10 +1,10 @@
 # issues
 
-`ISSUES.md`가 활성 상태의 현재 스냅샷이라면 이 폴더는 상태 전환의 날짜별 이력이다. 이벤트는 KST 기준
+`ISSUES.md`가 활성 상태의 현재 스냅샷이라면 이 폴더는 상태 전환의 날짜별 이력이다. 이벤트는 UTC 날짜의
 당일 `status-YYYY-MM-DD.md`에만 append하며 과거 날짜 파일에 뒤늦게 추가하지 않는다.
 
 ```markdown
-## [i-xxxxxxxx] HH:MM · from: <project>
+## [i-xxxxxxxx] YYYY-MM-DD HH:MM:SS UTC · from: <project>
 - 이슈: requests/... 또는 proposals/...
 - 상태: <before 또는 created> -> <after>
 - 레벨: critical | major | minor

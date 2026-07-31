@@ -2,7 +2,7 @@
 task_id: t-xxxxxxxx
 project: <owner-project-id>
 operator:
-opened: YYYY-MM-DD
+opened: YYYY-MM-DD HH:MM:SS UTC
 initiative:
 related_issue:
 related_request:
@@ -20,7 +20,7 @@ related_request:
 
 ## 진행 기록
 
-- YYYY-MM-DD HH:MM KST - 생성
+- YYYY-MM-DD HH:MM:SS UTC - 생성
 
 ## 완료 결과
 

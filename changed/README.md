@@ -5,10 +5,10 @@
 
 ## 변경 기록
 
-당일 `status-YYYY-MM-DD.md`에 append한다.
+UTC 날짜의 당일 `status-YYYY-MM-DD.md`에 append한다.
 
 ```markdown
-## [c-xxxxxxxx] HH:MM · from: <project>
+## [c-xxxxxxxx] YYYY-MM-DD HH:MM:SS UTC · from: <project>
 - 변경: 한 줄 요약
 - 위치: 문서, 브랜치 또는 커밋
 - 영향: project-a, project-b, operator:operator-id 또는 전체
@@ -23,10 +23,10 @@
 # <project> 변경 확인
 <!-- cursor: BEGIN -->
 
-- [c-xxxxxxxx] YYYY-MM-DD 확인 · 대응: 무관 — 사유
-- [c-xxxxxxxx] YYYY-MM-DD 확인 · 대응: 완료 — 위치 또는 커밋
-- [c-xxxxxxxx] YYYY-MM-DD 확인 · 대응: 요청 생성 — requests/...
-- [c-xxxxxxxx] YYYY-MM-DD 확인 · 대응: 후속 예정 — 무엇을 언제
+- [c-xxxxxxxx] YYYY-MM-DD HH:MM:SS UTC 확인 · 대응: 무관 — 사유
+- [c-xxxxxxxx] YYYY-MM-DD HH:MM:SS UTC 확인 · 대응: 완료 — 위치 또는 커밋
+- [c-xxxxxxxx] YYYY-MM-DD HH:MM:SS UTC 확인 · 대응: 요청 생성 — requests/...
+- [c-xxxxxxxx] YYYY-MM-DD HH:MM:SS UTC 확인 · 대응: 후속 예정 — 무엇을 언제
 ```
 
 커서는 전체 변경 피드에서 마지막으로 확인한 위치를 뜻하며 관련 항목만의 위치가 아니다.
