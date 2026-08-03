@@ -11,11 +11,14 @@
 - 공동 이니셔티브의 목표·참여 주체·완료 기준
 - request·issue·changed·task 상태 모델
 - 기준 문서·제안·저널·아젠다의 생명주기
+- 저널 판단의 유효성·무효화 색인과 큐레이션 상태
+- worker·curator 역할과 비직관적 현행 불변식 등록부
 
 ## 제공 계약
 
 - `INDEX.md`
 - `ISSUES.md`, `PROJECTS.md`, `INITIATIVES.md`, `OPERATORS.md`, `AGENDA.md`
+- `INVALIDATIONS.md`, `CURATION.md`
 - 각 운영 폴더의 `README.md`와 템플릿
 
 ## 소비 계약
@@ -32,6 +35,8 @@
 - 프로젝트 식별: `PROJECTS.md`
 - 활성 공동 이니셔티브: `INITIATIVES.md`
 - 실행 자동화 식별: `OPERATORS.md`
+- 지식 무효화: `INVALIDATIONS.md`
+- 큐레이션 현재 상태: `CURATION.md`
 
 ## 현재 제약과 후속 작업
 

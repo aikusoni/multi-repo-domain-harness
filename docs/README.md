@@ -6,6 +6,8 @@
 - `domain-map.md`: 도메인 경계와 각 도메인의 책임
 - `glossary.md`: 저장소 사이에서 의미가 달라질 수 있는 용어
 - `decision-log.md`: 확정된 횡단 결정과 대체된 결정
+- `roles.md`: worker·curator 책임과 프로젝트 정체성의 경계
+- `quirks.md`: 모르고 단순화하면 동작을 깨뜨리는 비직관적 현행 불변식
 - `contracts/`: API, 이벤트, 데이터 스키마 등 저장소 간 계약
 
 기준 문서에는 확인된 사실과 확정된 결정만 기록한다. 검토가 필요한 변경은 먼저 `proposals/`에 둔다.

@@ -13,11 +13,12 @@
 3. 프로젝트 자기소개인 Project Profile은 `projects/<project-id>.md`에 기록한다.
 4. 여러 프로젝트가 공유하는 목표는 [`INITIATIVES.md`](INITIATIVES.md)와 `initiatives/`에 등록한다.
 5. 실행 자동화가 있으면 [`OPERATORS.md`](OPERATORS.md)와 `operators/`에 등록한다.
-6. 프로젝트와 도메인 간 관계를 `docs/`에 작성한다.
-7. 저장소 내부 실행 작업은 `tasks/<project>/`, operator 유지보수는 `tasks/operator-<id>/`에서 관리한다.
-8. 다른 저장소 또는 operator의 작업이 필요하면 `requests/`와 `ISSUES.md`에 등록한다.
-9. 사람의 결정·리뷰·합의를 기다리는 주제는 [`AGENDA.md`](AGENDA.md)에 등재한다.
-10. 여러 저장소나 operator에 영향을 주는 변경은 `changed/`에 기록한다.
+6. `./operators/curation-status.sh`로 지식 큐레이션 주의 신호를 확인한다.
+7. 프로젝트와 도메인 간 관계를 `docs/`에 작성한다.
+8. 저장소 내부 실행 작업은 `tasks/<project>/`, operator 유지보수는 `tasks/operator-<id>/`에서 관리한다.
+9. 다른 저장소 또는 operator의 작업이 필요하면 `requests/`와 `ISSUES.md`에 등록한다.
+10. 사람의 결정·리뷰·합의를 기다리는 주제는 [`AGENDA.md`](AGENDA.md)에 등재한다.
+11. 여러 저장소나 operator에 영향을 주는 변경은 `changed/`에 기록한다.
 
 ## 설계 원칙
 
@@ -25,6 +26,9 @@
 - 세션·사람·도구가 아니라 프로젝트 식별자를 작업 주체로 사용한다.
 - 실행 자동화는 `operator:<id>`로 등록하되 이를 에이전트 정체성과 혼동하지 않는다.
 - 공동 목표는 `initiative:<id>`로 등록하되 프로젝트·task·request의 정체성과 상태를 대체하지 않는다.
+- 과거 기록과 그 안의 판단이 지금도 유효한지는 분리하고, 대체·기각된 판단을 검색 가능한 색인에 남긴다.
+- worker와 curator는 책임 역할이며 프로젝트 정체성을 대체하지 않는다.
+- 비직관적 현행 불변식은 검증 근거·영향·검색 가능한 symbol과 함께 quirk로 관리한다.
 - 전체 문서를 매번 읽지 않고 현재 작업에 관련된 문서만 선택한다.
 - 모든 날짜와 시각은 UTC 고정 오프셋 `+00:00`을 사용하고 시각 값에 `UTC`를 반드시 명시한다.
   서머타임(DST)이나 지역별·계절별 오프셋은 적용하지 않는다.
@@ -45,3 +49,5 @@
 | Request | 다른 주체에 무엇을 요청하고 어떻게 확인하는가? | API에 복구 endpoint 요청 |
 | Issue | 무엇이 위험하거나 작업을 막는가? | 이벤트 계약 불일치 |
 | Operator | 어떤 반복 실행을 자동화하는가? | 복구 시나리오 검증 실행기 |
+| Invalidation | 어떤 과거 판단이 대체되거나 기각됐는가? | 이전 재시도 전략의 대체 기록 |
+| Quirk | 어떤 비직관적 불변식을 모르고 바꾸면 동작이 깨지는가? | 호환성을 위한 특수 분기 |

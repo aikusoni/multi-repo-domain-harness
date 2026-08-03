@@ -6,6 +6,7 @@ participants:
 operators: []
 opened: YYYY-MM-DD HH:MM:SS UTC
 target_date: YYYY-MM-DD UTC
+closed_at:
 ---
 
 # Initiative: 공동 목표 이름
@@ -47,8 +48,14 @@ target_date: YYYY-MM-DD UTC
 
 - YYYY-MM-DD HH:MM:SS UTC - 생성
 
-## 완료 결과
+## 종료
 
-- 결과:
+- 판정: completed | cancelled (`INITIATIVES.md` 종료 대장이 정본)
+- 종료 시각: YYYY-MM-DD HH:MM:SS UTC
+- 완료 기준별 충족 여부:
+- 결과 또는 취소 사유:
+- 판단 근거와 결정 주체:
 - 통합 검증:
+- 참여 주체별 최종 기여:
 - 관련 커밋·배포:
+- 재개 조건과 후속:

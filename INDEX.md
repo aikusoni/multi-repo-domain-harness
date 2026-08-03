@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0006 · 최종 갱신: 2026-07-31 02:02:40 UTC · UTC 고정 오프셋과 서머타임 미적용 명시**
+**규칙 버전: r0007 · 최종 갱신: 2026-08-03 07:53:09 UTC · 지식 유효성·큐레이션·quirk와 종료 대장 추가**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -15,7 +15,9 @@
 | 경로 | 역할 | 운영 방식 |
 |---|---|---|
 | `docs/` | 공통 계약, 용어, 결정, 저장소·도메인 지도 | 기준 문서. 변경 전 검토 권장 |
-| `journal/` | 세션별 발견, 결정, 시행착오 | append-only |
+| `journal/` | 세션별 발견, 결정, 시행착오 | append-only. 유효성 메타데이터만 예외 |
+| `INVALIDATIONS.md` | 대체·기각된 저널 판단의 누적 색인 | 원본 저널과 함께 갱신 |
+| `CURATION.md` | 지식 큐레이션 시각과 주의 임계값 | 현재 상태. 규칙 정본이 아님 |
 | `proposals/` | 기준 문서 변경 제안 | 자유롭게 작성, 승인 후 `docs/` 반영 |
 | `requests/` | 다른 프로젝트·operator에 전달하는 작업 요청 | 요청자와 대상이 왕복 처리 |
 | `ISSUES.md` | 활성 proposal/request의 상태 정본 | 활성 상태만 유지 |
@@ -46,14 +48,16 @@
    - `PROJECTS.md`와 `projects/<project-id>.md`의 **Project Profile(프로젝트 프로필)**은 프로젝트의
      자기소개다. “누가 협업하는가, 무엇을 소유하는가, 어떤 계약을 제공·소비하는가”를 답한다.
 3. **선택적 읽기**: `INDEX.md`, 자기 프로젝트와 관련 operator의 활성 이니셔티브·이슈·변경·작업 큐,
-   현재 작업과 직접 관련된 `docs/`·`initiatives/`·`operators/` 문서만 읽는다. 모든 이력과 완료 작업을
-   일괄 로드하지 않는다.
+   현재 작업과 직접 관련된 `docs/`·`initiatives/`·`operators/` 문서만 읽는다. 코드를 단순화하거나
+   비직관적 동작을 바꾸기 전에는 `docs/quirks.md`를 해당 project와 symbol로 검색한다. 모든 이력과 완료
+   작업을 일괄 로드하지 않는다.
 4. **착수 게이트**: 자기 프로젝트와 관련된 `critical` 또는 `major` 이슈가 `open`이나
    `in-progress`이면 일반 작업보다 해당 이슈를 우선 검토한다. 관련 없는 이슈는 작업을 막지 않는다.
 5. **작업 로그와 열린 논의 분리**: 결정·발견·시행착오는 UTC 날짜의
-   `journal/YYYY-MM-DD-<topic>.md`에 기록한다. 기존 기록은 고치지 않고 정정이나 후속 내용을 아래에
-   추가한다. 사람의 결정·리뷰나 프로젝트 간 합의를 기다리는 살아 있는 안건은 journal에 묻지 않고 관련
-   request/proposal 본문과 `AGENDA.md`에 등재한다.
+   `journal/YYYY-MM-DD-<topic>.md`에 기록하고 새 파일은 `VALIDITY: ACTIVE`로 시작한다. 기존 기록은
+   고치지 않고 정정이나 후속 내용을 아래에 추가한다. 단, 판단의 현재 유효성을 나타내는 `VALIDITY`,
+   `REPLACED_BY`, `REASON`은 메타데이터 예외로 갱신할 수 있다. 사람의 결정·리뷰나 프로젝트 간 합의를
+   기다리는 살아 있는 안건은 journal에 묻지 않고 관련 request/proposal 본문과 `AGENDA.md`에 등재한다.
 6. **기준 문서 변경**: 기본 경로는 `proposals/`에 변경안과 근거를 작성하는 것이다. 승인된 변경은
    `docs/`에 반영하고 관련 proposal을 종료한다.
 7. **주체 간 요청**: 다른 프로젝트가 수행하거나 operator가 실행·수정해야 할 일은 `requests/`에 작성한다.
@@ -159,21 +163,37 @@
       `cancelled`를 사용할 수 있다. `blocked`에는 반드시 원인이 되는 `ISSUES.md` 행을 연결한다.
     - initiative는 task·request·issue의 상태를 대신하지 않는다. 프로젝트 내부 실행은 task, 주체 간
       인계는 request, 위험·차단은 issue, 사람 결정은 agenda에 기록하고 모두 initiative 문서에 연결한다.
-    - `completed`·`cancelled` 시 완료 기준과 결과를 기록한 뒤 `initiatives/archive/YYYY-MM/`로 옮기고
-      활성 등록부에서 제거한다. `paused`는 재개 가능하므로 활성 영역에 남긴다.
+    - `completed`·`cancelled` 시 완료 기준과 결과 또는 취소 사유를 기록한 뒤
+      `initiatives/archive/YYYY-MM/`로 옮기고 활성 등록부에서 제거하며, `INITIATIVES.md` 종료 대장에
+      한 줄을 남긴다. `paused`는 재개 가능하므로 활성 영역에 남긴다.
     - 한 프로젝트 안에서 독립적으로 끝나는 일은 initiative를 만들지 않고 task로 관리한다. 여러 주체의
       공동 결과·통합 완료 기준·조정이 필요할 때만 initiative를 만든다.
+21. **지식 유효성과 무효화**: 저널의 과거 사건은 보존하되 그 안의 판단이 현재도 유효한지는
+    `ACTIVE`, `SUPERSEDED`, `REJECTED`로 명시한다. `SUPERSEDED`에는 대체 대상과 사유,
+    `REJECTED`에는 사유가 필수다. 현재 작업에서 판단을 실제로 뒤집었다면 같은 변경에서 원본 저널의
+    유효성 메타데이터와 `INVALIDATIONS.md`를 갱신한다. 아카이브는 오래된 기록의 보관 위치일 뿐
+    무효화를 뜻하지 않는다. 세부 형식은 `journal/README.md`를 따른다.
+22. **큐레이션과 역할**: worker는 자기 프로젝트 작업과 실행 기록을 남기고, curator는 검증된 현행
+    판단의 canon 승격, 무효화 색인, quirk, 아카이브와 하네스 정합을 관리한다. 역할은 책임 묶음일 뿐
+    규칙 2의 project-id를 대체하지 않는다. 시작할 때 `operator:curation-status`를 실행하고
+    `ATTENTION`이면 첫 사용자 응답에 알리되, 이 신호만으로 현재 작업을 막거나 자동 교정하지 않는다.
+    큐레이션을 실제로 완료한 때만 `CURATION.md`의 시각을 갱신한다. 세부 책임은 `docs/roles.md`를 따른다.
+23. **Quirk 등록부**: 모르고 제거·단순화하면 동작을 깨뜨리는 비직관적 현행 불변식은 검증 근거와 영향,
+    검색 가능한 symbol을 `docs/quirks.md`에 기록한다. 단순 복잡성·과거 경위·추측은 등록하지 않는다.
+    코드 주석은 프로젝트 규칙이 허용할 때 안정 quirk ID를 가리키는 현재 불변식 앵커만 둘 수 있고,
+    승인 경위·날짜·사람·커밋 해시는 넣지 않는다.
 
 ## 권장 시작 순서
 
 1. `PROJECTS.md`에서 자기 프로젝트 식별자를 확인한다.
 2. operator 관련 작업이면 `OPERATORS.md`에서 식별자·소유 프로젝트·계약 문서를 확인한다.
-3. `INITIATIVES.md`에서 자기 프로젝트·operator가 참여하는 활성 이니셔티브를 확인한다.
-4. `ISSUES.md`에서 자기 프로젝트와 관련 operator의 활성 이슈를 확인한다.
-5. `changed/`에서 자기 프로젝트나 operator가 아직 확인하지 않은 영향을 확인한다.
-6. 해당 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업 제목만 확인한다.
-7. `AGENDA.md`에서 자기 프로젝트·operator가 참여하는 열린 논의를 확인한다.
-8. 지금 수행할 작업과 직접 관련된 문서만 연다.
+3. `./operators/curation-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
+4. `INITIATIVES.md`에서 자기 프로젝트·operator가 참여하는 활성 이니셔티브를 확인한다.
+5. `ISSUES.md`에서 자기 프로젝트와 관련 operator의 활성 이슈를 확인한다.
+6. `changed/`에서 자기 프로젝트나 operator가 아직 확인하지 않은 영향을 확인한다.
+7. 해당 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업 제목만 확인한다.
+8. `AGENDA.md`에서 자기 프로젝트·operator가 참여하는 열린 논의를 확인한다.
+9. 지금 수행할 작업과 직접 관련된 문서와 `docs/quirks.md`의 관련 project·symbol만 연다.
 
 ## 커밋 메시지 권장 형식
 

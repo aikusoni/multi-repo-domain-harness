@@ -20,23 +20,29 @@
 2. 현재 저장소의 `git status --short`를 확인하고 기존 변경과 작업 범위가 겹치는지 판단한다.
 3. 현재 작업 대상의 프로젝트 식별자를 결정하고 `PROJECTS.md`에서 확인한다.
 4. 실행 자동화 관련 작업이면 `OPERATORS.md`에서 operator 식별자와 소유 프로젝트를 확인한다.
-5. `INITIATIVES.md`에서 해당 프로젝트·operator가 참여하는 활성 공동 목표를 확인한다.
-6. `ISSUES.md`에서 해당 프로젝트와 관련 operator의 활성 게이트를 확인한다.
-7. `changed/`의 해당 주체 확인 로그와 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업을 확인한다.
-8. `AGENDA.md`에서 현재 프로젝트·operator가 참여하는 열린 논의가 있는지 확인한다.
-9. 현재 작업에 직접 필요한 `docs/`, `initiatives/`, `operators/` 문서만 추가로 읽는다.
+5. `./operators/curation-status.sh`를 실행한다. `ATTENTION`이면 첫 사용자 응답에 알리되 작업 게이트로
+   사용하지 않는다.
+6. `INITIATIVES.md`에서 해당 프로젝트·operator가 참여하는 활성 공동 목표를 확인한다.
+7. `ISSUES.md`에서 해당 프로젝트와 관련 operator의 활성 게이트를 확인한다.
+8. `changed/`의 해당 주체 확인 로그와 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업을 확인한다.
+9. `AGENDA.md`에서 현재 프로젝트·operator가 참여하는 열린 논의가 있는지 확인한다.
+10. 현재 작업에 직접 필요한 `docs/`, `initiatives/`, `operators/` 문서만 추가로 읽는다. 코드를
+    단순화하거나 비직관적 동작을 바꾸기 전에는 `docs/quirks.md`를 관련 project와 symbol로 검색한다.
 
 ## 변경 원칙
 
 - 기준 문서에 확정되지 않은 내용을 단정해서 쓰지 않는다.
 - 검증하지 않은 내용은 `[미검증]`으로 표시한다.
-- 기존 journal과 이벤트 피드는 수정하지 않고 append한다.
+- 기존 journal 본문과 이벤트 피드는 수정하지 않고 append한다. 저널의 `VALIDITY`, `REPLACED_BY`,
+  `REASON`은 지식 유효성 메타데이터 예외다.
 - 모든 날짜와 시각은 UTC 고정 오프셋 `+00:00`을 사용하고 시각에는 `UTC`를 반드시 명시한다.
   서머타임(DST)이나 지역별·계절별 오프셋은 적용하지 않는다.
 - 다른 프로젝트가 수행하거나 operator가 실행·수정할 일은 `requests/`에 작성한다.
 - 둘 이상의 프로젝트·operator가 공유하는 결과는 initiative로 등록하고 관련 task·request·issue를 연결한다.
 - 담당하지 않은 프로젝트 저장소는 조사 목적으로 읽을 수 있지만 수정·빌드·커밋하지 않는다.
 - 교차 프로젝트에 영향을 주는 변경은 `changed/`에 기록한다.
+- 현재 작업에서 과거 저널 판단을 대체·기각하면 원본의 유효성 메타데이터와 `INVALIDATIONS.md`를 같은
+  변경에서 갱신한다.
 - 커밋 전 전체 변경에서 비밀·개인정보·내부 경로·비공개 시스템 정보 등 공개 위험 정보를 검토한다.
 - 공개 위험 정보가 없으면 완료한 변경을 자동 커밋한다.
 - 위험하거나 공개 가능 여부가 불확실한 정보가 있으면 stage와 commit을 중단하고 사용자에게 한 번 확인한다.

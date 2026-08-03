@@ -9,3 +9,7 @@
 | Request | 다른 프로젝트·operator에 전달하고 결과를 왕복 확인하는 실행 요청 | 요청자·대상 | `requests/...` | 프로젝트 간 인계 |
 | Issue | 계약·기준·작업 흐름의 위험이나 차단 상태 | 관련 주체 | `ISSUES.md`, `issues/...` | 활성 상태와 이력 분리 |
 | Operator | 반복 가능한 실행을 자동화하는 주체 | owner 프로젝트 | `operator:<id>` | 에이전트 정체성이 아님 |
+| Invalidation | 과거 저널 판단이 대체되거나 기각됐음을 명시하는 지식 유효성 기록 | harness | `INVALIDATIONS.md` | 실행 항목의 dropped/cancelled와 구분 |
+| Quirk | 코드만 읽으면 오해하기 쉬우며 모르고 변경하면 동작을 깨뜨리는 현행 불변식 | 해당 프로젝트 | `Q-NNN` | 단순 복잡성이나 과거 경위는 제외 |
+| Worker | 프로젝트 작업과 그 실행 기록을 남기는 기본 역할 | 해당 프로젝트 | `docs/roles.md` | project-id를 대체하지 않음 |
+| Curator | 하네스의 승격·무효화·아카이브·정합을 관리하는 역할 | harness | `docs/roles.md`, `CURATION.md` | project-id를 대체하지 않음 |
