@@ -20,6 +20,81 @@
 10. 사람의 결정·리뷰·합의를 기다리는 주제는 [`AGENDA.md`](AGENDA.md)에 등재한다.
 11. 여러 저장소나 operator에 영향을 주는 변경은 `changed/`에 기록한다.
 
+## macOS 데스크톱 앱에서 적용하기
+
+이 절은 Mac에 하네스를 내려받고 Codex 데스크톱 앱의 로컬 프로젝트 또는 Claude Desktop의
+**Code > Local** 세션에서 사용하는 경우를 다룬다. 일반 Claude Chat 탭이나 클라우드·SSH 세션은 로컬
+파일 경로를 같은 방식으로 읽는다고 가정하지 않는다.
+
+macOS에서 `~`는 현재 사용자의 홈 디렉터리다. 하네스는 `~/.codex/config.toml`이나
+`~/.claude/settings.json`에 임의의 설정 키로 등록하지 않는다. 이 파일들은 도구·권한 같은 실행 설정에
+사용하고, 하네스 진입 규칙은 Codex의 `AGENTS.md`와 Claude Code의 `CLAUDE.md`에 선언한다.
+
+### 1. 하네스 절대경로 확인
+
+하네스 저장소에서 `pwd`를 실행해 절대경로를 확인한다. 아래 예시의
+`/absolute/path/to/multi-repo-domain-harness`는 이 값으로 바꾼다. 실제 사용자명이나 로컬 절대경로가
+들어간 설정 파일은 공개 저장소에 커밋하지 않는다.
+
+### 2. Codex에 전역 하네스 선언
+
+Codex는 기본적으로 `~/.codex/AGENTS.md`를 사용자 전역 지침으로 읽는다. 디렉터리가 없다면
+`mkdir -p ~/.codex`로 만든 뒤, 기존 내용을 보존하면서 다음 진입 규칙을 추가한다.
+
+```md
+# Shared multi-repo harness
+
+모든 저장소 작업에서 다음 절차를 따른다.
+
+1. 다른 프로젝트 파일을 읽거나 수정하기 전에
+   `/absolute/path/to/multi-repo-domain-harness/INDEX.md` 전체를 읽는다.
+2. 현재 Git 저장소 이름을 `project-id`로 사용한다.
+3. `INDEX.md`의 시작 절차, 읽기 범위, 기록 위치와 Git 경계를 따른다.
+4. 작업 단위 전환, 중단 후 재개, 커밋과 최종 보고 전에는 규칙 버전 스탬프를 다시 확인한다.
+5. 스탬프가 바뀌었거나 마지막 숙지 버전을 확신할 수 없으면 `INDEX.md` 전체를 다시 읽는다.
+```
+
+저장소 루트의 `AGENTS.md`에는 그 저장소에만 필요한 규칙을 둔다. Codex는 사용자 전역 지침과 저장소
+지침을 함께 읽으므로 하네스 전체를 각 저장소에 복사할 필요가 없다. 단,
+`~/.codex/AGENTS.override.md`가 있으면 같은 위치의 `AGENTS.md`보다 먼저 선택되므로, 위 규칙을 override
+파일에 합치거나 해당 override를 사용하지 않는 상태인지 확인한다.
+
+### 3. Claude Code에 전역 하네스 선언
+
+Claude Desktop에서는 일반 Chat 탭이 아니라 **Code** 탭에서 **Local** 환경과 작업할 저장소 폴더를
+선택한다. `~/.claude/CLAUDE.md`가 없다면 `mkdir -p ~/.claude`로 디렉터리를 만든 뒤 파일을 생성하고,
+기존 파일이 있다면 다음 내용을 병합한다.
+
+```md
+@/absolute/path/to/multi-repo-domain-harness/INDEX.md
+
+# Shared multi-repo harness
+
+- 위에서 불러온 `INDEX.md`를 운영 규칙의 정본으로 사용한다.
+- 현재 Git 저장소 이름을 `project-id`로 사용한다.
+- 작업 단위 전환, 중단 후 재개, 커밋과 최종 보고 전에는 원본 `INDEX.md`의 규칙 버전 스탬프를
+  다시 확인한다.
+- 스탬프가 바뀌었거나 마지막 숙지 버전을 확신할 수 없으면 원본 `INDEX.md` 전체를 다시 읽는다.
+```
+
+Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥으로 불러온다. 팀과 공유할 프로젝트 규칙은
+저장소 루트의 `CLAUDE.md` 또는 `.claude/CLAUDE.md`에 둔다. 이미 `AGENTS.md` 하나로 프로젝트 규칙을
+관리한다면 루트 `CLAUDE.md`에 `@AGENTS.md`를 적어 같은 규칙을 재사용할 수 있다. 개인별 경로나 설정은
+커밋 대상 파일 대신 `~/.claude/CLAUDE.md` 또는 gitignore된 `CLAUDE.local.md`에 둔다.
+
+### 4. 적용 확인
+
+설정 파일을 바꾼 뒤에는 이미 열려 있던 대화를 재사용하지 말고 새 작업 또는 새 세션을 시작한다.
+
+- Codex: 저장소를 프로젝트로 연 뒤 “적용된 하네스의 `INDEX.md` 규칙 버전 스탬프와 현재
+  `project-id`를 말해 달라”고 요청한다.
+- Claude Code: `/context`에서 `CLAUDE.md`가 Memory files에 포함됐는지 확인한 뒤 같은 질문을 한다.
+- 두 앱 모두 응답한 `project-id`가 현재 저장소 이름과 같고, 스탬프가 실제 `INDEX.md` 상단과 같아야
+  적용된 상태다.
+
+하네스가 선택한 프로젝트 폴더 밖에 있어 읽기 승인이 나타나면 해당 하네스 디렉터리에 대한 읽기만
+허용한다. 쓰기는 제품 저장소와 하네스 저장소의 경계를 유지해 각각 별도 변경과 별도 커밋으로 처리한다.
+
 ## 설계 원칙
 
 - 현재 상태의 정본과 시간순 이력을 분리한다.
