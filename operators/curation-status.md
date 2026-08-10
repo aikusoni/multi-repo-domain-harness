@@ -11,7 +11,7 @@ related_initiatives: []
 
 ## 목적과 책임
 
-`CURATION.md`의 임계값과 현재 `journal/` 루트 상태를 읽어 큐레이션 주의 신호를 한 줄로 보고한다.
+`CURATION.md`의 임계값과 `journal/` 루트·아카이브 상태를 읽어 큐레이션 주의 신호를 한 줄로 보고한다.
 규칙을 바꾸거나 저널을 자동 승격·무효화·보관하지 않는다.
 
 ## 실행 조건
@@ -24,13 +24,14 @@ related_initiatives: []
 ## 입력 계약
 
 - 하네스 루트 `CURATION.md`
-- `journal/YYYY-MM-DD-*.md` 루트 파일. `journal/archive/`는 제외한다.
+- `journal/YYYY-MM-DD-*.md`와 `journal/archive/YYYY-MM/YYYY-MM-DD-*.md`
 - Python 3 표준 라이브러리
 
 ## 출력과 성공 판정
 
 - `OK` 또는 `ATTENTION` 한 줄
-- 루트 저널 수와 임계값
+- 마지막 큐레이션 뒤 UTC 활동이 있는 미큐레이션 저널 수와 임계값
+- 미큐레이션 저널 중 아카이브에 있는 수
 - 마지막 큐레이션 UTC 시각과 경과 일수
 - `validity_required_since` 이후 생성된 저널의 `VALIDITY` 누락 수
 - 설정을 정상적으로 읽고 상태를 계산하면 주의 여부와 무관하게 exit code `0`
@@ -40,7 +41,7 @@ related_initiatives: []
 
 ## 권한과 부작용
 
-- 읽기 범위: `CURATION.md`, `journal/` 루트 Markdown 파일
+- 읽기 범위: `CURATION.md`, `journal/` 루트와 아카이브 Markdown 파일
 - 쓰기 범위: 없음
 - 외부 변경: 없음
 - 사용자 승인 필요 조건: 없음
@@ -67,9 +68,12 @@ related_initiatives: []
 ## 검증
 
 - 정상 설정에서 exit code `0`과 `OK|ATTENTION` 출력 확인
+- 마지막 큐레이션 이후 UTC 활동 시각이 있는 루트·아카이브 저널이 같은 방식으로 집계되는지 확인
 - 임계값 초과와 `VALIDITY` 누락 fixture에서 `ATTENTION` 확인
 - 로컬 시간대 변경과 관계없이 UTC 경과 일수가 같은지 확인
 
 ## 변경 호환성
 
-`CURATION.md`의 네 설정 키와 출력 접두사 `OK|ATTENTION`은 공개 계약이다. 변경 시 `changed/`에 알린다.
+`CURATION.md`의 네 설정 키와 출력 접두사 `OK|ATTENTION`은 공개 계약이다. 저널의 UTC 활동 시각은 본문에
+있는 `YYYY-MM-DD HH:MM:SS UTC` 중 가장 늦은 값으로 판정하고, 값이 없으면 파일명 UTC 날짜의 끝으로
+보수적으로 판정한다. 변경 시 `changed/`에 알린다.

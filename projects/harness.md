@@ -13,12 +13,14 @@
 - 기준 문서·제안·저널·아젠다의 생명주기
 - 저널 판단의 유효성·무효화 색인과 큐레이션 상태
 - worker·curator 역할과 비직관적 현행 불변식 등록부
+- 현재 상태 요약·살아있는 문서의 현재성·로컬 참조 정합 감사
 
 ## 제공 계약
 
 - `INDEX.md`
 - `ISSUES.md`, `PROJECTS.md`, `INITIATIVES.md`, `OPERATORS.md`, `AGENDA.md`
 - `INVALIDATIONS.md`, `CURATION.md`
+- `operators/curation-status.md`, `operators/harness-audit.md`
 - 각 운영 폴더의 `README.md`와 템플릿
 
 ## 소비 계약

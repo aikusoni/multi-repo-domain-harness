@@ -1,0 +1,6 @@
+# Append-only 날짜별 피드는 동시 변경을 모두 보존한다.
+changed/status-*.md merge=union
+issues/status-*.md  merge=union
+
+# 현재 상태를 수정하는 ISSUES.md·AGENDA.md·looked 파일과 유효성 메타데이터를 수정할 수 있는 journal에는
+# union 병합을 적용하지 않는다. 삭제한 행의 부활이나 메타데이터 중복을 막기 위한 의도된 경계다.

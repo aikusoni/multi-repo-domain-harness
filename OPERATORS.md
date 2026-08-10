@@ -25,8 +25,15 @@
 ## 등록된 operator
 
 ### operator:curation-status
-- **목적**: 루트 저널 수, 마지막 큐레이션 경과, 신규 저널 유효성 메타데이터 누락을 보고한다.
+- **목적**: 루트·아카이브의 미큐레이션 저널 수, 마지막 큐레이션 경과와 유효성 메타데이터 누락을 보고한다.
 - **owner**: harness
 - **구현**: `operators/curation-status.sh`
 - **계약**: `operators/curation-status.md`
+- **영향**: 전체
+
+### operator:harness-audit
+- **목적**: 활성 항목 파일, 현재 참조, 상태 요약과 살아있는 문서의 정합을 읽기 전용으로 검사한다.
+- **owner**: harness
+- **구현**: `operators/harness-audit.sh`
+- **계약**: `operators/harness-audit.md`
 - **영향**: 전체
