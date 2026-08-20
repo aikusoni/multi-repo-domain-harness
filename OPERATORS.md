@@ -37,3 +37,17 @@
 - **구현**: `operators/harness-audit.sh`
 - **계약**: `operators/harness-audit.md`
 - **영향**: 전체
+
+### operator:feedback-status
+- **목적**: 최근 검증 결과의 성공·실수 수, major 이상 실수, 반복 pattern과 이벤트 스키마 오류를 보고한다.
+- **owner**: harness
+- **구현**: `operators/feedback-status.sh`
+- **계약**: `operators/feedback-status.md`
+- **영향**: 전체
+
+### operator:review-branch
+- **목적**: 로컬 review 스냅샷을 생성·감사하고 hook에서 직접 커밋과 원격 push를 차단한다.
+- **owner**: harness
+- **구현**: `operators/review-branch.sh`
+- **계약**: `operators/review-branch.md`
+- **영향**: 전체

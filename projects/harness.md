@@ -14,13 +14,17 @@
 - 저널 판단의 유효성·무효화 색인과 큐레이션 상태
 - worker·curator 역할과 비직관적 현행 불변식 등록부
 - 현재 상태 요약·살아있는 문서의 현재성·로컬 참조 정합 감사
+- 검증된 성공·실수의 집계와 지침 개선 피드백
+- 로컬 review·원격 PR·feature·release·정본의 변경 승격 계약
 
 ## 제공 계약
 
 - `INDEX.md`
 - `ISSUES.md`, `PROJECTS.md`, `INITIATIVES.md`, `OPERATORS.md`, `AGENDA.md`
 - `INVALIDATIONS.md`, `CURATION.md`
-- `operators/curation-status.md`, `operators/harness-audit.md`
+- `FEEDBACK.md`, `feedback/README.md`
+- `operators/curation-status.md`, `operators/harness-audit.md`, `operators/feedback-status.md`,
+  `operators/review-branch.md`
 - 각 운영 폴더의 `README.md`와 템플릿
 
 ## 소비 계약
@@ -39,6 +43,8 @@
 - 실행 자동화 식별: `OPERATORS.md`
 - 지식 무효화: `INVALIDATIONS.md`
 - 큐레이션 현재 상태: `CURATION.md`
+- 검증 결과 집계 설정: `FEEDBACK.md`
+- 변경 승격: `docs/change-promotion.md`
 
 ## 현재 제약과 후속 작업
 

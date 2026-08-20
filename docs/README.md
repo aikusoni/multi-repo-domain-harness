@@ -8,6 +8,8 @@
 - `decision-log.md`: 확정된 횡단 결정과 대체된 결정
 - `roles.md`: worker·curator 책임과 프로젝트 정체성의 경계
 - `quirks.md`: 모르고 단순화하면 동작을 깨뜨리는 비직관적 현행 불변식
+- `outcome-feedback.md`: 검증된 성공·실수를 지침 개선으로 연결하는 절차
+- `change-promotion.md`: 로컬 review, 원격 PR, feature, release·정본의 승격 계약
 - `contracts/`: API, 이벤트, 데이터 스키마 등 저장소 간 계약
 
 기준 문서에는 확인된 사실과 확정된 결정만 기록한다. 검토가 필요한 변경은 먼저 `proposals/`에 둔다.

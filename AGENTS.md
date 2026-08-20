@@ -22,18 +22,20 @@
 4. 실행 자동화 관련 작업이면 `OPERATORS.md`에서 operator 식별자와 소유 프로젝트를 확인한다.
 5. `./operators/curation-status.sh`를 실행한다. `ATTENTION`이면 첫 사용자 응답에 알리되 작업 게이트로
    사용하지 않는다.
-6. `INITIATIVES.md`에서 해당 프로젝트·operator가 참여하는 활성 공동 목표를 확인한다.
-7. `ISSUES.md`에서 해당 프로젝트와 관련 operator의 활성 게이트를 확인한다.
-8. `changed/`의 해당 주체 확인 로그와 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업을 확인한다.
-9. `AGENDA.md`에서 현재 프로젝트·operator가 참여하는 열린 논의가 있는지 확인한다.
-10. 현재 작업에 직접 필요한 `docs/`, `initiatives/`, `operators/` 문서만 추가로 읽는다. 코드를
+6. `./operators/feedback-status.sh`를 실행한다. `ATTENTION`이면 첫 사용자 응답에 알리되 작업 게이트나
+   자동 지침 변경 근거로 사용하지 않는다.
+7. `INITIATIVES.md`에서 해당 프로젝트·operator가 참여하는 활성 공동 목표를 확인한다.
+8. `ISSUES.md`에서 해당 프로젝트와 관련 operator의 활성 게이트를 확인한다.
+9. `changed/`의 해당 주체 확인 로그와 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업을 확인한다.
+10. `AGENDA.md`에서 현재 프로젝트·operator가 참여하는 열린 논의가 있는지 확인한다.
+11. 현재 작업에 직접 필요한 `docs/`, `initiatives/`, `operators/` 문서만 추가로 읽는다. 코드를
     단순화하거나 비직관적 동작을 바꾸기 전에는 `docs/quirks.md`를 관련 project와 symbol로 검색한다.
 
 ## 변경 원칙
 
 - 기준 문서에 확정되지 않은 내용을 단정해서 쓰지 않는다.
 - 검증하지 않은 내용은 `[미검증]`으로 표시한다.
-- 기존 journal 본문과 이벤트 피드는 수정하지 않고 append한다. 저널의 `VALIDITY`, `REPLACED_BY`,
+- 기존 journal 본문과 changed·issues·feedback 이벤트 피드는 수정하지 않고 append한다. 저널의 `VALIDITY`, `REPLACED_BY`,
   `REASON`은 지식 유효성 메타데이터 예외다.
 - `ISSUES.md` 요약과 `AGENDA.md`의 기다리는 것은 현재 상태 문장이므로 정정을 뒤에 덧붙이지 않고 다시
   쓴다. 같은 변경의 이력 이벤트는 append한다.

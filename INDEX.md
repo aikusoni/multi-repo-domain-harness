@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0008 · 최종 갱신: 2026-08-10 03:38:27 UTC · 현재성·감사·병합 보호와 보고 가독성 추가**
+**규칙 버전: r0009 · 최종 갱신: 2026-08-20 01:39:25 UTC · 검증 결과 피드백과 변경 승격 보호 추가**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -18,6 +18,8 @@
 | `journal/` | 세션별 발견, 결정, 시행착오 | append-only. 유효성 메타데이터만 예외 |
 | `INVALIDATIONS.md` | 대체·기각된 저널 판단의 누적 색인 | 원본 저널과 함께 갱신 |
 | `CURATION.md` | 지식 큐레이션 시각과 주의 임계값 | 현재 상태. 규칙 정본이 아님 |
+| `FEEDBACK.md` | 검증 결과 집계 설정과 주의 임계값 | 현재 상태. 성과 점수가 아님 |
+| `feedback/` | 검증된 성공·실수의 UTC 날짜별 이벤트 | append-only. 지침 개선 증거 |
 | `proposals/` | 기준 문서 변경 제안 | 자유롭게 작성, 승인 후 `docs/` 반영 |
 | `requests/` | 다른 프로젝트·operator에 전달하는 작업 요청 | 요청자와 대상이 왕복 처리 |
 | `ISSUES.md` | 활성 proposal/request의 상태 정본 | 활성 상태만 유지 |
@@ -134,8 +136,9 @@
     경우에만 수행한다. 사용자가 커밋하지 말라고 지시하면 그 지시를 우선한다.
     - stage와 commit은 현재 작업에서 직접 변경한 명시적 경로만 대상으로 한다. 기존 변경이 있는
       작업트리에서 `git add -A`, `git add .`, `git commit -a`처럼 범위가 넓은 명령을 사용하지 않는다.
-    - 여러 작업이 같은 날짜별 피드 끝에 추가한 행을 보존하도록 `changed/status-*.md`와
-      `issues/status-*.md`에만 union 병합을 사용한다. 현재 상태를 수정하는 파일과 저널에는 적용하지 않는다.
+    - 여러 작업이 같은 날짜별 피드 끝에 추가한 행을 보존하도록 `changed/status-*.md`,
+      `issues/status-*.md`, `feedback/status-*.md`에만 union 병합을 사용한다. 현재 상태를 수정하는 파일과
+      저널에는 적용하지 않는다.
     - 커밋 전 staged diff, 커밋 후 커밋 통계를 확인해 다른 작업의 파일이 섞이지 않았는지 검증한다.
     - 하네스 기록과 제품 코드 변경은 서로 다른 저장소의 별도 커밋으로 유지한다.
 17. **operator 식별과 거버넌스**: 실행 자동화는 에이전트 정체성과 분리해 `OPERATORS.md`에
@@ -189,7 +192,8 @@
     코드 주석은 프로젝트 규칙이 허용할 때 안정 quirk ID를 가리키는 현재 불변식 앵커만 둘 수 있고,
     승인 경위·날짜·사람·커밋 해시는 넣지 않는다.
 24. **현재 상태 요약과 살아있는 canon**: 누적형 기록과 재작성형 현재 상태를 구분한다.
-    - `journal/`, `changed/`, `issues/status-*`는 당시 사실의 누적형 기록이므로 append한다.
+    - `journal/`, `changed/`, `issues/status-*`, `feedback/status-*`는 당시 사실의 누적형 기록이므로
+      append한다.
     - `ISSUES.md`의 요약, `AGENDA.md`의 기다리는 것, 현재 상황을 주장하는 canon은 재작성형이다. 정정을
       뒤에 덧붙이지 않고 첫 문장이 지금 상태와 닫히기 위한 다음 행동을 말하도록 다시 쓴다.
     - 현황·인벤토리·체크리스트처럼 코드와 운영 상태에 따라 낡는 문서는 `docs/README.md`의 살아있는 문서
@@ -198,18 +202,39 @@
 25. **식별자 보고 가독성**: 사용자와 대화하거나 긴 문서에서 항목을 처음 가리킬 때 `i-...`, `c-...`,
     `Q-NNN`, 순번 같은 식별자만 쓰지 않고 짧은 헤드라인을 함께 붙인다. 식별자는 추적 앵커이며 사람이
     이전 문맥을 되짚지 않고도 대상을 알아볼 수 있어야 한다. 같은 문맥에서 반복할 때는 식별자만 쓸 수 있다.
+26. **검증 결과 피드백**: 작업 완료, 리뷰, 검증과 변경 승격에서 지침 평가에 정보가 있는 성공·실수를
+    근거와 함께 `feedback/`에 기록한다. 단순 행동 횟수, 자기 평가, 검증되지 않은 추론은 세지 않는다.
+    - 성공과 실수는 서로 상쇄하는 점수로 만들지 않는다. 성공은 지침의 효과, 실수는 누락·모호성·미준수,
+      실행 오류와 외부 실패의 원인을 검토하는 증거다.
+    - 시작할 때 `operator:feedback-status`를 실행한다. `ATTENTION`이면 반복 pattern, major 이상 실수 또는
+      스키마 오류를 첫 사용자 응답에 알리되 이 신호만으로 작업을 막거나 기준 문서를 자동 수정하지 않는다.
+    - curator는 원인과 반례를 확인해 지침 문제로 검증된 경우에만 proposal을 만들고, 사람의 승인을 받은
+      변경만 canon 또는 이 파일에 반영한다. 변경 후 같은 pattern의 재발 여부로 효과를 다시 확인한다.
+    - 형식, 분류, 임계값과 개선 절차는 `FEEDBACK.md`, `feedback/README.md`,
+      `docs/outcome-feedback.md`를 따른다.
+27. **변경 승격과 리뷰 브랜치**: 작업 변경은 별도 worktree 또는 작업 브랜치에서 만들고, 사람의 승인 없이
+    원격 feature·release·정본이나 배포 단계로 승격하지 않는다.
+    - 로컬 `review/<topic>_YYYYMMDDTHHMMSSZ`는 clean 작업 HEAD의 불변 제출 스냅샷이다. 원격에 push하거나
+      생성 뒤 이동·amend·reset·직접 커밋하지 않는다. 변경되면 새 UTC 타임스탬프의 review를 만든다.
+    - 공동 작업은 로컬 review 뒤 원격 PR 브랜치에서 CI와 공동 리뷰를 수행한다. PR head가 바뀌면 기존
+      승인을 무효화하고 검증·리뷰를 다시 수행한다. PR 브랜치는 배포 소스가 아니다.
+    - 승인된 결과만 보호된 feature로 통합하고, release·배포 브랜치 또는 정본 승격에는 별도 통합 검증과
+      승인을 요구한다. 태그 배포는 정본 브랜치에 먼저 병합한 정확한 commit만 태그한다.
+    - 저장소별 이름과 배포 방식이 달라도 단계 책임, review 원격 push 금지와 승인 무효화 원칙은 유지한다.
+      전체 계약과 강제 장치는 `docs/change-promotion.md`, 로컬 도구는 `operator:review-branch`를 따른다.
 
 ## 권장 시작 순서
 
 1. `PROJECTS.md`에서 자기 프로젝트 식별자를 확인한다.
 2. operator 관련 작업이면 `OPERATORS.md`에서 식별자·소유 프로젝트·계약 문서를 확인한다.
 3. `./operators/curation-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
-4. `INITIATIVES.md`에서 자기 프로젝트·operator가 참여하는 활성 이니셔티브를 확인한다.
-5. `ISSUES.md`에서 자기 프로젝트와 관련 operator의 활성 이슈를 확인한다.
-6. `changed/`에서 자기 프로젝트나 operator가 아직 확인하지 않은 영향을 확인한다.
-7. 해당 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업 제목만 확인한다.
-8. `AGENDA.md`에서 자기 프로젝트·operator가 참여하는 열린 논의를 확인한다.
-9. 지금 수행할 작업과 직접 관련된 문서와 `docs/quirks.md`의 관련 project·symbol만 연다.
+4. `./operators/feedback-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
+5. `INITIATIVES.md`에서 자기 프로젝트·operator가 참여하는 활성 이니셔티브를 확인한다.
+6. `ISSUES.md`에서 자기 프로젝트와 관련 operator의 활성 이슈를 확인한다.
+7. `changed/`에서 자기 프로젝트나 operator가 아직 확인하지 않은 영향을 확인한다.
+8. 해당 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업 제목만 확인한다.
+9. `AGENDA.md`에서 자기 프로젝트·operator가 참여하는 열린 논의를 확인한다.
+10. 지금 수행할 작업과 직접 관련된 문서와 `docs/quirks.md`의 관련 project·symbol만 연다.
 
 ## 커밋 메시지 권장 형식
 

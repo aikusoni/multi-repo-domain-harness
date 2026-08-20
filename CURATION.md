@@ -3,7 +3,7 @@
 이 파일은 하네스 지식 큐레이션의 현재 상태와 경고 임계값에 대한 정본이다. 운영 규칙은 `INDEX.md`,
 큐레이션 책임은 `docs/roles.md`, 상태 확인 방법은 `operators/curation-status.md`가 소유한다.
 
-- last_curated_at: 2026-08-10 03:43:32 UTC
+- last_curated_at: 2026-08-20 01:39:25 UTC
 - uncurated_journal_warning: 7
 - stale_after_days: 14
 - validity_required_since: 2026-08-03 UTC
