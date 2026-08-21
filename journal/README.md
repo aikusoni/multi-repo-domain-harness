@@ -9,6 +9,7 @@
 - 검증하지 않은 내용은 `[미검증]` 표시
 - 사람의 결정·리뷰나 프로젝트 간 합의를 기다리는 안건은 journal이 아니라 request/proposal 본문과
   `AGENDA.md`에 기록
+- 살아 있는 세션을 관측하거나 세션 간 메시지를 주고받으면 아래 `SESSION-COMM` 형식으로 기록
 - 오래되어 현행 판단에 필요하지 않은 기록은 `journal/archive/YYYY-MM/`로 이동하며 기본 스캔에서 제외
 
 ## 지식 유효성
@@ -38,6 +39,31 @@
 - 무효화된 항목은 `INVALIDATIONS.md`에 한 줄로 등재한다. 색인은 원문을 대체하지 않는다.
 - 기존 저널을 일괄 소급 수정하지 않는다. 새 저널과 현재 작업에서 실제로 재판정한 기록부터 적용한다.
 - 아카이브 여부와 유효성은 별개다. 오래되어 이동한 `ACTIVE` 기록이 자동으로 무효가 되지 않는다.
+
+## 세션 관측·통신 로그
+
+`INDEX.md` 규칙 28과 `docs/session-coordination.md`에 따라 위험 경계에서 다른 세션을 관측하거나
+메시지를 주고받았으면 해당 섹션에 한 줄을 append한다.
+
+```markdown
+**SESSION-COMM:** 2026-08-21 09:20:00 UTC · observe · peer: project-a@worktree-a · reason: INDEX 수정 전 소유 확인
+**SESSION-COMM:** 2026-08-21 09:21:00 UTC · outbound · peer: project-a@worktree-a · tx:contract-check-20260821T092100Z · tx-count:1/10 · prompt-in:- · API 계약 파일 수정 여부 질문 · ref:docs/contracts/api.md
+**SESSION-COMM:** 2026-08-21 09:22:00 UTC · inbound · peer: project-a@worktree-a · tx:contract-check-20260821T092100Z · tx-count:2/10 · prompt-in:1/5 · 수정 없음 확인 → requests/... · value:none(direct-answer)
+```
+
+- `observe`, `outbound`, `inbound`, `no-response` 중 하나를 사용한다. 관측만 한 줄에는 tx 카운터가 없다.
+- `peer`는 실제 작업 디렉터리로 확인하되 공개 기록에는 절대경로 대신
+  `<project-id>@<worktree-or-task>`를 쓴다. 제목이나 브랜치명만으로 상대를 기록하지 않는다.
+- 메시지 줄에는 tx id와 전체 메시지 번호 `tx-count:<n>/10`을 반드시 기록한다.
+- `prompt-in`은 해당 세션이 사람의 마지막 직접 프롬프트 뒤 받은 메시지 수다. outbound에는 `-`,
+  inbound에는 `<n>/5`를 기록한다.
+- 끝에는 파일·커밋·수치 같은 산출물 포인터를 붙인다. 없으면 `value:none`, 직접 질문에 대한 답이면
+  `value:none(direct-answer)`로 적는다.
+- 무응답과 `회신 불요` 수신도 기록하되 그것을 이유로 새 메시지를 보내지 않는다.
+- 통신 결과가 결론의 근거가 되면 request, changed, decision 또는 canon 포인터를 같은 줄에 붙인다.
+- 이 형식은 도입 뒤 새 로그부터 적용하며 기존 journal은 소급 수정하지 않는다.
+
+## 항목 템플릿
 
 ```markdown
 # YYYY-MM-DD topic
