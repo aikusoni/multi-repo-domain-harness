@@ -46,7 +46,8 @@
 - **영향**: 전체
 
 ### operator:review-branch
-- **목적**: 로컬 review 스냅샷을 생성·감사하고 hook에서 직접 커밋과 원격 push를 차단한다.
+- **목적**: 어느 committed checkpoint에서나 로컬 review 스냅샷을 생성하고 이름·원격 유출·worktree
+  연결을 감사하며 hook에서 직접 커밋과 원격 push를 차단한다.
 - **owner**: harness
 - **구현**: `operators/review-branch.sh`
 - **계약**: `operators/review-branch.md`

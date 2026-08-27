@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0010 · 최종 갱신: 2026-08-21 09:15:18 UTC · 살아 있는 세션 조정과 통신 예산 추가**
+**규칙 버전: r0011 · 최종 갱신: 2026-08-27 05:58:29 UTC · 리뷰 체크포인트와 작업 브랜치 수명주기 보강**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -212,16 +212,27 @@
       변경만 canon 또는 이 파일에 반영한다. 변경 후 같은 pattern의 재발 여부로 효과를 다시 확인한다.
     - 형식, 분류, 임계값과 개선 절차는 `FEEDBACK.md`, `feedback/README.md`,
       `docs/outcome-feedback.md`를 따른다.
-27. **변경 승격과 리뷰 브랜치**: 작업 변경은 별도 worktree 또는 작업 브랜치에서 만들고, 사람의 승인 없이
-    원격 feature·release·정본이나 배포 단계로 승격하지 않는다.
-    - 로컬 `review/<topic>_YYYYMMDDTHHMMSSZ`는 clean 작업 HEAD의 불변 제출 스냅샷이다. 원격에 push하거나
-      생성 뒤 이동·amend·reset·직접 커밋하지 않는다. 변경되면 새 UTC 타임스탬프의 review를 만든다.
-    - 공동 작업은 로컬 review 뒤 원격 PR 브랜치에서 CI와 공동 리뷰를 수행한다. PR head가 바뀌면 기존
-      승인을 무효화하고 검증·리뷰를 다시 수행한다. PR 브랜치는 배포 소스가 아니다.
+27. **변경 승격과 리뷰 체크포인트**: 작업 변경은 별도 작업용 worktree 또는 임시 작업 브랜치에서 만들고,
+    사람의 승인 없이 원격 PR·feature·release·정본이나 배포 단계로 승격하지 않는다. 승격 경로와 리뷰
+    스냅샷은 서로 다른 축이다.
+    - 자동화가 만드는 작업용 worktree에는 worktree와 수명이 같은 임시 작업 브랜치만 연결한다. 로컬
+      `review/*`, 원격 PR, feature, 통합·릴리스·배포·정본처럼 검토하거나 이동할 참조는 작업 브랜치로
+      연결하지 않고 명시적 ref 또는 detached commit으로 다룬다.
+    - 로컬 `review/<topic>_YYYYMMDDTHHMMSSZ`는 clean 작업 결과에만 한 번 생기는 단계가 아니라, 작업
+      결과·PR head·기능 통합 후보·릴리스 후보 등 **어느 committed checkpoint에서나** 만들 수 있는 불변
+      제출 스냅샷이다. 원격에 push하거나 생성 뒤 이동·amend·reset·직접 커밋하지 않으며, checkpoint가
+      달라지면 새 UTC 타임스탬프의 review를 만든다.
+    - 리뷰어에게 이동 가능한 통합·검증·릴리스 참조를 검토 대상으로 주지 않는다. 정확한 review commit을
+      detached 상태로 열게 해 참조 이동을 막지 않으며, PR head나 승격 후보가 바뀌면 기존 승인을
+      무효화하고 새 review에서 검증·리뷰를 다시 수행한다.
     - 승인된 결과만 보호된 feature로 통합하고, release·배포 브랜치 또는 정본 승격에는 별도 통합 검증과
       승인을 요구한다. 태그 배포는 정본 브랜치에 먼저 병합한 정확한 commit만 태그한다.
-    - 저장소별 이름과 배포 방식이 달라도 단계 책임, review 원격 push 금지와 승인 무효화 원칙은 유지한다.
-      전체 계약과 강제 장치는 `docs/change-promotion.md`, 로컬 도구는 `operator:review-branch`를 따른다.
+    - 작업용 worktree를 제거할 때는 임시 작업 브랜치 commit이 원격 작업 브랜치·feature·정본·tag 같은
+      지속 가능한 ref에서 도달 가능한지 확인한다. 로컬 review만 남은 상태는 보존 완료로 보지 않는다.
+      보존 ref를 만든 뒤 worktree와 임시 로컬·원격 작업 브랜치를 정리하고 잔존 여부를 기계적으로 확인한다.
+    - 저장소별 이름과 배포 방식이 달라도 임시 작업 브랜치의 수명, review 불변성·원격 push 금지,
+      checkpoint 변경 시 승인 무효화 원칙은 유지한다. 전체 계약과 강제 장치는
+      `docs/change-promotion.md`, 로컬 도구는 `operator:review-branch`를 따른다.
 28. **살아 있는 세션 조정과 통신 예산**: 세션 등록부와 직접 메시지 기능이 있는 환경에서는 커서 전진,
     append-only가 아닌 공유 파일 수정, worktree 일괄 정리, 공유 런타임·포트 점유 직전에만 겹치는 살아
     있는 세션을 확인하고 직접 조정한다. 모든 세션 시작을 막는 게이트로 쓰지 않는다.

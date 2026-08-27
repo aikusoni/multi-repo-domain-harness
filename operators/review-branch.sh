@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 usage:
-  review-branch.sh create <topic> [repository]
+  review-branch.sh create <topic> [repository] [source-ref]
   review-branch.sh audit [repository]
   review-branch.sh pre-commit [repository]
   review-branch.sh pre-push
@@ -22,6 +22,7 @@ case "${command_name}" in
   create)
     topic="${1:-}"
     repository="${2:-.}"
+    source_ref="${3:-HEAD}"
     if [[ -z "${topic}" || "${topic}" == -* || ! "${topic}" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
       printf 'invalid topic: use lowercase letters, digits and hyphens\n' >&2
       exit 2
@@ -30,11 +31,14 @@ case "${command_name}" in
       printf 'not a git worktree: %s\n' "${repository}" >&2
       exit 2
     fi
-    if [[ -n "$(git -C "${repository}" status --porcelain --untracked-files=all)" ]]; then
+    if [[ "${source_ref}" == "HEAD" && -n "$(git -C "${repository}" status --porcelain --untracked-files=all)" ]]; then
       printf 'review snapshot requires a clean worktree\n' >&2
       exit 1
     fi
-    head_sha="$(git -C "${repository}" rev-parse --verify HEAD)"
+    if ! head_sha="$(git -C "${repository}" rev-parse --verify --end-of-options "${source_ref}^{commit}" 2>/dev/null)"; then
+      printf 'invalid review source ref: %s\n' "${source_ref}" >&2
+      exit 2
+    fi
     timestamp="$(date -u '+%Y%m%dT%H%M%SZ')"
     branch="review/${topic}_${timestamp}"
     if git -C "${repository}" show-ref --verify --quiet "refs/heads/${branch}"; then
@@ -66,11 +70,18 @@ case "${command_name}" in
       findings=$((findings + 1))
     done < <(git -C "${repository}" for-each-ref --format='%(refname:short)' refs/remotes/)
 
+    while IFS= read -r line; do
+      [[ "${line}" != branch\ refs/heads/review/* ]] && continue
+      branch="${line#branch refs/heads/}"
+      printf 'R003 review branch attached to worktree: %s\n' "${branch}"
+      findings=$((findings + 1))
+    done < <(git -C "${repository}" worktree list --porcelain)
+
     if (( findings > 0 )); then
       printf 'ATTENTION review-branch: findings=%d\n' "${findings}"
     else
       local_count="$(git -C "${repository}" for-each-ref --count=999999 --format='%(refname)' refs/heads/review/ | wc -l | tr -d ' ')"
-      printf 'OK review-branch: local_snapshots=%s remote_tracking=0\n' "${local_count}"
+      printf 'OK review-branch: local_snapshots=%s remote_tracking=0 attached_review=0\n' "${local_count}"
     fi
     ;;
 

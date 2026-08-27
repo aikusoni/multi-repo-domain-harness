@@ -26,6 +26,20 @@ HEAD_SHA="$(git -C "${REPOSITORY}" rev-parse HEAD)"
 AUDIT_OUTPUT="$("${OPERATOR}" audit "${REPOSITORY}")"
 [[ "${AUDIT_OUTPUT}" == OK\ review-branch:* ]]
 
+printf 'second checkpoint\n' >>"${REPOSITORY}/fixture.txt"
+git -C "${REPOSITORY}" add fixture.txt
+git -C "${REPOSITORY}" commit -q -m second-checkpoint
+EXPLICIT_OUTPUT="$("${OPERATOR}" create prior-checkpoint "${REPOSITORY}" "${HEAD_SHA}")"
+EXPLICIT_BRANCH="${EXPLICIT_OUTPUT#*branch=}"
+EXPLICIT_BRANCH="${EXPLICIT_BRANCH%% sha=*}"
+[[ "$(git -C "${REPOSITORY}" rev-parse "${EXPLICIT_BRANCH}")" == "${HEAD_SHA}" ]]
+[[ "$(git -C "${REPOSITORY}" branch --show-current)" != review/* ]]
+
+if "${OPERATOR}" create invalid-source "${REPOSITORY}" refs/heads/missing >/dev/null 2>&1; then
+  printf 'expected invalid source ref rejection\n' >&2
+  exit 1
+fi
+
 printf 'dirty\n' >>"${REPOSITORY}/fixture.txt"
 if "${OPERATOR}" create dirty-worktree "${REPOSITORY}" >/dev/null 2>&1; then
   printf 'expected dirty worktree rejection\n' >&2
@@ -35,10 +49,18 @@ git -C "${REPOSITORY}" restore fixture.txt
 
 git -C "${REPOSITORY}" branch review/bad-name HEAD
 git -C "${REPOSITORY}" update-ref refs/remotes/origin/review/leaked HEAD
+REVIEW_WORKTREE="${TEST_ROOT}/review-worktree"
+git -C "${REPOSITORY}" worktree add -q "${REVIEW_WORKTREE}" "${REVIEW_BRANCH}"
 ATTENTION_OUTPUT="$("${OPERATOR}" audit "${REPOSITORY}")"
 [[ "${ATTENTION_OUTPUT}" == *"R001"* ]]
 [[ "${ATTENTION_OUTPUT}" == *"R002"* ]]
+[[ "${ATTENTION_OUTPUT}" == *"R003"* ]]
 [[ "${ATTENTION_OUTPUT}" == *"ATTENTION review-branch"* ]]
+
+if "${OPERATOR}" pre-commit "${REVIEW_WORKTREE}"; then
+  printf 'expected commit rejection on attached review branch\n' >&2
+  exit 1
+fi
 
 ZERO_SHA='0000000000000000000000000000000000000000'
 if printf 'refs/heads/review/topic_20260820T000000Z %s refs/heads/review/topic_20260820T000000Z %s\n' \
