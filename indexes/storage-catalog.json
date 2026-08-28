@@ -63,7 +63,7 @@
     }
   ],
   "schema_version": 1,
-  "source_digest": "sha256:48f1c7763f6972ac1d734101ab194b7612da7a76e30634f2f62f0e4495603d69",
+  "source_digest": "sha256:3051846824b96fbf98a42ba56610ac92db62a8a814c8d0b7810bec94d9539e93",
   "spaces": [
     {
       "id": "space:cross-space-catalog",
@@ -255,6 +255,7 @@
       "kind": "narrative-space",
       "locations": [
         "journal",
+        "explorations",
         "requests",
         "proposals"
       ],
@@ -269,7 +270,7 @@
         "vendor_lock_in": "prohibited"
       },
       "purpose": [
-        "Preserve intent, investigation context, requests, and decisions."
+        "Preserve intent, investigation context, open explorations, requests, and decisions."
       ],
       "query_modes": [
         "exact",

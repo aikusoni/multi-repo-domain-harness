@@ -74,12 +74,12 @@ targets = [
     "FEEDBACK.md",
 ]
 targets.extend(str(path.relative_to(root)) for path in sorted((root / "docs").rglob("*.md")))
-for area in ("storage", "schemas", "indexes", "views", "research"):
+for area in ("storage", "schemas", "indexes", "views", "research", "explorations"):
     targets.extend(str(path.relative_to(root)) for path in sorted((root / area).rglob("*.md")))
 
 path_pattern = re.compile(
     r"(?<![\w-])(?:docs|journal|feedback|requests|proposals|initiatives|tasks|operators|projects|issues|changed|"
-    r"storage|schemas|indexes|views|research)/"
+    r"storage|schemas|indexes|views|research|explorations)/"
     r"[A-Za-z0-9._/<>*-]+\.(?:md|json)"
 )
 placeholder = re.compile(r"YYYY|MM-DD|<[^>]+>|NNN|xxx|\.\.\.|\*", re.IGNORECASE)

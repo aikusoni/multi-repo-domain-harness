@@ -14,6 +14,7 @@
 | 정보 | 우선 공간 | 쓰기 |
 |---|---|---|
 | 조사·요청·결정 과정 | narrative | 기존 기록 규칙 |
+| 정책·설계·용어의 열린 탐색 | narrative | 비정본 exploration, 명시적 승격 전 실행 없음 |
 | 상태 전환·영향·검증 결과 | event | append-only |
 | 활성 이슈·논의·initiative·task 상태 | current-state | 현재 문장 재작성 또는 폴더 이동 |
 | 원본의 공개 안전한 식별자 | evidence-reference | versioned |

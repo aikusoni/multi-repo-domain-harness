@@ -18,6 +18,7 @@ mkdir -p \
   "${FIXTURE}/storage/spaces/relations" \
   "${FIXTURE}/storage/spaces/residuals" \
   "${FIXTURE}/journal" \
+  "${FIXTURE}/explorations" \
   "${FIXTURE}/requests" \
   "${FIXTURE}/proposals" \
   "${FIXTURE}/issues" \

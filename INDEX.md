@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0014 · 최종 갱신: 2026-08-28 05:48:09 UTC · 지연 도입 로컬 저장·기억 신뢰성 경계 추가**
+**규칙 버전: r0015 · 최종 갱신: 2026-08-28 09:10:02 UTC · 비정본 Exploration 토론 공간 추가**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -20,6 +20,7 @@
 | `indexes/` | 등록 공간과 catalog의 재생성 가능한 검색 index | 생성 결과. 정본 아님, 직접 수정 금지 |
 | `views/` | 여러 저장공간에서 조립한 사람용 파생 뷰 | 생성 조건·입력 digest·손실을 명시 |
 | `research/` | 저장공간·adapter 설계에 참고한 검증된 공개 연구·구현 reference | 기본 reference-only. 채택 정본 아님 |
+| `explorations/` | 정책·설계·용어·장기 방향의 열린 질문과 관점 | 비정본 토론 종합. 일반 시작 읽기·작업 게이트 아님 |
 | `journal/` | 세션별 발견, 결정, 시행착오 | append-only. 유효성 메타데이터만 예외 |
 | `INVALIDATIONS.md` | 대체·기각된 저널 판단의 누적 색인 | 원본 저널과 함께 갱신 |
 | `CURATION.md` | 지식 큐레이션 시각과 주의 임계값 | 현재 상태. 규칙 정본이 아님 |
@@ -57,7 +58,9 @@
 3. **선택적 읽기**: `INDEX.md`, 자기 프로젝트와 관련 operator의 활성 이니셔티브·이슈·변경·작업 큐,
    현재 작업과 직접 관련된 `docs/`·`initiatives/`·`operators/` 문서만 읽는다. 코드를 단순화하거나
    비직관적 동작을 바꾸기 전에는 `docs/quirks.md`를 해당 project와 symbol로 검색한다. 모든 이력과 완료
-   작업을 일괄 로드하지 않는다.
+   작업을 일괄 로드하지 않는다. `explorations/`는 일반 프로젝트·operator 세션의 시작 읽기 대상이 아니며,
+   하네스 정책·설계·용어·장기 방향을 논의하거나 관련 기준 문서가 특정 exploration을 직접 연결할 때만
+   선택적으로 읽는다.
 4. **착수 게이트**: 자기 프로젝트와 관련된 `critical` 또는 `major` 이슈가 `open`이나
    `in-progress`이면 일반 작업보다 해당 이슈를 우선 검토한다. 관련 없는 이슈는 작업을 막지 않는다.
 5. **작업 로그와 열린 논의 분리**: 결정·발견·시행착오는 UTC 날짜의
@@ -327,6 +330,21 @@
       read-after-write로 확인하고, 파생 갱신 지연·공간 간 불일치·검색하지 않은 범위를 숨기지 않는다. 전체
       실행 로드맵은 `docs/local-storage-runtime.md`, 실패 단계·인출 상태·trace 계약은
       `docs/memory-reliability.md`를 따른다.
+32. **Exploration 비정본 토론 공간**: 하네스 정책·설계·용어와 장기 방향을 바로 결정하거나 구현하지 않고
+    탐색할 가치가 있으면 `explorations/<topic>.md`에 기록한다. exploration은 작업 journal, proposal,
+    agenda, task, request, issue, decision과 canon을 대신하지 않으며 상태나 내용만으로 작업을 시작·중단·
+    우선시하지 않는다.
+    - 일반 세션 시작에는 exploration을 검색하거나 읽지 않는다. 하네스 발전 논의가 현재 작업이거나 사용자·
+      기준 문서가 특정 note를 직접 가리킬 때만 필요한 파일을 읽는다. 다른 문서가 exploration을 근거로
+      연결해도 현행 규칙·확정 사실·사용자 승인으로 해석하지 않는다.
+    - 문서는 `OPEN`, `DORMANT`, `CONCLUDED` 상태와 시작·최종 갱신 UTC 시각, 비정본 여부를 표시한다.
+      append-only 대화록이 아니라 질문·현재 종합·서로 다른 관점·`[미검증]` 가설·열린 질문·가능한 영향을
+      읽기 좋게 다시 쓸 수 있으며 이전 형태는 Git 이력으로 보존한다.
+    - 구체적 기준 변경은 proposal, 지금 사람 판단이 필요한 항목은 agenda, 프로젝트 내부 실행은 task,
+      주체 간 인계는 request, 위험·차단은 issue로 별도 승격한다. 승인된 결과만 `docs/`, decision log 또는
+      이 파일에 반영하며 exploration 자체를 실행 계약으로 자동 승격하지 않는다.
+    - exploration은 `space:harness-narrative`의 공개 record지만 원시 제품 자료·비공개 시스템 정보·개인정보를
+      넣지 않는다. 세부 작성·승격 경계와 템플릿은 `explorations/README.md`를 따른다.
 
 ## 권장 시작 순서
 
