@@ -4,10 +4,10 @@
   "role": "record",
   "kind": "narrative-space",
   "status": "active",
-  "purpose": ["Preserve intent, investigation context, requests, and decisions."],
-  "locations": ["journal", "requests", "proposals"],
-  "accepts": ["Markdown records governed by the existing harness rules."],
-  "preserves": ["Original rationale", "Authored sequence", "Provenance metadata"],
+  "purpose": ["Preserve intent, investigation context, open explorations, requests, and decisions."],
+  "locations": ["journal", "explorations", "requests", "proposals"],
+  "accepts": ["Markdown records and non-canonical exploration notes governed by the existing harness rules."],
+  "preserves": ["Original rationale", "Current exploration synthesis", "Authored sequence", "Provenance metadata"],
   "losses": ["Direct structured state queries"],
   "query_modes": ["exact", "text", "time-range", "evidence"],
   "write_policy": "versioned",
@@ -30,5 +30,5 @@
     "vendor_lock_in": "prohibited",
     "exit_plan": "Repository Markdown remains directly readable and exportable."
   },
-  "recorded_at": "2026-08-28 05:27:55 UTC"
+  "recorded_at": "2026-08-28 09:10:02 UTC"
 }

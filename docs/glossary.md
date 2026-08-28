@@ -28,6 +28,7 @@
 | Retrieval Status | 조회 범위와 결과 의미를 found·not_found·not_searched·stale·partial 등으로 구분하는 계약 | query owner | query result metadata | not_found 이외 상태를 부재로 해석 금지 |
 | Query Trace | 질문 해석부터 space 선택·질의·fallback·선별·압축·최종 전달까지 잇는 재현 가능한 인출 provenance | query owner | `query:<id>` | 비공개 query 본문 대신 안전한 ref 사용 |
 | Memory Fault | 필요한 정보가 현재 문맥에 없거나 신뢰할 수 없을 때 추가 조회·재검증을 요구하는 future runtime signal | harness runtime | `memory-failure:<id>` | 권한 확대나 무제한 전체 검색의 근거가 아님 |
+| Exploration | 정책·설계·용어와 장기 방향을 결정·실행 전에 여러 관점과 열린 질문으로 보존하는 비정본 토론 노트 | harness | `explorations/<topic>.md` | 일반 시작 읽기·작업 게이트 아님, 결과는 명시적으로 승격 |
 | Invalidation | 과거 저널 판단이 대체되거나 기각됐음을 명시하는 지식 유효성 기록 | harness | `INVALIDATIONS.md` | 실행 항목의 dropped/cancelled와 구분 |
 | Quirk | 코드만 읽으면 오해하기 쉬우며 모르고 변경하면 동작을 깨뜨리는 현행 불변식 | 해당 프로젝트 | `Q-NNN` | 단순 복잡성이나 과거 경위는 제외 |
 | Worker | 프로젝트 작업과 그 실행 기록을 남기는 기본 역할 | 해당 프로젝트 | `docs/roles.md` | project-id를 대체하지 않음 |

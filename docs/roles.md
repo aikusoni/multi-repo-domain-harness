@@ -18,6 +18,8 @@
   license·export·fallback·exit plan을 확인하며, 직접 구현은 최소 범위와 기각 근거를 남긴다.
 - 로컬 DB·broker·자동 인출 기능은 측정된 병목과 승인된 proposal 없이 현재 operator의 기능인 것처럼
   구현하거나 기록하지 않는다. future 설계와 active capability를 명확히 구분한다.
+- 하네스 정책·설계·용어를 열린 상태로 탐색할 필요가 있으면 `explorations/`에 비정본 종합을 남길 수 있다.
+  exploration을 현재 규칙이나 작업 지시로 사용하지 않고 실행 항목이 확정될 때만 정식 경로로 승격한다.
 - 다른 프로젝트의 작업은 request로 넘기고 자기 프로젝트의 task·changed 기록만 관리한다.
 
 ## Curator
@@ -42,7 +44,9 @@
     index 재구성 가능성을 확인한다. research reference를 채택 근거로 과장하지 않고 adapter license·
     portability·fallback이 검증되지 않은 저장 기술을 기본 정답으로 승격하지 않는다. future runtime·기억
     신뢰성 문서가 active 기능을 주장하지 않는지와 파일 기반 fallback이 유지되는지도 함께 확인한다.
-11. 완료 후 `CURATION.md`의 `last_curated_at`을 실제 완료 시각의 UTC 값으로 갱신한다.
+11. exploration의 가설을 canon으로 자동 승격하지 않는다. 구체적 제안·사람 결정·실행 항목이 생긴 경우에만
+    proposal·agenda·task와 승인된 canon으로 연결됐는지 확인한다.
+12. 완료 후 `CURATION.md`의 `last_curated_at`을 실제 완료 시각의 UTC 값으로 갱신한다.
 
 Curator도 분쟁을 임의 확정하지 않는다. 해석·소유권·정책 결정이 필요하면 근거를 `AGENDA.md`에 올리고
 사용자 결정을 기다린다. 자동 교정이나 과거 본문 재작성은 하지 않는다.

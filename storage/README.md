@@ -13,8 +13,9 @@ storage/
 └── spaces/             # 이 저장소가 직접 소유하는 선택적 파일 기반 공간
 ```
 
-기존 `journal/`, `requests/`, `issues/`, `changed/`, `tasks/`는 이동하지 않는다. definition의 `locations`가
-그 위치를 기존 record space로 등록한다.
+기존 `journal/`, `explorations/`, `requests/`, `issues/`, `changed/`, `tasks/`는 이동하지 않는다.
+definition의 `locations`가 그 위치를 기존 record space로 등록한다. `explorations/`는 narrative record에
+포함되지만 비정본이며 일반 작업 시작 시 읽거나 실행 근거로 사용하지 않는다.
 
 ## 운영 순서
 
