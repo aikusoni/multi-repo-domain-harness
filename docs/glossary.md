@@ -18,6 +18,16 @@
 | Transformation | 한 표현에서 다른 표현을 만들 때 방법·버전·입출력·보존·손실·가역성을 선언한 계약 | 변환 owner | `transformation:<id>` | 파생 표현 재구성 근거 |
 | Residual | 현재 active model이나 분류에 맞지 않는 충돌·예외·희귀 신호 | 관찰 project | `space:residuals` | 억지 분류하지 않고 review 시각과 근거 보존 |
 | Query Plan | 질문의 query mode와 예산에 맞춰 필요한 active space·순서·손실을 선택한 조회 계획 | harness | `operator:storage-spaces plan` | 정확한 구조 조건을 우선하고 중요한 결론은 evidence 재확인 |
+| Storage Adapter | 외부 엔진·서비스의 고유 API를 write·query·trace·export·rebuild·health 공통 계약으로 격리하는 연결 계층 | adapter owner | `adapter:<id>`, `storage/adapters/` | 외부 시스템을 정본으로 자동 승격하지 않음 |
+| Implementation Candidate | Storage Space requirement를 충족할 가능성이 있어 근거·license·유지보수·손실을 평가하는 구현 후보 | space owner | `candidate:<id>` | research reference나 발견만으로 selected가 되지 않음 |
+| Reuse-first | 직접 구현 전에 capability를 정의하고 기존 연구·구현과 adapter 가능성을 비교하는 선택 원칙 | harness | `implementation.selection_policy` | 무조건 외부 구현을 채택한다는 뜻이 아님 |
+| Portability Contract | 구현 중단·교체 시 export 형식, lock-in 허용 여부, exit plan과 fallback data access를 보장하는 계약 | space owner | `portability`, `implementation.fallback` | evidence·record의 핵심 접근은 unavailable 금지 |
+| Research Reference | 구현·질의·lineage 설계를 검토하기 위해 공개 원문에서 확인한 참고 항목 | harness | `research:<id>`, `research/catalog.json` | 기본 `reference-only`, 도입 승인이 아님 |
+| Local Storage Runtime | 파일·Git 정본 위에서 DB·전문 index·context 조립을 재생성 가능한 projection으로 실행하는 장기 계층 | harness | `docs/local-storage-runtime.md` | 현재 미구현, 측정된 병목과 proposal 승인 뒤 도입 |
+| Local Storage Broker | 다중 에이전트의 로컬 저장 접근을 중개해 정책·schema·ID·쓰기·파생 갱신을 조정하는 future component | harness | future runtime process | record owner나 Source of Truth가 아님 |
+| Retrieval Status | 조회 범위와 결과 의미를 found·not_found·not_searched·stale·partial 등으로 구분하는 계약 | query owner | query result metadata | not_found 이외 상태를 부재로 해석 금지 |
+| Query Trace | 질문 해석부터 space 선택·질의·fallback·선별·압축·최종 전달까지 잇는 재현 가능한 인출 provenance | query owner | `query:<id>` | 비공개 query 본문 대신 안전한 ref 사용 |
+| Memory Fault | 필요한 정보가 현재 문맥에 없거나 신뢰할 수 없을 때 추가 조회·재검증을 요구하는 future runtime signal | harness runtime | `memory-failure:<id>` | 권한 확대나 무제한 전체 검색의 근거가 아님 |
 | Invalidation | 과거 저널 판단이 대체되거나 기각됐음을 명시하는 지식 유효성 기록 | harness | `INVALIDATIONS.md` | 실행 항목의 dropped/cancelled와 구분 |
 | Quirk | 코드만 읽으면 오해하기 쉬우며 모르고 변경하면 동작을 깨뜨리는 현행 불변식 | 해당 프로젝트 | `Q-NNN` | 단순 복잡성이나 과거 경위는 제외 |
 | Worker | 프로젝트 작업과 그 실행 기록을 남기는 기본 역할 | 해당 프로젝트 | `docs/roles.md` | project-id를 대체하지 않음 |

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "space:harness-events",
   "role": "record",
   "kind": "event-space",
@@ -18,5 +18,17 @@
   "cost": { "read": "medium", "write": "low", "rebuild": "not-applicable" },
   "public_safety": { "classification": "public", "raw_content_allowed": true },
   "permissions": { "read": "Harness participants", "write": "Affected owner project" },
-  "recorded_at": "2026-08-28 05:09:48 UTC"
+  "implementation": {
+    "selection_policy": "reuse-first",
+    "strategy": "native",
+    "adapter": null,
+    "candidates": [],
+    "fallback": { "adapter": null, "data_access": "read-only", "degraded_query_modes": ["state", "time-range"] }
+  },
+  "portability": {
+    "export_formats": ["markdown"],
+    "vendor_lock_in": "prohibited",
+    "exit_plan": "Append-only Markdown events remain directly readable and exportable."
+  },
+  "recorded_at": "2026-08-28 05:27:55 UTC"
 }

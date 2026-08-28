@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0012 · 최종 갱신: 2026-08-28 05:16:27 UTC · 조합 가능한 저장공간과 손실 추적 규칙 추가**
+**규칙 버전: r0014 · 최종 갱신: 2026-08-28 05:48:09 UTC · 지연 도입 로컬 저장·기억 신뢰성 경계 추가**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -19,6 +19,7 @@
 | `schemas/` | 저장공간 control plane의 기계 판독 계약 | JSON Schema와 operator 검사를 함께 정합 |
 | `indexes/` | 등록 공간과 catalog의 재생성 가능한 검색 index | 생성 결과. 정본 아님, 직접 수정 금지 |
 | `views/` | 여러 저장공간에서 조립한 사람용 파생 뷰 | 생성 조건·입력 digest·손실을 명시 |
+| `research/` | 저장공간·adapter 설계에 참고한 검증된 공개 연구·구현 reference | 기본 reference-only. 채택 정본 아님 |
 | `journal/` | 세션별 발견, 결정, 시행착오 | append-only. 유효성 메타데이터만 예외 |
 | `INVALIDATIONS.md` | 대체·기각된 저널 판단의 누적 색인 | 원본 저널과 함께 갱신 |
 | `CURATION.md` | 지식 큐레이션 시각과 주의 임계값 | 현재 상태. 규칙 정본이 아님 |
@@ -284,6 +285,48 @@
     - 원시 제품 자료와 비공개 시스템 정보를 복제하지 않는다. representation·source ref는 공개 안전한
       프로젝트 한정 식별자를 사용하며 생성 index와 view도 규칙 15의 별도 공개 위험 검토를 받는다.
       상세 계약은 `docs/storage-architecture.md`, 형식은 `schemas/`, 실행은 `operator:storage-spaces`를 따른다.
+30. **저장 구현 재사용과 Adapter 이식성**: 새 저장 요구가 생기면 구현부터 만들지 않는다. 정보 형태,
+    query mode, 일관성·보존, provenance·rebuild, 허용 손실, 권한·비용과 장애 시 data access를 먼저
+    Storage Space Definition으로 확정하고, 관련 공개 연구·기존 구현·범용 엔진의 adapter 가능성을 평가한다.
+    - 구현 선택의 `selection_policy`는 `reuse-first`다. 이는 외부 제품 우선이 아니라 직접 구현 전에 기존
+      지식과 구현을 비교한다는 뜻이다. 현재 전략은 `native`, `adapter`, `hybrid`, `custom-minimal` 중 하나로
+      선언하고, 적합한 구현이 없거나 하네스 고유 제어 계층일 때만 최소 범위를 직접 구현한다.
+    - 검증한 공개 원문은 `research/catalog.json`에 `research:<id>`로 등록하고 기본 상태를
+      `reference-only`로 둔다. reference는 채택 승인이 아니며, 실제 후보는 space definition에서
+      `discovered → evaluating → optional → selected` 또는 `rejected`로 관리한다. selected에는 license와
+      유지보수 상태, 실제 fixture의 capability·손실·비용 검증이 필요하다.
+    - 외부 엔진·서비스는 `storage/adapters/registry.json`에 등록한 `adapter:<id>`를 통해서만 active space에
+      연결한다. adapter는 `write`, `query`, `trace`, `export`, `rebuild`, `health`의 지원·저하·미지원 상태를
+      숨김없이 선언한다. 연결만으로 외부 시스템이나 그 결과가 evidence·record의 정본이 되지 않는다.
+    - active space는 공개 export 형식, vendor lock-in, exit plan, fallback adapter 또는 직접 접근,
+      장애 시 남는 data access와 degraded query mode를 선언한다. evidence·record의 fallback은 핵심 자료
+      접근이 `unavailable`이 될 수 없고, projection·index는 source에서 재생성할 수 있어야 한다.
+    - adapter 채택·교체·제거는 proposal에서 migration·소급·비용·권한·공개 안전성을 승인받고 space
+      definition·adapter registry·fixture·`changed/`를 같은 변경에서 갱신한다. 연구 source만 공개 HTTPS
+      URL을 허용하며 비공개 문서·구현 endpoint와 원문 본문은 기록하지 않는다. 세부 계약은
+      `docs/storage-adapters.md`, 형식은 `schemas/storage-adapter*.json`과
+      `schemas/research-catalog.schema.json`, 검사는 `operator:storage-spaces`를 따른다.
+31. **로컬 저장 실행과 기억 신뢰성의 지연 도입**: 현재의 파일·Git evidence·record를 사람이 검토 가능한
+    정본으로 유지한다. 로컬 DB, 전문 index, background service, Query Planner·Context Composer와 Local
+    Storage Broker는 현재 operator의 기능으로 간주하지 않으며, 반복적인 탐색·문맥·동시 쓰기·인출 실패가
+    작업 시간·latency·token·중복률·정확도 측정에서 주요 병목으로 확인된 뒤 별도 proposal로 단계 도입한다.
+    - 파생 database·index·cache·작업 memory는 Git에 공유하는 새 정본이 아니다. 공유 record와 event,
+      transformation·adapter version에서 재생성할 수 있어야 하며 실행 계층 실패 시 파일 기반 읽기와 핵심
+      record 접근으로 복귀해야 한다. 초기 확장은 embedded를 우선하고 실제 동시성·격리 요구가 있는 공간만
+      local service로 분리한다. remote/shared는 별도 권한·동기화·충돌 결정을 요구한다.
+    - 도입 proposal은 반복 병목의 기준 측정, 최소 space와 실행 방식, 공개 안전성, 비용·token budget,
+      adapter·migration·rebuild·rollback, 성공·중단 기준을 포함한다. 명확한 증거 없이 모든 공간이나 broker를
+      미리 구현하지 않고 단계별 proposal과 검증을 독립적으로 거친다.
+    - future query 계약은 `found`, `not_found`, `not_searched`, `not_indexed`, `inaccessible`, `stale`,
+      `ambiguous`, `partial`, `failed`를 구분한다. `not_found` 이외 상태를 자료 부재로 해석하지 않으며 조회한
+      공간·제외 이유·범위·freshness·version·limit·conflict·evidence·fallback과 Query Trace를 드러낸다.
+    - future Memory Fault는 필요한 정보가 문맥에 없거나 stale·모호·부분적일 때 최소 추가 조회와 source
+      재검증을 요구하는 신호다. 권한 확대, 무제한 전체 검색이나 자동 확정의 근거가 아니며 비용·위험 한계나
+      사용자 결정 경계에 도달하면 상태와 시도한 fallback을 보고하고 멈춘다.
+    - 저장 요청 접수와 durable record, index·projection 반영을 구분한다. 중요한 record는 가능한 경우
+      read-after-write로 확인하고, 파생 갱신 지연·공간 간 불일치·검색하지 않은 범위를 숨기지 않는다. 전체
+      실행 로드맵은 `docs/local-storage-runtime.md`, 실패 단계·인출 상태·trace 계약은
+      `docs/memory-reliability.md`를 따른다.
 
 ## 권장 시작 순서
 

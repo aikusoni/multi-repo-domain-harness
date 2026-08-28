@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:multi-repo-domain-harness:storage-adapter:1",
+  "title": "Storage Adapter Definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "type",
+    "status",
+    "implementation",
+    "operations",
+    "query_modes",
+    "input_formats",
+    "output_formats",
+    "consistency",
+    "license_status",
+    "public_safety",
+    "recorded_at"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "pattern": "^adapter:[a-z0-9][a-z0-9._-]*$" },
+    "type": { "enum": ["embedded", "engine", "external-service", "delegated"] },
+    "status": { "enum": ["active", "paused", "planned", "retired"] },
+    "implementation": {
+      "type": "string",
+      "oneOf": [
+        { "pattern": "^[a-z0-9][a-z0-9._-]*:(?!/)(?!.*://).+$" },
+        { "pattern": "^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$" }
+      ]
+    },
+    "operations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["write", "query", "trace", "export", "rebuild", "health"],
+      "properties": {
+        "write": { "$ref": "#/$defs/operation" },
+        "query": { "$ref": "#/$defs/operation" },
+        "trace": { "$ref": "#/$defs/operation" },
+        "export": { "$ref": "#/$defs/operation" },
+        "rebuild": { "$ref": "#/$defs/operation" },
+        "health": { "$ref": "#/$defs/operation" }
+      }
+    },
+    "query_modes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "input_formats": { "$ref": "#/$defs/nonEmptyStrings" },
+    "output_formats": { "$ref": "#/$defs/nonEmptyStrings" },
+    "consistency": { "enum": ["strong", "eventual", "snapshot", "not-applicable"] },
+    "license_status": { "enum": ["not-reviewed", "compatible", "incompatible", "not-applicable"] },
+    "public_safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "raw_content_allowed"],
+      "properties": {
+        "classification": { "enum": ["public", "public-metadata-only"] },
+        "raw_content_allowed": { "type": "boolean" }
+      }
+    },
+    "recorded_at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} UTC$"
+    }
+  },
+  "$defs": {
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["support", "notes"],
+      "properties": {
+        "support": { "enum": ["supported", "degraded", "unsupported"] },
+        "notes": { "type": "string", "minLength": 1 }
+      }
+    },
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

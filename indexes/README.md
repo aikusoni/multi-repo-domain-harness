@@ -4,5 +4,5 @@
 아니며 직접 수정하지 않는다.
 
 초기 index는 `./operators/storage-spaces.py build-index`가 만드는 `storage-catalog.json` 하나다. 공간
-정의와 catalog entry의 상대경로·ID·역할·query mode·representation만 담고 원본 근거 본문은 복제하지
-않는다.
+정의, adapter, research reference, catalog entry와 transformation의 검색용 요약만 담고 원본 근거 본문은
+복제하지 않는다. research source URL은 index에 복제하지 않는다.

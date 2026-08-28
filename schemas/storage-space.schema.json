@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:multi-repo-domain-harness:storage-space:1",
+  "$id": "urn:multi-repo-domain-harness:storage-space:2",
   "title": "Storage Space Definition",
   "type": "object",
   "additionalProperties": false,
@@ -24,10 +24,12 @@
     "cost",
     "public_safety",
     "permissions",
+    "implementation",
+    "portability",
     "recorded_at"
   ],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": { "const": 2 },
     "id": { "type": "string", "pattern": "^space:[a-z0-9][a-z0-9._-]*$" },
     "role": {
       "enum": ["evidence", "record", "projection", "index", "cache"]
@@ -113,6 +115,54 @@
         "write": { "type": "string", "minLength": 1 }
       }
     },
+    "implementation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selection_policy", "strategy", "adapter", "candidates", "fallback"],
+      "properties": {
+        "selection_policy": { "const": "reuse-first" },
+        "strategy": { "enum": ["native", "adapter", "hybrid", "custom-minimal"] },
+        "adapter": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^adapter:[a-z0-9][a-z0-9._-]*$" }
+          ]
+        },
+        "candidates": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/implementationCandidate" }
+        },
+        "fallback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["adapter", "data_access", "degraded_query_modes"],
+          "properties": {
+            "adapter": {
+              "oneOf": [
+                { "type": "null" },
+                { "type": "string", "pattern": "^adapter:[a-z0-9][a-z0-9._-]*$" }
+              ]
+            },
+            "data_access": { "enum": ["full", "read-only", "export-only", "unavailable"] },
+            "degraded_query_modes": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "portability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["export_formats", "vendor_lock_in", "exit_plan"],
+      "properties": {
+        "export_formats": { "$ref": "#/$defs/nonEmptyStrings" },
+        "vendor_lock_in": { "enum": ["prohibited", "exception-approved"] },
+        "exit_plan": { "type": "string", "minLength": 1 }
+      }
+    },
     "recorded_at": { "$ref": "#/$defs/utcTimestamp" }
   },
   "$defs": {
@@ -125,6 +175,24 @@
     "utcTimestamp": {
       "type": "string",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} UTC$"
+    },
+    "implementationCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "status", "research_refs", "license_status", "maintenance_status", "notes"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^candidate:[a-z0-9][a-z0-9._-]*$" },
+        "type": { "enum": ["embedded", "engine", "external-service", "research-implementation"] },
+        "status": { "enum": ["discovered", "evaluating", "optional", "selected", "rejected"] },
+        "research_refs": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^research:[a-z0-9][a-z0-9._-]*$" },
+          "uniqueItems": true
+        },
+        "license_status": { "enum": ["not-reviewed", "compatible", "incompatible", "not-applicable"] },
+        "maintenance_status": { "enum": ["unknown", "active", "inactive"] },
+        "notes": { "type": "string", "minLength": 1 }
+      }
     }
   }
 }

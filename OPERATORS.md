@@ -54,8 +54,8 @@
 - **영향**: 전체
 
 ### operator:storage-spaces
-- **목적**: 등록 저장공간·catalog·transformation lineage를 감사하고 결정적 index, 제한 조회, query plan과
-  catalog 단위 context를 제공한다.
+- **목적**: 등록 저장공간·adapter·research·catalog·transformation lineage와 이식성·fallback을 감사하고
+  결정적 index, 제한 조회, query plan과 catalog 단위 context를 제공한다.
 - **owner**: harness
 - **구현**: `operators/storage-spaces.py`
 - **계약**: `operators/storage-spaces.md`

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:multi-repo-domain-harness:research-catalog:1",
+  "title": "Research and Implementation Reference Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries", "recorded_at"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "recorded_at": { "$ref": "#/$defs/utcTimestamp" }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "title",
+        "source",
+        "supports",
+        "relevant_spaces",
+        "possible_use",
+        "adoption_status",
+        "license_review"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^research:[a-z0-9][a-z0-9._-]*$" },
+        "type": { "enum": ["paper", "architecture", "research-implementation", "documentation"] },
+        "title": { "type": "string", "minLength": 1 },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "verified_at"],
+          "properties": {
+            "url": { "type": "string", "pattern": "^https://[^\\s]+$" },
+            "verified_at": { "$ref": "#/$defs/utcTimestamp" }
+          }
+        },
+        "supports": { "$ref": "#/$defs/nonEmptyStrings" },
+        "relevant_spaces": { "$ref": "#/$defs/nonEmptyStrings" },
+        "possible_use": { "$ref": "#/$defs/nonEmptyStrings" },
+        "adoption_status": { "enum": ["reference-only", "evaluating", "adopted", "rejected"] },
+        "license_review": { "enum": ["not-required-reference-only", "not-reviewed", "compatible", "incompatible"] }
+      }
+    },
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} UTC$"
+    }
+  }
+}

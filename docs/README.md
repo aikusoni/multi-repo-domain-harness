@@ -12,6 +12,9 @@
 - `change-promotion.md`: 로컬 review, 원격 PR, feature, release·정본의 승격 계약
 - `session-coordination.md`: 살아 있는 세션 식별, 위험 경계 조정, tx 총 10건과 프롬프트 후 수신 5건 제한
 - `storage-architecture.md`: 목적별 저장공간, 여러 표현의 lineage, query planning과 제한 context 조립
+- `storage-adapters.md`: 재사용 우선 구현 평가, 공통 adapter API, 이식성·fallback과 채택 게이트
+- `local-storage-runtime.md`: 파일 정본 위의 장기 로컬 실행 계층, broker와 단계적 도입 게이트
+- `memory-reliability.md`: 저장·인출 실패 단계, retrieval status, Query Trace와 Memory Fault 장기 계약
 - `contracts/`: API, 이벤트, 데이터 스키마 등 저장소 간 계약
 
 기준 문서에는 확인된 사실과 확정된 결정만 기록한다. 검토가 필요한 변경은 먼저 `proposals/`에 둔다.

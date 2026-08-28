@@ -1,10 +1,86 @@
 {
+  "adapters": [],
   "catalog_entries": [],
+  "research_references": [
+    {
+      "adoption_status": "reference-only",
+      "id": "research:bigdawg-polystore",
+      "possible_use": [
+        "query planner reference",
+        "adapter architecture reference"
+      ],
+      "title": "The BigDAWG Polystore System and Architecture",
+      "type": "research-implementation"
+    },
+    {
+      "adoption_status": "reference-only",
+      "id": "research:blackboard-architecture",
+      "possible_use": [
+        "shared workspace reference",
+        "independent processor boundary reference"
+      ],
+      "title": "The Blackboard Architecture: Example Systems",
+      "type": "architecture"
+    },
+    {
+      "adoption_status": "reference-only",
+      "id": "research:dataspaces",
+      "possible_use": [
+        "progressive integration reference",
+        "source lineage requirements"
+      ],
+      "title": "From Databases to Dataspaces: A New Abstraction for Information Management",
+      "type": "paper"
+    },
+    {
+      "adoption_status": "reference-only",
+      "id": "research:memgpt",
+      "possible_use": [
+        "context budget reference",
+        "memory tier policy reference"
+      ],
+      "title": "MemGPT: Towards LLMs as Operating Systems",
+      "type": "paper"
+    },
+    {
+      "adoption_status": "reference-only",
+      "id": "research:provenance-semirings",
+      "possible_use": [
+        "derived record lineage reference",
+        "provenance model reference"
+      ],
+      "title": "Provenance Semirings",
+      "type": "paper"
+    },
+    {
+      "adoption_status": "reference-only",
+      "id": "research:soar-memory",
+      "possible_use": [
+        "memory role separation reference"
+      ],
+      "title": "Soar Cognitive Architecture and Memory Systems",
+      "type": "architecture"
+    }
+  ],
   "schema_version": 1,
-  "source_digest": "sha256:bf49f8cb1ee7ab91ae0dc927d7a8ea2eb20716c4a7272a5c39bd9b5bb441b99f",
+  "source_digest": "sha256:48f1c7763f6972ac1d734101ab194b7612da7a76e30634f2f62f0e4495603d69",
   "spaces": [
     {
       "id": "space:cross-space-catalog",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "read-only",
+          "degraded_query_modes": [
+            "relation",
+            "time-range"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "native"
+      },
       "kind": "relation-space",
       "locations": [
         "storage/catalog"
@@ -12,6 +88,14 @@
       "losses": [
         "Representation content"
       ],
+      "portability": {
+        "exit_plan": "Catalog entries and lineage remain exportable as JSON Lines.",
+        "export_formats": [
+          "json",
+          "jsonl"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Connect representations, source lineage, and transformations across registered spaces."
       ],
@@ -26,6 +110,19 @@
     },
     {
       "id": "space:evidence-references",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "read-only",
+          "degraded_query_modes": [
+            "time-range"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "native"
+      },
       "kind": "evidence-space",
       "locations": [
         "storage/spaces/evidence"
@@ -34,6 +131,13 @@
         "Original private content",
         "Immediate interpretation"
       ],
+      "portability": {
+        "exit_plan": "Public-safe evidence references remain exportable as JSON.",
+        "export_formats": [
+          "json"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Preserve public-safe references needed to recheck original evidence."
       ],
@@ -47,6 +151,19 @@
     },
     {
       "id": "space:harness-current-state",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "read-only",
+          "degraded_query_modes": [
+            "state"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "native"
+      },
       "kind": "table-space",
       "locations": [
         "ISSUES.md",
@@ -57,6 +174,13 @@
       "losses": [
         "Full historical sequence without linked event records"
       ],
+      "portability": {
+        "exit_plan": "Current-state Markdown and task files remain directly readable.",
+        "export_formats": [
+          "markdown"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Expose active issues, agenda, initiatives, and task state."
       ],
@@ -70,6 +194,20 @@
     },
     {
       "id": "space:harness-events",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "read-only",
+          "degraded_query_modes": [
+            "state",
+            "time-range"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "native"
+      },
       "kind": "event-space",
       "locations": [
         "issues",
@@ -79,6 +217,13 @@
       "losses": [
         "Immediate current-state lookup"
       ],
+      "portability": {
+        "exit_plan": "Append-only Markdown events remain directly readable and exportable.",
+        "export_formats": [
+          "markdown"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Preserve issue, change, and validation event history."
       ],
@@ -93,6 +238,20 @@
     },
     {
       "id": "space:harness-narrative",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "read-only",
+          "degraded_query_modes": [
+            "time-range",
+            "evidence"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "native"
+      },
       "kind": "narrative-space",
       "locations": [
         "journal",
@@ -102,6 +261,13 @@
       "losses": [
         "Direct structured state queries"
       ],
+      "portability": {
+        "exit_plan": "Repository Markdown remains directly readable and exportable.",
+        "export_formats": [
+          "markdown"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Preserve intent, investigation context, requests, and decisions."
       ],
@@ -116,6 +282,20 @@
     },
     {
       "id": "space:objects",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "read-only",
+          "degraded_query_modes": [
+            "state",
+            "time-range"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "native"
+      },
       "kind": "object-space",
       "locations": [
         "storage/spaces/objects"
@@ -124,6 +304,14 @@
         "Unstructured source detail",
         "Unmodeled ambiguity"
       ],
+      "portability": {
+        "exit_plan": "Versioned claims remain exportable as JSON Lines.",
+        "export_formats": [
+          "json",
+          "jsonl"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Represent durable subjects and perspective-scoped claims when object queries are useful."
       ],
@@ -137,6 +325,20 @@
     },
     {
       "id": "space:relations",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "read-only",
+          "degraded_query_modes": [
+            "relation",
+            "time-range"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "native"
+      },
       "kind": "relation-space",
       "locations": [
         "storage/spaces/relations"
@@ -145,6 +347,14 @@
         "Continuous strength",
         "Unexpressed indirect context"
       ],
+      "portability": {
+        "exit_plan": "Relations remain exportable as source-target JSON Lines.",
+        "export_formats": [
+          "json",
+          "jsonl"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Represent explicit dependencies and impacts when relation traversal is useful."
       ],
@@ -158,6 +368,20 @@
     },
     {
       "id": "space:residuals",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "read-only",
+          "degraded_query_modes": [
+            "residual",
+            "time-range"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "native"
+      },
       "kind": "residual-space",
       "locations": [
         "storage/spaces/residuals"
@@ -166,6 +390,14 @@
         "Immediate classification",
         "Optimized retrieval"
       ],
+      "portability": {
+        "exit_plan": "Residual records remain exportable with evidence and review metadata.",
+        "export_formats": [
+          "json",
+          "jsonl"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Retain conflicts, exceptions, and rare signals that do not fit an active model."
       ],
@@ -180,6 +412,22 @@
     },
     {
       "id": "space:storage-index",
+      "implementation": {
+        "adapter": null,
+        "candidates": [],
+        "fallback": {
+          "adapter": null,
+          "data_access": "unavailable",
+          "degraded_query_modes": [
+            "exact",
+            "state",
+            "relation",
+            "text"
+          ]
+        },
+        "selection_policy": "reuse-first",
+        "strategy": "custom-minimal"
+      },
       "kind": "table-space",
       "locations": [
         "indexes/storage-catalog.json"
@@ -188,6 +436,13 @@
         "Full source records",
         "Unindexed fields"
       ],
+      "portability": {
+        "exit_plan": "Delete the index and rebuild it from registry, catalog, transformation, adapter, and research metadata.",
+        "export_formats": [
+          "json"
+        ],
+        "vendor_lock_in": "prohibited"
+      },
       "purpose": [
         "Provide a deterministic searchable summary of registered spaces and catalog entries."
       ],

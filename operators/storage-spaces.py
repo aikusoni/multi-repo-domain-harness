@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import ipaddress
 import json
 import re
 import sys
@@ -12,12 +13,15 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable
+from urllib.parse import urlparse
 
 
 UTC_FORMAT = "%Y-%m-%d %H:%M:%S UTC"
 SPACE_ID = re.compile(r"^space:[a-z0-9][a-z0-9._-]*$")
 CATALOG_ID = re.compile(r"^catalog:[a-z0-9][a-z0-9._-]*$")
 TRANSFORMATION_ID = re.compile(r"^transformation:[a-z0-9][a-z0-9._-]*$")
+ADAPTER_ID = re.compile(r"^adapter:[a-z0-9][a-z0-9._-]*$")
+RESEARCH_ID = re.compile(r"^research:[a-z0-9][a-z0-9._-]*$")
 ROLES = {"evidence", "record", "projection", "index", "cache"}
 KINDS = {
     "evidence-space",
@@ -50,6 +54,11 @@ class Model:
     registry: dict[str, Any]
     definitions: dict[str, dict[str, Any]]
     definition_paths: dict[str, Path]
+    adapter_registry: dict[str, Any]
+    adapters: dict[str, dict[str, Any]]
+    adapter_paths: dict[str, Path]
+    research_catalog: dict[str, Any]
+    research: dict[str, dict[str, Any]]
     catalog: dict[str, dict[str, Any]]
     catalog_paths: dict[str, Path]
     transformations: dict[str, dict[str, Any]]
@@ -110,6 +119,23 @@ def safe_ref(value: Any) -> bool:
     if not payload or payload.startswith(("/", "~")) or re.match(r"^[A-Za-z]:", payload):
         return False
     return ".." not in PurePosixPath(payload).parts
+
+
+def public_https_url(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    parsed = urlparse(value)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+        return False
+    host = parsed.hostname.casefold()
+    if host == "localhost" or host.endswith((".local", ".internal")):
+        return False
+    try:
+        if ipaddress.ip_address(host).is_private:
+            return False
+    except ValueError:
+        pass
+    return True
 
 
 def add(findings: list[Finding], code: str, message: str) -> None:
@@ -176,6 +202,183 @@ def load_model(root: Path) -> Model:
         if ref not in seen_definition_refs:
             add(findings, "S009", f"{ref}: registry에 없는 definition")
 
+    adapter_registry_path = root / "storage/adapters/registry.json"
+    adapter_registry = read_json(adapter_registry_path, required=True)
+    source_paths.append(adapter_registry_path)
+    adapters: dict[str, dict[str, Any]] = {}
+    adapter_paths: dict[str, Path] = {}
+    adapter_entries = adapter_registry.get("adapters")
+    if adapter_registry.get("schema_version") != 1:
+        add(findings, "D001", "storage/adapters/registry.json: schema_version은 1이어야 함")
+    if not valid_utc(adapter_registry.get("recorded_at")):
+        add(findings, "D002", "storage/adapters/registry.json: recorded_at은 명시적 UTC 시각이어야 함")
+    if not isinstance(adapter_entries, list):
+        add(findings, "D003", "storage/adapters/registry.json: adapters는 배열이어야 함")
+        adapter_entries = []
+
+    seen_adapter_ids: set[str] = set()
+    seen_adapter_refs: set[str] = set()
+    for position, entry in enumerate(adapter_entries):
+        label = f"storage/adapters/registry.json:adapters[{position}]"
+        if not isinstance(entry, dict):
+            add(findings, "D004", f"{label}: object가 아님")
+            continue
+        adapter_id = entry.get("id")
+        definition_ref = entry.get("definition")
+        if not isinstance(adapter_id, str) or not ADAPTER_ID.fullmatch(adapter_id):
+            add(findings, "D005", f"{label}: 잘못된 adapter id")
+            continue
+        if adapter_id in seen_adapter_ids:
+            add(findings, "D006", f"{label}: 중복 adapter id {adapter_id}")
+            continue
+        seen_adapter_ids.add(adapter_id)
+        if not safe_relative_path(definition_ref) or not str(definition_ref).startswith("storage/adapters/"):
+            add(findings, "D007", f"{label}: 안전하지 않은 definition 경로")
+            continue
+        seen_adapter_refs.add(str(definition_ref))
+        path = root / str(definition_ref)
+        if not path.is_file():
+            add(findings, "D008", f"{label}: definition 파일 없음 {definition_ref}")
+            continue
+        adapter = read_json(path)
+        source_paths.append(path)
+        adapters[adapter_id] = adapter
+        adapter_paths[adapter_id] = path
+
+    for path in json_files(root / "storage/adapters"):
+        if path == adapter_registry_path:
+            continue
+        ref = relative(root, path)
+        if ref not in seen_adapter_refs:
+            add(findings, "D009", f"{ref}: registry에 없는 adapter definition")
+
+    required_adapter_fields = {
+        "schema_version",
+        "id",
+        "type",
+        "status",
+        "implementation",
+        "operations",
+        "query_modes",
+        "input_formats",
+        "output_formats",
+        "consistency",
+        "license_status",
+        "public_safety",
+        "recorded_at",
+    }
+    for adapter_id, adapter in adapters.items():
+        path = relative(root, adapter_paths[adapter_id])
+        require_fields(adapter, required_adapter_fields, path, findings, "D101")
+        if adapter.get("schema_version") != 1:
+            add(findings, "D102", f"{path}: schema_version은 1이어야 함")
+        if adapter.get("id") != adapter_id:
+            add(findings, "D103", f"{path}: registry id와 adapter id가 다름")
+        if adapter.get("status") != "active":
+            add(findings, "D104", f"{path}: registry에 등록된 adapter는 active여야 함")
+        if adapter.get("type") not in {"embedded", "engine", "external-service", "delegated"}:
+            add(findings, "D114", f"{path}: 알 수 없는 adapter type")
+        implementation = adapter.get("implementation")
+        if not safe_ref(implementation) and not safe_relative_path(implementation):
+            add(findings, "D105", f"{path}: 공개 안전하지 않은 implementation")
+        operations = adapter.get("operations")
+        if not isinstance(operations, dict):
+            add(findings, "D106", f"{path}: operations는 object여야 함")
+        else:
+            for operation in ("write", "query", "trace", "export", "rebuild", "health"):
+                contract = operations.get(operation)
+                if not isinstance(contract, dict):
+                    add(findings, "D107", f"{path}: operation 누락 {operation}")
+                    continue
+                if contract.get("support") not in {"supported", "degraded", "unsupported"}:
+                    add(findings, "D108", f"{path}: {operation}.support 값 오류")
+                if not isinstance(contract.get("notes"), str) or not contract.get("notes"):
+                    add(findings, "D109", f"{path}: {operation}.notes 누락")
+        for field in ("input_formats", "output_formats"):
+            value = adapter.get(field)
+            if not isinstance(value, list) or not value or not all(isinstance(item, str) and item for item in value):
+                add(findings, "D110", f"{path}: {field}는 비어 있지 않은 문자열 배열이어야 함")
+        query_modes = adapter.get("query_modes")
+        if not isinstance(query_modes, list) or not all(isinstance(item, str) and item for item in query_modes):
+            add(findings, "D115", f"{path}: query_modes는 문자열 배열이어야 함")
+        if adapter.get("consistency") not in {"strong", "eventual", "snapshot", "not-applicable"}:
+            add(findings, "D116", f"{path}: 알 수 없는 consistency")
+        if adapter.get("license_status") not in {"compatible", "not-applicable"}:
+            add(findings, "D111", f"{path}: active adapter의 license 검토가 완료되지 않음")
+        safety = adapter.get("public_safety")
+        if not isinstance(safety, dict):
+            add(findings, "D117", f"{path}: public_safety는 object여야 함")
+        elif safety.get("classification") == "public-metadata-only":
+            if safety.get("raw_content_allowed") is not False:
+                add(findings, "D112", f"{path}: metadata-only adapter는 raw content를 허용할 수 없음")
+        if not valid_utc(adapter.get("recorded_at")):
+            add(findings, "D113", f"{path}: recorded_at은 명시적 UTC 시각이어야 함")
+
+    research_path = root / "research/catalog.json"
+    research_catalog = read_json(research_path, required=True)
+    source_paths.append(research_path)
+    research: dict[str, dict[str, Any]] = {}
+    research_entries = research_catalog.get("entries")
+    if research_catalog.get("schema_version") != 1:
+        add(findings, "R001", "research/catalog.json: schema_version은 1이어야 함")
+    if not valid_utc(research_catalog.get("recorded_at")):
+        add(findings, "R002", "research/catalog.json: recorded_at은 명시적 UTC 시각이어야 함")
+    if not isinstance(research_entries, list):
+        add(findings, "R003", "research/catalog.json: entries는 배열이어야 함")
+        research_entries = []
+    for position, entry in enumerate(research_entries):
+        label = f"research/catalog.json:entries[{position}]"
+        if not isinstance(entry, dict):
+            add(findings, "R004", f"{label}: object가 아님")
+            continue
+        research_id = entry.get("id")
+        if not isinstance(research_id, str) or not RESEARCH_ID.fullmatch(research_id):
+            add(findings, "R005", f"{label}: 잘못된 research id")
+            continue
+        if research_id in research:
+            add(findings, "R006", f"{label}: 중복 research id {research_id}")
+            continue
+        research[research_id] = entry
+        require_fields(
+            entry,
+            {
+                "id",
+                "type",
+                "title",
+                "source",
+                "supports",
+                "relevant_spaces",
+                "possible_use",
+                "adoption_status",
+                "license_review",
+            },
+            label,
+            findings,
+            "R007",
+        )
+        source = entry.get("source")
+        if not isinstance(source, dict) or not public_https_url(source.get("url")):
+            add(findings, "R008", f"{label}: 공개 HTTPS source가 아님")
+        elif not valid_utc(source.get("verified_at")):
+            add(findings, "R009", f"{label}: verified_at은 명시적 UTC 시각이어야 함")
+        for field in ("supports", "relevant_spaces", "possible_use"):
+            value = entry.get(field)
+            if not isinstance(value, list) or not value or not all(isinstance(item, str) and item for item in value):
+                add(findings, "R010", f"{label}: {field}는 비어 있지 않은 문자열 배열이어야 함")
+        if entry.get("type") not in {"paper", "architecture", "research-implementation", "documentation"}:
+            add(findings, "R012", f"{label}: 알 수 없는 reference type")
+        if entry.get("adoption_status") not in {"reference-only", "evaluating", "adopted", "rejected"}:
+            add(findings, "R013", f"{label}: 알 수 없는 adoption_status")
+        if entry.get("license_review") not in {
+            "not-required-reference-only",
+            "not-reviewed",
+            "compatible",
+            "incompatible",
+        }:
+            add(findings, "R014", f"{label}: 알 수 없는 license_review")
+        if entry.get("adoption_status") == "adopted" and entry.get("license_review") != "compatible":
+            add(findings, "R011", f"{label}: adopted reference의 license가 compatible이 아님")
+
     required_definition_fields = {
         "schema_version",
         "id",
@@ -196,13 +399,15 @@ def load_model(root: Path) -> Model:
         "cost",
         "public_safety",
         "permissions",
+        "implementation",
+        "portability",
         "recorded_at",
     }
     for space_id, definition in definitions.items():
         path = relative(root, definition_paths[space_id])
         require_fields(definition, required_definition_fields, path, findings, "S101")
-        if definition.get("schema_version") != 1:
-            add(findings, "S102", f"{path}: schema_version은 1이어야 함")
+        if definition.get("schema_version") != 2:
+            add(findings, "S102", f"{path}: schema_version은 2여야 함")
         if definition.get("id") != space_id:
             add(findings, "S103", f"{path}: registry id와 definition id가 다름")
         if definition.get("status") != "active":
@@ -233,6 +438,134 @@ def load_model(root: Path) -> Model:
                 add(findings, "S111", f"{path}: metadata-only 공간은 raw content를 허용할 수 없음")
         if not valid_utc(definition.get("recorded_at")):
             add(findings, "S112", f"{path}: recorded_at은 명시적 UTC 시각이어야 함")
+        implementation = definition.get("implementation")
+        if not isinstance(implementation, dict):
+            add(findings, "S113", f"{path}: implementation은 object여야 함")
+        else:
+            if implementation.get("selection_policy") != "reuse-first":
+                add(findings, "S114", f"{path}: selection_policy는 reuse-first여야 함")
+            strategy = implementation.get("strategy")
+            if strategy not in {"native", "adapter", "hybrid", "custom-minimal"}:
+                add(findings, "S115", f"{path}: 알 수 없는 implementation strategy")
+            adapter_ref = implementation.get("adapter")
+            if strategy in {"adapter", "hybrid"} and adapter_ref is None:
+                add(findings, "S116", f"{path}: adapter/hybrid strategy는 adapter가 필요함")
+            if adapter_ref is not None and adapter_ref not in adapters:
+                add(findings, "S117", f"{path}: 미등록 adapter {adapter_ref}")
+            candidates = implementation.get("candidates")
+            if not isinstance(candidates, list):
+                add(findings, "S118", f"{path}: candidates는 배열이어야 함")
+            else:
+                seen_candidates: set[str] = set()
+                selected_candidates = 0
+                for position, candidate in enumerate(candidates):
+                    pointer = f"{path}:candidates[{position}]"
+                    if not isinstance(candidate, dict):
+                        add(findings, "S119", f"{pointer}: object가 아님")
+                        continue
+                    require_fields(
+                        candidate,
+                        {
+                            "id",
+                            "type",
+                            "status",
+                            "research_refs",
+                            "license_status",
+                            "maintenance_status",
+                            "notes",
+                        },
+                        pointer,
+                        findings,
+                        "S134",
+                    )
+                    candidate_id = candidate.get("id")
+                    if not isinstance(candidate_id, str) or not re.fullmatch(
+                        r"candidate:[a-z0-9][a-z0-9._-]*", candidate_id
+                    ):
+                        add(findings, "S120", f"{pointer}: 잘못된 candidate id")
+                    elif candidate_id in seen_candidates:
+                        add(findings, "S121", f"{pointer}: 중복 candidate id {candidate_id}")
+                    else:
+                        seen_candidates.add(candidate_id)
+                    refs = candidate.get("research_refs")
+                    if not isinstance(refs, list):
+                        add(findings, "S122", f"{pointer}: research_refs는 배열이어야 함")
+                    else:
+                        for research_ref in refs:
+                            if research_ref not in research:
+                                add(findings, "S123", f"{pointer}: research reference 없음 {research_ref}")
+                    if candidate.get("type") not in {
+                        "embedded",
+                        "engine",
+                        "external-service",
+                        "research-implementation",
+                    }:
+                        add(findings, "S135", f"{pointer}: 알 수 없는 candidate type")
+                    if candidate.get("status") not in {
+                        "discovered",
+                        "evaluating",
+                        "optional",
+                        "selected",
+                        "rejected",
+                    }:
+                        add(findings, "S136", f"{pointer}: 알 수 없는 candidate status")
+                    if candidate.get("license_status") not in {
+                        "not-reviewed",
+                        "compatible",
+                        "incompatible",
+                        "not-applicable",
+                    }:
+                        add(findings, "S137", f"{pointer}: 알 수 없는 candidate license_status")
+                    if candidate.get("maintenance_status") not in {"unknown", "active", "inactive"}:
+                        add(findings, "S138", f"{pointer}: 알 수 없는 candidate maintenance_status")
+                    if not isinstance(candidate.get("notes"), str) or not candidate.get("notes"):
+                        add(findings, "S139", f"{pointer}: candidate notes 누락")
+                    if candidate.get("status") == "selected":
+                        selected_candidates += 1
+                        if candidate.get("license_status") not in {"compatible", "not-applicable"}:
+                            add(findings, "S124", f"{pointer}: selected candidate의 license 검토 미완료")
+                        if candidate.get("maintenance_status") != "active":
+                            add(findings, "S125", f"{pointer}: selected candidate가 active 유지보수 상태가 아님")
+                if strategy in {"adapter", "hybrid"} and selected_candidates != 1:
+                    add(findings, "S141", f"{path}: adapter/hybrid strategy는 selected candidate 하나가 필요함")
+                if strategy in {"native", "custom-minimal"} and selected_candidates:
+                    add(findings, "S142", f"{path}: native/custom-minimal strategy에 selected candidate가 있음")
+            if strategy == "adapter" and adapter_ref in adapters:
+                adapter = adapters[adapter_ref]
+                missing_modes = sorted(set(definition.get("query_modes", [])) - set(adapter.get("query_modes", [])))
+                if missing_modes:
+                    add(findings, "S143", f"{path}: adapter가 query mode를 지원하지 않음 {','.join(missing_modes)}")
+                query_operation = adapter.get("operations", {}).get("query", {})
+                if query_operation.get("support") == "unsupported":
+                    add(findings, "S144", f"{path}: adapter query operation이 unsupported임")
+                export_formats = set(definition.get("portability", {}).get("export_formats", []))
+                if export_formats and not export_formats.intersection(adapter.get("output_formats", [])):
+                    add(findings, "S145", f"{path}: adapter output과 portability export 형식이 겹치지 않음")
+            fallback = implementation.get("fallback")
+            if not isinstance(fallback, dict):
+                add(findings, "S126", f"{path}: fallback은 object여야 함")
+            else:
+                fallback_adapter = fallback.get("adapter")
+                if fallback_adapter is not None and fallback_adapter not in adapters:
+                    add(findings, "S127", f"{path}: 미등록 fallback adapter {fallback_adapter}")
+                if fallback.get("data_access") not in {"full", "read-only", "export-only", "unavailable"}:
+                    add(findings, "S140", f"{path}: 알 수 없는 fallback data_access")
+                if definition.get("role") in {"evidence", "record"} and fallback.get("data_access") == "unavailable":
+                    add(findings, "S128", f"{path}: evidence/record fallback은 핵심 자료 접근을 유지해야 함")
+                modes = fallback.get("degraded_query_modes")
+                if not isinstance(modes, list):
+                    add(findings, "S129", f"{path}: degraded_query_modes는 배열이어야 함")
+        portability = definition.get("portability")
+        if not isinstance(portability, dict):
+            add(findings, "S130", f"{path}: portability는 object여야 함")
+        else:
+            formats = portability.get("export_formats")
+            if not isinstance(formats, list) or not formats or not all(isinstance(item, str) and item for item in formats):
+                add(findings, "S131", f"{path}: export_formats는 비어 있지 않은 문자열 배열이어야 함")
+            if portability.get("vendor_lock_in") not in {"prohibited", "exception-approved"}:
+                add(findings, "S132", f"{path}: vendor_lock_in 값 오류")
+            if not isinstance(portability.get("exit_plan"), str) or not portability.get("exit_plan"):
+                add(findings, "S133", f"{path}: exit_plan 누락")
 
     catalog: dict[str, dict[str, Any]] = {}
     catalog_paths: dict[str, Path] = {}
@@ -375,6 +708,11 @@ def load_model(root: Path) -> Model:
         registry=registry,
         definitions=definitions,
         definition_paths=definition_paths,
+        adapter_registry=adapter_registry,
+        adapters=adapters,
+        adapter_paths=adapter_paths,
+        research_catalog=research_catalog,
+        research=research,
         catalog=catalog,
         catalog_paths=catalog_paths,
         transformations=transformations,
@@ -393,6 +731,8 @@ def print_audit(model: Model) -> None:
     print(
         "OK storage-spaces: "
         f"active_spaces={len(model.definitions)} "
+        f"adapters={len(model.adapters)} "
+        f"research_refs={len(model.research)} "
         f"catalog_entries={len(model.catalog)} "
         f"transformations={len(model.transformations)}"
     )
@@ -426,6 +766,8 @@ def build_index(model: Model) -> int:
                 "query_modes": definition["query_modes"],
                 "losses": definition["losses"],
                 "rebuildable": definition["rebuild"]["rebuildable"],
+                "implementation": definition["implementation"],
+                "portability": definition["portability"],
             }
             for space_id, definition in sorted(model.definitions.items())
         ],
@@ -449,6 +791,26 @@ def build_index(model: Model) -> int:
                 "reversible": transformation["reversible"],
             }
             for transformation_id, transformation in sorted(model.transformations.items())
+        ],
+        "adapters": [
+            {
+                "id": adapter_id,
+                "type": adapter["type"],
+                "query_modes": adapter["query_modes"],
+                "output_formats": adapter["output_formats"],
+                "operations": adapter["operations"],
+            }
+            for adapter_id, adapter in sorted(model.adapters.items())
+        ],
+        "research_references": [
+            {
+                "id": research_id,
+                "type": entry["type"],
+                "title": entry["title"],
+                "adoption_status": entry["adoption_status"],
+                "possible_use": entry["possible_use"],
+            }
+            for research_id, entry in sorted(model.research.items())
         ],
     }
     path = model.root / "indexes/storage-catalog.json"
@@ -481,6 +843,10 @@ def query(model: Model, args: argparse.Namespace) -> int:
         records.append({"record_type": "catalog", **entry})
     for transformation_id, transformation in sorted(model.transformations.items()):
         records.append({"record_type": "transformation", **transformation})
+    for adapter_id, adapter in sorted(model.adapters.items()):
+        records.append({"record_type": "adapter", **adapter})
+    for research_id, entry in sorted(model.research.items()):
+        records.append({"record_type": "research", **entry})
 
     def matches(record: dict[str, Any]) -> bool:
         if args.id and record.get("id") != args.id:
@@ -528,6 +894,8 @@ def plan(model: Model, args: argparse.Namespace) -> int:
                 "missing_modes": [mode for mode in requested if mode not in supported],
                 "locations": definition["locations"],
                 "losses": definition["losses"],
+                "implementation": definition["implementation"],
+                "portability": definition["portability"],
             }
         )
     candidates.sort(key=lambda item: (-len(item["matched_modes"]), item["space"]))
@@ -574,6 +942,8 @@ def context(model: Model, args: argparse.Namespace) -> int:
                 "role": model.definitions[space_id]["role"],
                 "kind": model.definitions[space_id]["kind"],
                 "losses": model.definitions[space_id]["losses"],
+                "implementation": model.definitions[space_id]["implementation"],
+                "portability": model.definitions[space_id]["portability"],
             }
             for space_id in used_space_ids
         ],

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "space:relations",
   "role": "record",
   "kind": "relation-space",
@@ -18,5 +18,17 @@
   "cost": { "read": "low", "write": "medium", "rebuild": "not-applicable" },
   "public_safety": { "classification": "public-metadata-only", "raw_content_allowed": false },
   "permissions": { "read": "Harness participants", "write": "Relation owner" },
-  "recorded_at": "2026-08-28 05:09:48 UTC"
+  "implementation": {
+    "selection_policy": "reuse-first",
+    "strategy": "native",
+    "adapter": null,
+    "candidates": [],
+    "fallback": { "adapter": null, "data_access": "read-only", "degraded_query_modes": ["relation", "time-range"] }
+  },
+  "portability": {
+    "export_formats": ["json", "jsonl"],
+    "vendor_lock_in": "prohibited",
+    "exit_plan": "Relations remain exportable as source-target JSON Lines."
+  },
+  "recorded_at": "2026-08-28 05:27:55 UTC"
 }

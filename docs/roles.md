@@ -14,6 +14,10 @@
 - 작업 변경은 `docs/change-promotion.md`의 worktree·review·PR·feature 승격 경계를 지킨다.
 - 정보를 새 표현으로 저장할 때 active Storage Space를 선택하고 evidence·lineage, 허용 손실과 public-safe
   ref를 보존한다. 적합한 공간이 없으면 임의 저장소를 만들지 않고 proposal로 제안한다.
+- 새 저장 구현은 capability를 먼저 쓰고 research reference·후보·adapter 가능성을 비교한다. 선택한 구현의
+  license·export·fallback·exit plan을 확인하며, 직접 구현은 최소 범위와 기각 근거를 남긴다.
+- 로컬 DB·broker·자동 인출 기능은 측정된 병목과 승인된 proposal 없이 현재 operator의 기능인 것처럼
+  구현하거나 기록하지 않는다. future 설계와 active capability를 명확히 구분한다.
 - 다른 프로젝트의 작업은 request로 넘기고 자기 프로젝트의 task·changed 기록만 관리한다.
 
 ## Curator
@@ -35,7 +39,9 @@
 9. 현행 참조가 없는 오래된 저널·요청·제안을 각 archive로 옮기고 현재 등재부·canon·목차의 포인터를
    새 경로로 갱신한다.
 10. `operator:storage-spaces audit`으로 registry-definition 정합, 여러 표현의 lineage, 위험 ref와 파생
-    index 재구성 가능성을 확인한다. 저장 기술 하나를 기본 정답으로 승격하지 않는다.
+    index 재구성 가능성을 확인한다. research reference를 채택 근거로 과장하지 않고 adapter license·
+    portability·fallback이 검증되지 않은 저장 기술을 기본 정답으로 승격하지 않는다. future runtime·기억
+    신뢰성 문서가 active 기능을 주장하지 않는지와 파일 기반 fallback이 유지되는지도 함께 확인한다.
 11. 완료 후 `CURATION.md`의 `last_curated_at`을 실제 완료 시각의 UTC 값으로 갱신한다.
 
 Curator도 분쟁을 임의 확정하지 않는다. 해석·소유권·정책 결정이 필요하면 근거를 `AGENDA.md`에 올리고

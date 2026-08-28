@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "id": "research:dataspaces",
+      "type": "paper",
+      "title": "From Databases to Dataspaces: A New Abstraction for Information Management",
+      "source": {
+        "url": "https://www.cs.ubc.ca/~rap/teaching/534P/2011/readings/dataspaces.pdf",
+        "verified_at": "2026-08-28 05:27:55 UTC"
+      },
+      "supports": [
+        "heterogeneous interrelated sources",
+        "incremental integration",
+        "search query lineage access and evolution"
+      ],
+      "relevant_spaces": ["cross-space catalog", "heterogeneous storage spaces"],
+      "possible_use": ["progressive integration reference", "source lineage requirements"],
+      "adoption_status": "reference-only",
+      "license_review": "not-required-reference-only"
+    },
+    {
+      "id": "research:bigdawg-polystore",
+      "type": "research-implementation",
+      "title": "The BigDAWG Polystore System and Architecture",
+      "source": {
+        "url": "https://arxiv.org/abs/1609.07548",
+        "verified_at": "2026-08-28 05:27:55 UTC"
+      },
+      "supports": [
+        "heterogeneous storage engines",
+        "multiple data models",
+        "middleware query interface"
+      ],
+      "relevant_spaces": ["table space", "time-series space", "cross-space query"],
+      "possible_use": ["query planner reference", "adapter architecture reference"],
+      "adoption_status": "reference-only",
+      "license_review": "not-required-reference-only"
+    },
+    {
+      "id": "research:blackboard-architecture",
+      "type": "architecture",
+      "title": "The Blackboard Architecture: Example Systems",
+      "source": {
+        "url": "https://wrap.warwick.ac.uk/id/eprint/60797/12/WRAP_cs-rr-101.pdf",
+        "verified_at": "2026-08-28 05:27:55 UTC"
+      },
+      "supports": ["shared problem state", "cooperation of different knowledge sources"],
+      "relevant_spaces": ["working space", "event space", "cross-space coordination"],
+      "possible_use": ["shared workspace reference", "independent processor boundary reference"],
+      "adoption_status": "reference-only",
+      "license_review": "not-required-reference-only"
+    },
+    {
+      "id": "research:soar-memory",
+      "type": "architecture",
+      "title": "Soar Cognitive Architecture and Memory Systems",
+      "source": {
+        "url": "https://soar.eecs.umich.edu/home/About/",
+        "verified_at": "2026-08-28 05:27:55 UTC"
+      },
+      "supports": ["multiple memory representations", "working semantic episodic and procedural memory"],
+      "relevant_spaces": ["working space", "narrative space", "event space", "semantic space"],
+      "possible_use": ["memory role separation reference"],
+      "adoption_status": "reference-only",
+      "license_review": "not-required-reference-only"
+    },
+    {
+      "id": "research:memgpt",
+      "type": "paper",
+      "title": "MemGPT: Towards LLMs as Operating Systems",
+      "source": {
+        "url": "https://arxiv.org/abs/2310.08560",
+        "verified_at": "2026-08-28 05:27:55 UTC"
+      },
+      "supports": ["hierarchical memory tiers", "limited context management", "memory movement policies"],
+      "relevant_spaces": ["working space", "context composition", "external memory"],
+      "possible_use": ["context budget reference", "memory tier policy reference"],
+      "adoption_status": "reference-only",
+      "license_review": "not-required-reference-only"
+    },
+    {
+      "id": "research:provenance-semirings",
+      "type": "paper",
+      "title": "Provenance Semirings",
+      "source": {
+        "url": "https://www.cs.ucdavis.edu/~green/papers/pods07.pdf",
+        "verified_at": "2026-08-28 05:27:55 UTC"
+      },
+      "supports": ["symbolic query provenance", "input to output derivation tracking"],
+      "relevant_spaces": ["cross-space catalog", "transformation lineage"],
+      "possible_use": ["derived record lineage reference", "provenance model reference"],
+      "adoption_status": "reference-only",
+      "license_review": "not-required-reference-only"
+    }
+  ],
+  "recorded_at": "2026-08-28 05:27:55 UTC"
+}

@@ -6,6 +6,8 @@
 2. exact, state, time-range, relation, aggregate, similarity, evidence 중 어떤 조회가 필요한가?
 3. 무엇을 잃어도 되고, 무엇은 반드시 원본으로 돌아갈 수 있어야 하는가?
 4. registry의 active space가 목적과 손실 한계를 충족하는가?
+5. 새 구현이 필요한가, 아니면 검증된 기존 구현을 adapter로 연결할 수 있는가?
+6. 외부 구현 장애·중단 뒤 어떤 자료 접근과 query mode가 남는가?
 
 ## 기본 routing
 
@@ -20,4 +22,5 @@
 | 설명되지 않은 충돌·희귀 정보 | residual | append-only + review_after |
 
 하나의 관찰을 여러 공간에 기록하면 catalog와 transformation으로 lineage를 남긴다. 의미·field·time-series
-공간은 active definition과 검증된 adapter가 생기기 전에는 사용하지 않는다.
+공간은 active definition과 검증된 adapter가 생기기 전에는 사용하지 않는다. 새 구현은 `reuse-first`
+평가와 공개 export·fallback을 통과한 native·adapter·hybrid·custom-minimal 전략 중 최소 범위를 택한다.

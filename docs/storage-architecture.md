@@ -104,6 +104,20 @@ projection·index·cache를 Source of Truth로 사용하지 않는다. 삭제 �
 각 representation은 등록된 space를 가리켜야 한다. 하나의 표현이 사라져도 lineage가 가리키는 source와
 transformation을 통해 복구 가능 여부를 판단할 수 있어야 한다.
 
+## 구현 선택과 Adapter
+
+새 공간이 필요할 때 저장 기술을 바로 직접 구현하지 않는다. 먼저 capability와 허용 손실을 definition으로
+확정하고, 검증된 연구·공개 구현·범용 엔진을 조사한다. 적합한 구현은 등록된 adapter로 연결하고, 부족한
+projection·index만 조합한다. 적합한 구현이 없을 때만 최소 기능을 직접 구현한다.
+
+active space는 `selection_policy: reuse-first`, 현재 구현 전략·adapter·후보, 장애 시 data access와 degraded
+query mode, export 형식·vendor lock-in·exit plan을 선언한다. 외부 시스템은 adapter를 거쳐도 자동으로
+evidence나 record의 정본이 되지 않는다. 상세 평가·API·fallback 계약은 `docs/storage-adapters.md`를 따른다.
+
+현재 active 구현은 파일과 Git record, 재생성 가능한 JSON index까지만 사용한다. 로컬 DB·background index,
+Query Planner service·Context Composer·단일 broker는 도입된 구성 요소가 아니다. 반복 병목이 측정되면
+`docs/local-storage-runtime.md`의 단계와 rollback 경계로 별도 proposal을 검토한다.
+
 ## 기존 하네스 기록의 위치
 
 기존 구조는 이동하거나 세계 모델 형식으로 일괄 변환하지 않는다.
@@ -132,8 +146,9 @@ transformation을 통해 복구 가능 여부를 판단할 수 있어야 한다.
 5. 파생 표현이면 transformation과 rebuild source가 있는가?
 6. 공개 저장소에 안전한 메타데이터만 남는가?
 
-적합한 active 공간이 없으면 임의 디렉터리를 만들지 않는다. proposal에서 정의·schema·adapter·비용과
-마이그레이션·소급 여부를 승인받은 뒤 registry에 추가한다.
+적합한 active 공간이 없으면 임의 디렉터리를 만들지 않는다. 관련 `research/` reference와 adapter 후보를
+먼저 평가하고 proposal에서 정의·schema·adapter·비용·migration·fallback·소급 여부를 승인받은 뒤
+registry에 추가한다.
 
 ## Query Planner
 
@@ -160,6 +175,9 @@ Context Composer는 모든 저장공간을 프롬프트에 넣지 않는다. 현
 제한하고, 잘린 결과와 사용한 공간·손실을 출력에 표시한다.
 
 신뢰도가 낮거나 변경이 되돌리기 어렵다면 압축된 projection보다 원본 record와 evidence를 우선한다.
+장기적으로 query 결과의 상태·범위·freshness와 선택·제외·fallback을 재현할 필요가 생기면
+`docs/memory-reliability.md`의 Retrieval Status와 Query Trace 계약을 적용한다. 현재 operator의 제한 조회를
+그 future 계약을 이미 구현한 것으로 해석하지 않는다.
 
 ## 관점과 독립성
 
@@ -175,6 +193,8 @@ Object·Relation 같은 공간을 사용할 때 `structure`, `runtime`, `domain`
 - 제품 코드, 원시 로그·메트릭, 문서·이미지 원본, 고객·운영 데이터와 비공개 시스템 구조를 복사하지 않는다.
 - source·representation ref는 `<project-id>:<relative-path-or-opaque-id>` 형식의 공개 안전한 식별자를 쓴다.
 - 로컬 절대경로, URL, 인증정보, 계정과 원본 본문을 catalog·index·view에 넣지 않는다.
+- `research/catalog.json`은 예외적으로 검증한 공개 원문의 HTTPS URL만 기록하며 비공개 문서·구현 endpoint는
+  허용하지 않는다.
 - permissions는 책임 경계를 설명할 뿐 외부 시스템 권한을 부여하지 않는다.
 - 보안 관점의 상세가 공개 위험을 만들면 레코드를 생성하지 않고 안전한 원본 시스템에만 둔다.
 
@@ -183,7 +203,9 @@ Object·Relation 같은 공간을 사용할 때 `structure`, `runtime`, `domain`
 초기 단계는 registry, 정의, catalog schema, 기존 기록 연결, 결정적 index, query planning과 제한된 context
 조립까지만 구현한다.
 
-후속 단계는 실제 질의와 비용 증거가 있을 때 별도 proposal로 진행한다.
+후속 단계는 실제 질의와 비용 증거가 있을 때 별도 proposal로 진행한다. 실행 방식·broker·Git과 로컬 상태
+분리의 전체 로드맵은 `docs/local-storage-runtime.md`, 저장·인출 누락을 구분하는 후속 신뢰성 단계는
+`docs/memory-reliability.md`를 따른다.
 
 1. evidence·object·relation·residual 파일 adapter와 유형별 record schema 확장
 2. transformation 실행과 lineage 무결성·재구성 검증
