@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:residuals",
+  "role": "record",
+  "kind": "residual-space",
+  "status": "active",
+  "purpose": ["Retain conflicts, exceptions, and rare signals that do not fit an active model."],
+  "locations": ["storage/spaces/residuals"],
+  "accepts": ["Public-safe residual records with review timing and evidence links."],
+  "preserves": ["Unresolved signal", "Conflict", "Evidence link", "Review time"],
+  "losses": ["Immediate classification", "Optimized retrieval"],
+  "query_modes": ["exact", "residual", "time-range", "text"],
+  "write_policy": "append-only",
+  "consistency": "eventual",
+  "retention": { "policy": "Retain until classified, superseded, or explicitly discarded", "minimum": "Until review" },
+  "provenance": { "required": true, "fields": ["project", "evidence_ref", "recorded_at", "review_after"] },
+  "rebuild": { "rebuildable": false, "sources": [] },
+  "cost": { "read": "medium", "write": "low", "rebuild": "not-applicable" },
+  "public_safety": { "classification": "public-metadata-only", "raw_content_allowed": false },
+  "permissions": { "read": "Harness participants", "write": "Current observer" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:harness-events",
+  "role": "record",
+  "kind": "event-space",
+  "status": "active",
+  "purpose": ["Preserve issue, change, and validation event history."],
+  "locations": ["issues", "changed", "feedback"],
+  "accepts": ["UTC-stamped append-only event records."],
+  "preserves": ["Event time", "Sequence", "Affected subject", "Outcome"],
+  "losses": ["Immediate current-state lookup"],
+  "query_modes": ["exact", "time-range", "state", "text"],
+  "write_policy": "append-only",
+  "consistency": "eventual",
+  "retention": { "policy": "Append-only repository history", "minimum": "Indefinite" },
+  "provenance": { "required": true, "fields": ["project", "recorded_at", "evidence"] },
+  "rebuild": { "rebuildable": false, "sources": [] },
+  "cost": { "read": "medium", "write": "low", "rebuild": "not-applicable" },
+  "public_safety": { "classification": "public", "raw_content_allowed": true },
+  "permissions": { "read": "Harness participants", "write": "Affected owner project" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

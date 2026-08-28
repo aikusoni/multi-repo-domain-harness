@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:storage-index",
+  "role": "index",
+  "kind": "table-space",
+  "status": "active",
+  "purpose": ["Provide a deterministic searchable summary of registered spaces and catalog entries."],
+  "locations": ["indexes/storage-catalog.json"],
+  "accepts": ["Generated summaries from the registry, definitions, catalog, and transformations."],
+  "preserves": ["Stable identifiers", "Roles", "Kinds", "Query modes", "Lineage summary"],
+  "losses": ["Full source records", "Unindexed fields"],
+  "query_modes": ["exact", "state", "relation", "text"],
+  "write_policy": "generated",
+  "consistency": "snapshot",
+  "retention": { "policy": "Replace after successful deterministic rebuild", "minimum": "Until next valid build" },
+  "provenance": { "required": true, "fields": ["source_digest"] },
+  "rebuild": { "rebuildable": true, "sources": ["storage/registry.json", "storage/definitions", "storage/catalog", "storage/transformations"] },
+  "cost": { "read": "low", "write": "not-applicable", "rebuild": "low" },
+  "public_safety": { "classification": "public-metadata-only", "raw_content_allowed": false },
+  "permissions": { "read": "Harness participants", "write": "operator:storage-spaces" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

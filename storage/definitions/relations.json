@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:relations",
+  "role": "record",
+  "kind": "relation-space",
+  "status": "active",
+  "purpose": ["Represent explicit dependencies and impacts when relation traversal is useful."],
+  "locations": ["storage/spaces/relations"],
+  "accepts": ["Evidence-linked public-safe relations between stable identifiers."],
+  "preserves": ["Source", "Target", "Relation type", "Evidence", "Validity interval"],
+  "losses": ["Continuous strength", "Unexpressed indirect context"],
+  "query_modes": ["exact", "relation", "time-range"],
+  "write_policy": "append-only",
+  "consistency": "eventual",
+  "retention": { "policy": "Append with explicit expiry or supersession", "minimum": "Relation lifetime" },
+  "provenance": { "required": true, "fields": ["project", "evidence_ref", "recorded_at"] },
+  "rebuild": { "rebuildable": false, "sources": [] },
+  "cost": { "read": "low", "write": "medium", "rebuild": "not-applicable" },
+  "public_safety": { "classification": "public-metadata-only", "raw_content_allowed": false },
+  "permissions": { "read": "Harness participants", "write": "Relation owner" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

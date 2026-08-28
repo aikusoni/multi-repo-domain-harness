@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:cross-space-catalog",
+  "role": "record",
+  "kind": "relation-space",
+  "status": "active",
+  "purpose": ["Connect representations, source lineage, and transformations across registered spaces."],
+  "locations": ["storage/catalog"],
+  "accepts": ["Catalog entries conforming to schemas/catalog-entry.schema.json."],
+  "preserves": ["Representation identity", "Lineage", "Transformation identity", "Validity"],
+  "losses": ["Representation content"],
+  "query_modes": ["exact", "relation", "evidence", "time-range"],
+  "write_policy": "versioned",
+  "consistency": "eventual",
+  "retention": { "policy": "Keep while any representation remains reachable", "minimum": "Representation lifetime" },
+  "provenance": { "required": true, "fields": ["recorded_at", "sources"] },
+  "rebuild": { "rebuildable": false, "sources": [] },
+  "cost": { "read": "low", "write": "medium", "rebuild": "not-applicable" },
+  "public_safety": { "classification": "public-metadata-only", "raw_content_allowed": false },
+  "permissions": { "read": "Harness participants", "write": "Representation owner" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

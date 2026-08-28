@@ -99,6 +99,10 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 
 - 현재 상태의 정본과 시간순 이력을 분리한다.
 - 현재 상태 요약은 다시 쓰고, 당시 사실을 보존하는 이벤트와 journal은 append한다.
+- 하나의 데이터 모델을 강제하지 않고 보존 특성·허용 손실·질의 목적이 다른 저장공간을 공통 registry와
+  catalog로 조합한다. 오브젝트·관계·필드·시계열·의미 검색은 필요할 때 선택하는 저장 전략이다.
+- 파생 projection·index·cache를 정본으로 사용하지 않고 source lineage와 transformation을 통해 무엇을
+  보존·압축·손실했는지 추적한다.
 - 변경에 따라 낡을 수 있는 문서는 기준 시각·미반영분·현행 정본을 스스로 밝힌다.
 - 세션·사람·도구가 아니라 프로젝트 식별자를 작업 주체로 사용한다.
 - 실행 자동화는 `operator:<id>`로 등록하되 이를 에이전트 정체성과 혼동하지 않는다.
@@ -138,5 +142,14 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 | Review Snapshot | 사람이 검토할 정확한 checkpoint는 무엇인가? | 로컬 `review/<topic>_<UTC timestamp>` |
 | Promotion | 승인된 변경이 어느 통합·배포 단계로 이동할 수 있는가? | PR에서 feature로 승인 승격 |
 | Coordination Transaction | 어떤 충돌 위험·협업 판단을 위해 세션들이 주고받은 메시지 묶음인가? | 계약 파일 소유 확인을 위한 tx |
+| Storage Space | 어떤 정보 특성·질의·비용을 위해 어디에 어떤 계약으로 저장하는가? | event record 또는 relation projection 공간 |
+| Storage Role | 이 공간이 원본 근거, 직접 기록, 파생 표현, index, cache 중 무엇인가? | `evidence`, `record`, `projection`, `index`, `cache` |
+| Cross-Space Catalog | 같은 정보의 여러 표현과 출처·변환을 어떻게 잇는가? | event와 object 표현의 lineage 연결 |
+| Transformation | 표현을 만들며 무엇을 보존하고 잃었는가? | narrative에서 state projection 생성 |
+| Query Plan | 질문에 필요한 최소 공간과 조회 방식을 어떻게 고르는가? | exact 조회 뒤 relation과 evidence 확인 |
 | Invalidation | 어떤 과거 판단이 대체되거나 기각됐는가? | 이전 재시도 전략의 대체 기록 |
 | Quirk | 어떤 비직관적 불변식을 모르고 바꾸면 동작이 깨지는가? | 호환성을 위한 특수 분기 |
+
+저장공간 구성과 확장 경계는 [`docs/storage-architecture.md`](docs/storage-architecture.md), 활성 구성은
+[`storage/registry.json`](storage/registry.json), 실행 명령은
+[`operators/storage-spaces.md`](operators/storage-spaces.md)를 따른다.

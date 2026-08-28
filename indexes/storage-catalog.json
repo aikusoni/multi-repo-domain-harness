@@ -1,0 +1,205 @@
+{
+  "catalog_entries": [],
+  "schema_version": 1,
+  "source_digest": "sha256:bf49f8cb1ee7ab91ae0dc927d7a8ea2eb20716c4a7272a5c39bd9b5bb441b99f",
+  "spaces": [
+    {
+      "id": "space:cross-space-catalog",
+      "kind": "relation-space",
+      "locations": [
+        "storage/catalog"
+      ],
+      "losses": [
+        "Representation content"
+      ],
+      "purpose": [
+        "Connect representations, source lineage, and transformations across registered spaces."
+      ],
+      "query_modes": [
+        "exact",
+        "relation",
+        "evidence",
+        "time-range"
+      ],
+      "rebuildable": false,
+      "role": "record"
+    },
+    {
+      "id": "space:evidence-references",
+      "kind": "evidence-space",
+      "locations": [
+        "storage/spaces/evidence"
+      ],
+      "losses": [
+        "Original private content",
+        "Immediate interpretation"
+      ],
+      "purpose": [
+        "Preserve public-safe references needed to recheck original evidence."
+      ],
+      "query_modes": [
+        "exact",
+        "evidence",
+        "time-range"
+      ],
+      "rebuildable": false,
+      "role": "evidence"
+    },
+    {
+      "id": "space:harness-current-state",
+      "kind": "table-space",
+      "locations": [
+        "ISSUES.md",
+        "AGENDA.md",
+        "INITIATIVES.md",
+        "tasks"
+      ],
+      "losses": [
+        "Full historical sequence without linked event records"
+      ],
+      "purpose": [
+        "Expose active issues, agenda, initiatives, and task state."
+      ],
+      "query_modes": [
+        "exact",
+        "state",
+        "text"
+      ],
+      "rebuildable": false,
+      "role": "record"
+    },
+    {
+      "id": "space:harness-events",
+      "kind": "event-space",
+      "locations": [
+        "issues",
+        "changed",
+        "feedback"
+      ],
+      "losses": [
+        "Immediate current-state lookup"
+      ],
+      "purpose": [
+        "Preserve issue, change, and validation event history."
+      ],
+      "query_modes": [
+        "exact",
+        "time-range",
+        "state",
+        "text"
+      ],
+      "rebuildable": false,
+      "role": "record"
+    },
+    {
+      "id": "space:harness-narrative",
+      "kind": "narrative-space",
+      "locations": [
+        "journal",
+        "requests",
+        "proposals"
+      ],
+      "losses": [
+        "Direct structured state queries"
+      ],
+      "purpose": [
+        "Preserve intent, investigation context, requests, and decisions."
+      ],
+      "query_modes": [
+        "exact",
+        "text",
+        "time-range",
+        "evidence"
+      ],
+      "rebuildable": false,
+      "role": "record"
+    },
+    {
+      "id": "space:objects",
+      "kind": "object-space",
+      "locations": [
+        "storage/spaces/objects"
+      ],
+      "losses": [
+        "Unstructured source detail",
+        "Unmodeled ambiguity"
+      ],
+      "purpose": [
+        "Represent durable subjects and perspective-scoped claims when object queries are useful."
+      ],
+      "query_modes": [
+        "exact",
+        "state",
+        "time-range"
+      ],
+      "rebuildable": false,
+      "role": "record"
+    },
+    {
+      "id": "space:relations",
+      "kind": "relation-space",
+      "locations": [
+        "storage/spaces/relations"
+      ],
+      "losses": [
+        "Continuous strength",
+        "Unexpressed indirect context"
+      ],
+      "purpose": [
+        "Represent explicit dependencies and impacts when relation traversal is useful."
+      ],
+      "query_modes": [
+        "exact",
+        "relation",
+        "time-range"
+      ],
+      "rebuildable": false,
+      "role": "record"
+    },
+    {
+      "id": "space:residuals",
+      "kind": "residual-space",
+      "locations": [
+        "storage/spaces/residuals"
+      ],
+      "losses": [
+        "Immediate classification",
+        "Optimized retrieval"
+      ],
+      "purpose": [
+        "Retain conflicts, exceptions, and rare signals that do not fit an active model."
+      ],
+      "query_modes": [
+        "exact",
+        "residual",
+        "time-range",
+        "text"
+      ],
+      "rebuildable": false,
+      "role": "record"
+    },
+    {
+      "id": "space:storage-index",
+      "kind": "table-space",
+      "locations": [
+        "indexes/storage-catalog.json"
+      ],
+      "losses": [
+        "Full source records",
+        "Unindexed fields"
+      ],
+      "purpose": [
+        "Provide a deterministic searchable summary of registered spaces and catalog entries."
+      ],
+      "query_modes": [
+        "exact",
+        "state",
+        "relation",
+        "text"
+      ],
+      "rebuildable": true,
+      "role": "index"
+    }
+  ],
+  "transformations": []
+}

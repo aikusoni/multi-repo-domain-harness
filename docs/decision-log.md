@@ -15,6 +15,7 @@
 | D-001 | accepted | 2026-08-20 01:33:17 UTC | 성공·실수는 상쇄되는 성과 점수가 아니라 검증 증거와 반복 pattern으로 지침 개선에 사용한다. | 구조화된 evidence와 도입·발견 단계가 원시 카운트보다 지침 원인을 더 잘 구분한다. | 이벤트 부풀리기, 유의미한 문제 미탐지 또는 임계값으로 인한 반복 오판이 확인됨 | harness, 전체 | `docs/outcome-feedback.md` |
 | D-002 | superseded | 2026-08-20 01:33:17 UTC | 작업본은 로컬 불변 review, 공동 원격 PR, feature, release·정본 순으로 승인·검증해 승격한다. D-003이 review를 선형 단계에서 독립 checkpoint 스냅샷으로 재정의했다. | 참여 저장소가 로컬 branch와 원격 보호·CI를 구분해 운영할 수 있다. | review가 승격 경로의 한 단계가 아니거나 승격 뒤 checkpoint도 다시 검토해야 함 | harness, 전체 | `docs/change-promotion.md#승격-경로와-리뷰-체크포인트` |
 | D-003 | accepted | 2026-08-27 05:58:29 UTC | 승격은 작업·PR·feature·release·정본 경로로 관리하고, review는 어느 committed checkpoint에서나 별도로 생성하는 로컬 불변 스냅샷으로 관리한다. 작업용 worktree에는 임시 작업 브랜치만 연결한다. | 저장소가 임시 작업 ref와 지속 가능한 ref를 구분하고 commit을 detached 상태로 검토할 수 있다. | 호스팅 도구가 detached commit 검토를 지원하지 않거나 브랜치 잠금 없이 동일한 불변성·도달 가능성을 보장하는 방식이 필요함 | harness, 전체 | `docs/change-promotion.md#승격-경로와-리뷰-체크포인트` |
+| D-004 | accepted | 2026-08-28 05:16:27 UTC | 하네스 메모리는 하나의 중심 데이터 모델이 아니라 공통 registry·catalog·query/context 계약 아래 조합하는 여러 Storage Space로 구성한다. Object·Relation·Field는 선택 가능한 저장 전략으로 둔다. | 정보마다 보존 특성·질의·비용·허용 손실이 달라 단일 표현이 원문과 모든 구조적 조회를 함께 최적화할 수 없다. | 서로 다른 space의 lineage 비용이 효용을 반복해서 초과하거나 하나의 검증된 표현이 모든 활성 query mode와 보존 요구를 더 단순하게 충족함 | harness, 전체 | `docs/storage-architecture.md` |
 
 상태는 `accepted`, `superseded`, `deprecated`를 사용한다. `superseded`는 대체 결정이나 ADR 링크가
 필수다. 중요한 결정은 별도 ADR 문서를 만들고 여기에는 한 줄 요약과 링크만 둔다.

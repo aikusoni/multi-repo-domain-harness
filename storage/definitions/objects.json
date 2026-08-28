@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:objects",
+  "role": "record",
+  "kind": "object-space",
+  "status": "active",
+  "purpose": ["Represent durable subjects and perspective-scoped claims when object queries are useful."],
+  "locations": ["storage/spaces/objects"],
+  "accepts": ["Versioned public-safe object claims with stable identifiers."],
+  "preserves": ["Stable identity", "Claim perspective", "Validity interval", "Evidence link"],
+  "losses": ["Unstructured source detail", "Unmodeled ambiguity"],
+  "query_modes": ["exact", "state", "time-range"],
+  "write_policy": "versioned",
+  "consistency": "eventual",
+  "retention": { "policy": "Retain claims and explicit supersession", "minimum": "Subject lifetime" },
+  "provenance": { "required": true, "fields": ["project", "evidence_ref", "recorded_at"] },
+  "rebuild": { "rebuildable": false, "sources": [] },
+  "cost": { "read": "low", "write": "medium", "rebuild": "not-applicable" },
+  "public_safety": { "classification": "public-metadata-only", "raw_content_allowed": false },
+  "permissions": { "read": "Harness participants", "write": "Subject owner" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

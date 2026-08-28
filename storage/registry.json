@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "active_spaces": [
+    { "id": "space:harness-narrative", "definition": "storage/definitions/harness-narrative.json" },
+    { "id": "space:harness-events", "definition": "storage/definitions/harness-events.json" },
+    { "id": "space:harness-current-state", "definition": "storage/definitions/harness-current-state.json" },
+    { "id": "space:evidence-references", "definition": "storage/definitions/evidence-references.json" },
+    { "id": "space:objects", "definition": "storage/definitions/objects.json" },
+    { "id": "space:relations", "definition": "storage/definitions/relations.json" },
+    { "id": "space:residuals", "definition": "storage/definitions/residuals.json" },
+    { "id": "space:cross-space-catalog", "definition": "storage/definitions/cross-space-catalog.json" },
+    { "id": "space:storage-index", "definition": "storage/definitions/storage-index.json" }
+  ],
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

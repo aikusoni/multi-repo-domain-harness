@@ -25,7 +25,8 @@ related_initiatives: []
 ## 입력 계약
 
 - `ISSUES.md`의 활성 request·proposal 표
-- `INDEX.md`, 루트 등재부와 `docs/**/*.md`의 로컬 Markdown·JSON 포인터
+- `INDEX.md`, 루트 등재부, `docs/`, `storage/`, `schemas/`, `indexes/`, `views/` Markdown의 로컬
+  Markdown·JSON 포인터
 - `requests/`, `proposals/`의 루트와 아카이브
 - `docs/README.md`의 살아있는 문서 등록부와 등록 문서 머리말
 - Python 3 표준 라이브러리

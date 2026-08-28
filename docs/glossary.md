@@ -12,6 +12,12 @@
 | Request | 다른 프로젝트·operator에 전달하고 결과를 왕복 확인하는 실행 요청 | 요청자·대상 | `requests/...` | 프로젝트 간 인계 |
 | Issue | 계약·기준·작업 흐름의 위험이나 차단 상태 | 관련 주체 | `ISSUES.md`, `issues/...` | 활성 상태와 이력 분리 |
 | Operator | 반복 가능한 실행을 자동화하는 주체 | owner 프로젝트 | `operator:<id>` | 에이전트 정체성이 아님 |
+| Storage Space | 특정 정보 특성·질의·비용을 위해 역할·보존·손실·rebuild 계약으로 등록한 저장 위치 | harness | `space:<id>`, `storage/definitions/` | object·graph·field는 선택 가능한 kind |
+| Storage Role | 공간이 원본 근거, 직접 기록, 파생 표현, 검색 index, 임시 cache 중 맡는 책임 | harness | `evidence`, `record`, `projection`, `index`, `cache` | projection·index·cache는 정본이 아님 |
+| Cross-Space Catalog | 같은 정보의 여러 representation과 source lineage·transformation을 연결하는 제어 계층 | harness | `catalog:<id>`, `storage/catalog/` | 실제 자료 본문을 복제하는 공간이 아님 |
+| Transformation | 한 표현에서 다른 표현을 만들 때 방법·버전·입출력·보존·손실·가역성을 선언한 계약 | 변환 owner | `transformation:<id>` | 파생 표현 재구성 근거 |
+| Residual | 현재 active model이나 분류에 맞지 않는 충돌·예외·희귀 신호 | 관찰 project | `space:residuals` | 억지 분류하지 않고 review 시각과 근거 보존 |
+| Query Plan | 질문의 query mode와 예산에 맞춰 필요한 active space·순서·손실을 선택한 조회 계획 | harness | `operator:storage-spaces plan` | 정확한 구조 조건을 우선하고 중요한 결론은 evidence 재확인 |
 | Invalidation | 과거 저널 판단이 대체되거나 기각됐음을 명시하는 지식 유효성 기록 | harness | `INVALIDATIONS.md` | 실행 항목의 dropped/cancelled와 구분 |
 | Quirk | 코드만 읽으면 오해하기 쉬우며 모르고 변경하면 동작을 깨뜨리는 현행 불변식 | 해당 프로젝트 | `Q-NNN` | 단순 복잡성이나 과거 경위는 제외 |
 | Worker | 프로젝트 작업과 그 실행 기록을 남기는 기본 역할 | 해당 프로젝트 | `docs/roles.md` | project-id를 대체하지 않음 |

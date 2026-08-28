@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0011 · 최종 갱신: 2026-08-27 05:58:29 UTC · 리뷰 체크포인트와 작업 브랜치 수명주기 보강**
+**규칙 버전: r0012 · 최종 갱신: 2026-08-28 05:16:27 UTC · 조합 가능한 저장공간과 손실 추적 규칙 추가**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -15,6 +15,10 @@
 | 경로 | 역할 | 운영 방식 |
 |---|---|---|
 | `docs/` | 공통 계약, 용어, 결정, 저장소·도메인 지도 | 기준 문서. 변경 전 검토 권장 |
+| `storage/` | 활성 저장공간 registry, definition, catalog, transformation과 파일 공간 | record·파생 표현의 위치·손실·lineage 정본 |
+| `schemas/` | 저장공간 control plane의 기계 판독 계약 | JSON Schema와 operator 검사를 함께 정합 |
+| `indexes/` | 등록 공간과 catalog의 재생성 가능한 검색 index | 생성 결과. 정본 아님, 직접 수정 금지 |
+| `views/` | 여러 저장공간에서 조립한 사람용 파생 뷰 | 생성 조건·입력 digest·손실을 명시 |
 | `journal/` | 세션별 발견, 결정, 시행착오 | append-only. 유효성 메타데이터만 예외 |
 | `INVALIDATIONS.md` | 대체·기각된 저널 판단의 누적 색인 | 원본 저널과 함께 갱신 |
 | `CURATION.md` | 지식 큐레이션 시각과 주의 임계값 | 현재 상태. 규칙 정본이 아님 |
@@ -260,6 +264,26 @@
     - 등록부나 직접 메시지 기능이 없거나 관측 범위가 불완전하면 다른 세션이 없다고 단정하지 않고 규칙
       1과 16의 보수적 직렬·Git 경계로 돌아간다. 정의, 카운팅과 로그 형식은
       `docs/session-coordination.md`와 `journal/README.md`를 따른다.
+29. **조합 가능한 저장공간과 손실 추적**: 하네스의 기록을 하나의 데이터 모델이나 저장 기술에 강제하지
+    않는다. 정보의 성격, 보존할 특성, 허용 손실, 질의 방식과 비용에 따라 `storage/registry.json`의
+    active Storage Space를 선택하고 필요할 때 여러 표현을 조합한다.
+    - 기존 journal·request·issue·changed·task와 현재 상태 정본은 이동하거나 일괄 변환하지 않는다.
+      definition의 `locations`로 현재 record space에 연결하며, 기존 append-only 기록은 소급 수정하지 않는다.
+    - 모든 공간은 `evidence`, `record`, `projection`, `index`, `cache` 중 역할과 storage kind, 보존·손실,
+      query mode, 쓰기·일관성·보존 정책, provenance, rebuild, 비용·권한·공개 안전성을 선언한다.
+      projection·index·cache를 정본으로 사용하지 않고, projection·index는 source에서 재생성할 수 있어야 한다.
+    - 같은 관찰을 여러 공간에 표현하면 Cross-Space Catalog에 representation과 source lineage를 연결한다.
+      파생 표현은 transformation의 방법·버전·입출력·보존 특성·손실과 가역성을 기록한다. Object·Relation·
+      Field·시계열·의미 검색은 선택 가능한 저장 전략이지 하네스 전체의 필수 중심 모델이 아니다.
+    - 새 정보는 정확한 ID·상태·시간·관계·수치·유사성·근거·잔차 중 필요한 query mode를 먼저 정하고,
+      구조화 조건과 최소 공간부터 조회한다. Context는 현재 project·task와 직접 관련된 결과만 예산 안에서
+      조립하고 사용 공간, 잘린 결과와 손실을 드러낸다. 중요한 판단은 record·evidence로 돌아가 재확인한다.
+    - 적합한 active 공간이 없으면 임의 디렉터리나 외부 저장소를 추가하지 않는다. proposal에서 definition,
+      schema, adapter, 비용, migration과 소급 여부를 승인받은 뒤 registry에 등록한다. 저장공간·catalog·
+      transformation 변경 후에는 `operator:storage-spaces audit`과 결정적 index 재생성을 수행한다.
+    - 원시 제품 자료와 비공개 시스템 정보를 복제하지 않는다. representation·source ref는 공개 안전한
+      프로젝트 한정 식별자를 사용하며 생성 index와 view도 규칙 15의 별도 공개 위험 검토를 받는다.
+      상세 계약은 `docs/storage-architecture.md`, 형식은 `schemas/`, 실행은 `operator:storage-spaces`를 따른다.
 
 ## 권장 시작 순서
 
@@ -273,6 +297,8 @@
 8. 해당 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업 제목만 확인한다.
 9. `AGENDA.md`에서 자기 프로젝트·operator가 참여하는 열린 논의를 확인한다.
 10. 지금 수행할 작업과 직접 관련된 문서와 `docs/quirks.md`의 관련 project·symbol만 연다.
+11. 작업이 여러 정보 표현의 저장·조회·문맥 조립을 바꾸면 `storage/registry.json`과 관련 definition을
+    확인하고 `operator:storage-spaces audit`을 실행한다.
 
 ## 커밋 메시지 권장 형식
 

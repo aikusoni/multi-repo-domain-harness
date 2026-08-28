@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:harness-narrative",
+  "role": "record",
+  "kind": "narrative-space",
+  "status": "active",
+  "purpose": ["Preserve intent, investigation context, requests, and decisions."],
+  "locations": ["journal", "requests", "proposals"],
+  "accepts": ["Markdown records governed by the existing harness rules."],
+  "preserves": ["Original rationale", "Authored sequence", "Provenance metadata"],
+  "losses": ["Direct structured state queries"],
+  "query_modes": ["exact", "text", "time-range", "evidence"],
+  "write_policy": "versioned",
+  "consistency": "snapshot",
+  "retention": { "policy": "Repository history and archive rules", "minimum": "Indefinite" },
+  "provenance": { "required": true, "fields": ["project", "recorded_at"] },
+  "rebuild": { "rebuildable": false, "sources": [] },
+  "cost": { "read": "medium", "write": "low", "rebuild": "not-applicable" },
+  "public_safety": { "classification": "public", "raw_content_allowed": true },
+  "permissions": { "read": "Harness participants", "write": "Current owner project" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:multi-repo-domain-harness:storage-space:1",
+  "title": "Storage Space Definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "role",
+    "kind",
+    "status",
+    "purpose",
+    "locations",
+    "accepts",
+    "preserves",
+    "losses",
+    "query_modes",
+    "write_policy",
+    "consistency",
+    "retention",
+    "provenance",
+    "rebuild",
+    "cost",
+    "public_safety",
+    "permissions",
+    "recorded_at"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "pattern": "^space:[a-z0-9][a-z0-9._-]*$" },
+    "role": {
+      "enum": ["evidence", "record", "projection", "index", "cache"]
+    },
+    "kind": {
+      "enum": [
+        "evidence-space",
+        "narrative-space",
+        "event-space",
+        "object-space",
+        "relation-space",
+        "field-space",
+        "table-space",
+        "time-series-space",
+        "semantic-space",
+        "residual-space",
+        "working-space"
+      ]
+    },
+    "status": { "enum": ["active", "paused", "planned", "retired"] },
+    "purpose": { "$ref": "#/$defs/nonEmptyStrings" },
+    "locations": { "$ref": "#/$defs/nonEmptyStrings" },
+    "accepts": { "$ref": "#/$defs/nonEmptyStrings" },
+    "preserves": { "$ref": "#/$defs/nonEmptyStrings" },
+    "losses": { "$ref": "#/$defs/nonEmptyStrings" },
+    "query_modes": { "$ref": "#/$defs/nonEmptyStrings" },
+    "write_policy": {
+      "enum": ["append-only", "versioned", "current-state", "generated", "ephemeral"]
+    },
+    "consistency": { "enum": ["strong", "eventual", "snapshot", "not-applicable"] },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "minimum"],
+      "properties": {
+        "policy": { "type": "string", "minLength": 1 },
+        "minimum": { "type": "string", "minLength": 1 }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "fields"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "fields": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "rebuild": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rebuildable", "sources"],
+      "properties": {
+        "rebuildable": { "type": "boolean" },
+        "sources": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["read", "write", "rebuild"],
+      "properties": {
+        "read": { "enum": ["low", "medium", "high", "not-applicable"] },
+        "write": { "enum": ["low", "medium", "high", "not-applicable"] },
+        "rebuild": { "enum": ["low", "medium", "high", "not-applicable"] }
+      }
+    },
+    "public_safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "raw_content_allowed"],
+      "properties": {
+        "classification": { "enum": ["public", "public-metadata-only"] },
+        "raw_content_allowed": { "type": "boolean" }
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["read", "write"],
+      "properties": {
+        "read": { "type": "string", "minLength": 1 },
+        "write": { "type": "string", "minLength": 1 }
+      }
+    },
+    "recorded_at": { "$ref": "#/$defs/utcTimestamp" }
+  },
+  "$defs": {
+    "nonEmptyStrings": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} UTC$"
+    }
+  }
+}

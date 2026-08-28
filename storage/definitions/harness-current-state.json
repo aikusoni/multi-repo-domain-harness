@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:harness-current-state",
+  "role": "record",
+  "kind": "table-space",
+  "status": "active",
+  "purpose": ["Expose active issues, agenda, initiatives, and task state."],
+  "locations": ["ISSUES.md", "AGENDA.md", "INITIATIVES.md", "tasks"],
+  "accepts": ["Current-state tables and state-by-directory task records."],
+  "preserves": ["Current state", "Stable identifiers", "Ownership"],
+  "losses": ["Full historical sequence without linked event records"],
+  "query_modes": ["exact", "state", "text"],
+  "write_policy": "current-state",
+  "consistency": "eventual",
+  "retention": { "policy": "Current state with repository history", "minimum": "Active lifetime" },
+  "provenance": { "required": true, "fields": ["project", "recorded_at"] },
+  "rebuild": { "rebuildable": false, "sources": [] },
+  "cost": { "read": "low", "write": "low", "rebuild": "not-applicable" },
+  "public_safety": { "classification": "public", "raw_content_allowed": true },
+  "permissions": { "read": "Harness participants", "write": "State owner" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}

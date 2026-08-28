@@ -12,6 +12,8 @@
 - 기존 코드의 비직관적 동작 때문에 실제 문제를 조사했다면 `docs/quirks.md` 후보를 남긴다.
 - 작업 완료·리뷰·검증·승격에서 지침 평가에 정보가 있는 검증 결과를 `feedback/`에 기록한다.
 - 작업 변경은 `docs/change-promotion.md`의 worktree·review·PR·feature 승격 경계를 지킨다.
+- 정보를 새 표현으로 저장할 때 active Storage Space를 선택하고 evidence·lineage, 허용 손실과 public-safe
+  ref를 보존한다. 적합한 공간이 없으면 임의 저장소를 만들지 않고 proposal로 제안한다.
 - 다른 프로젝트의 작업은 request로 넘기고 자기 프로젝트의 task·changed 기록만 관리한다.
 
 ## Curator
@@ -32,7 +34,9 @@
    종료 항목 반영 여부를 점검한다.
 9. 현행 참조가 없는 오래된 저널·요청·제안을 각 archive로 옮기고 현재 등재부·canon·목차의 포인터를
    새 경로로 갱신한다.
-10. 완료 후 `CURATION.md`의 `last_curated_at`을 실제 완료 시각의 UTC 값으로 갱신한다.
+10. `operator:storage-spaces audit`으로 registry-definition 정합, 여러 표현의 lineage, 위험 ref와 파생
+    index 재구성 가능성을 확인한다. 저장 기술 하나를 기본 정답으로 승격하지 않는다.
+11. 완료 후 `CURATION.md`의 `last_curated_at`을 실제 완료 시각의 UTC 값으로 갱신한다.
 
 Curator도 분쟁을 임의 확정하지 않는다. 해석·소유권·정책 결정이 필요하면 근거를 `AGENDA.md`에 올리고
 사용자 결정을 기다린다. 자동 교정이나 과거 본문 재작성은 하지 않는다.

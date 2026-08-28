@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "space:evidence-references",
+  "role": "evidence",
+  "kind": "evidence-space",
+  "status": "active",
+  "purpose": ["Preserve public-safe references needed to recheck original evidence."],
+  "locations": ["storage/spaces/evidence"],
+  "accepts": ["Safe project-qualified references and integrity metadata."],
+  "preserves": ["Source identity", "Observation time", "Integrity metadata"],
+  "losses": ["Original private content", "Immediate interpretation"],
+  "query_modes": ["exact", "evidence", "time-range"],
+  "write_policy": "versioned",
+  "consistency": "snapshot",
+  "retention": { "policy": "Keep while derived records remain active", "minimum": "Derived-record lifetime" },
+  "provenance": { "required": true, "fields": ["source", "observed_at"] },
+  "rebuild": { "rebuildable": false, "sources": [] },
+  "cost": { "read": "low", "write": "low", "rebuild": "not-applicable" },
+  "public_safety": { "classification": "public-metadata-only", "raw_content_allowed": false },
+  "permissions": { "read": "Harness participants", "write": "Evidence observer" },
+  "recorded_at": "2026-08-28 05:09:48 UTC"
+}
