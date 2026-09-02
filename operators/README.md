@@ -58,4 +58,6 @@ operator도 기존 하네스 흐름을 사용한다.
 - 파일명과 디렉터리에서는 콜론 대신 `operator-<id>` 사용
 
 operator가 자동으로 하네스 파일을 수정할 때도 `INDEX.md`의 공개 위험 정보 검토와 Git 규칙을 동일하게
-적용한다.
+적용한다. 특히 `project-id: harness`의 가변 operator 실행은 primary checkout에서만 허용하며 시작·재개와
+stage·commit·push 직전에 `operator:harness-worktree-guard check`를 통과한다. 참여 프로젝트를 대상으로
+실행하는 operator의 worktree 정책은 해당 프로젝트 계약을 따른다.

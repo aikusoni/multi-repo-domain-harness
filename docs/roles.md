@@ -3,6 +3,10 @@
 역할은 에이전트가 현재 수행하는 책임 묶음이며 프로젝트 정체성을 대체하지 않는다. worker, reviewer나
 curator 역할을 맡아도 에이전트의 기본 정체성은 계속 현재 저장소 또는 역할의 `project-id`다.
 
+어떤 역할이든 `project-id: harness`에서 가변 작업을 수행하기 전에는
+`operator:harness-worktree-guard check`를 통과해야 한다. linked checkout에서는 상태를 읽어 primary로
+전환하는 것 외의 작업을 하지 않는다. 이 제한은 참여 프로젝트의 worktree 정책을 바꾸지 않는다.
+
 ## Worker
 
 제품·문서 작업을 수행하고 관련 기록을 하네스에 남기는 기본 역할이다.
@@ -11,7 +15,7 @@ curator 역할을 맡아도 에이전트의 기본 정체성은 계속 현재 �
 - 현재 작업에서 과거 판단을 뒤집으면 원본 저널의 유효성 메타데이터와 `INVALIDATIONS.md`를 갱신한다.
 - 기존 코드의 비직관적 동작 때문에 실제 문제를 조사했다면 `docs/quirks.md` 후보를 남긴다.
 - 작업 완료·리뷰·검증·승격에서 지침 평가에 정보가 있는 검증 결과를 `feedback/`에 기록한다.
-- 작업 변경은 `docs/change-promotion.md`의 worktree·review·PR·feature 승격 경계를 지킨다.
+- 작업 변경은 `docs/change-promotion.md`의 checkout·worktree·review·PR·feature 승격 경계를 지킨다.
 - 정보를 새 표현으로 저장할 때 active Storage Space를 선택하고 evidence·lineage, 허용 손실과 public-safe
   ref를 보존한다. 적합한 공간이 없으면 임의 저장소를 만들지 않고 proposal로 제안한다.
 - 새 저장 구현은 capability를 먼저 쓰고 research reference·후보·adapter 가능성을 비교한다. 선택한 구현의

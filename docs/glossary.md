@@ -11,6 +11,8 @@
 | Harness Evolution | candidate를 현행 지침과 비교해 추가·병합·수정·기각하고 범위·효과·회귀를 검증하는 절차 | harness | `docs/harness-evolution.md` | 자동 자기수정이나 원시 경험 append가 아님 |
 | Review Snapshot | 사람이 검토할 어느 committed checkpoint든 가리킬 수 있는 로컬 전용 불변 브랜치 | 작업 project | `review/<topic>_<UTC timestamp>` | 승격 경로의 단계가 아니며 원격 push와 생성 뒤 변경 금지 |
 | Promotion | 승인·검증된 변경을 PR, feature, release·정본의 다음 통합 단계로 이동하는 행위 | 작업 project와 승인자 | `docs/change-promotion.md` | review 생성이나 브랜치 생성만으로 승인된 것이 아님 |
+| Primary Checkout | absolute Git dir와 absolute common dir가 같고 하네스의 가변 작업을 허용하는 기본 checkout | harness | `operator:harness-worktree-guard`의 `current=primary` | 단순 경로명이나 branch명으로 판정하지 않음 |
+| Linked Worktree | absolute Git dir와 absolute common dir가 다른 추가 checkout | harness | `operator:harness-worktree-guard`의 `current=linked` | 하네스에서는 읽기 전용 상태 확인만 허용, 참여 프로젝트 정책은 별도 |
 | Task | 한 프로젝트 또는 operator owner가 직접 수행하는 실행 단위 | 해당 프로젝트 | `tasks/<project>/...` | 프로젝트 내부 상태 |
 | Request | 다른 프로젝트·operator에 전달하고 결과를 왕복 확인하는 실행 요청 | 요청자·대상 | `requests/...` | 프로젝트 간 인계 |
 | Issue | 계약·기준·작업 흐름의 위험이나 차단 상태 | 관련 주체 | `ISSUES.md`, `issues/...` | 활성 상태와 이력 분리 |

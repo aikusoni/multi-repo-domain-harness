@@ -79,6 +79,11 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 이 하네스 저장소에 포함된 루트 `AGENTS.md`와 `CLAUDE.md`는 세부 규칙을 복제하지 않고 `INDEX.md`와
 에이전트 실행 계약으로 연결하는 최소 bootstrap만 제공한다.
 
+하네스 저장소 자체를 Codex·Claude의 작업 대상으로 열 때는 linked worktree가 아닌 기존 primary checkout을
+직접 사용한다. 앱이나 자동화가 별도 worktree를 만들었다면 그 세션에서는 하네스를 변경하지 말고 primary
+checkout에서 같은 작업을 다시 시작한다. 이 제한은 하네스 자체에만 적용되며 참여 제품 저장소의 격리
+worktree 정책은 그대로 유지된다.
+
 ### 4. 적용 확인
 
 설정 파일을 바꾼 뒤에는 이미 열려 있던 대화를 재사용하지 말고 새 작업 또는 새 세션을 시작한다.
@@ -128,8 +133,8 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 - 검증된 성공·실수는 성과 점수가 아니라 지침의 효과와 개선 필요성을 판단하는 증거로 사용한다.
 - 작업본, 공동 PR, feature 통합과 release·정본 승격을 분리하고, 리뷰는 어느 committed checkpoint에서나
   별도로 생성하는 로컬 불변 스냅샷으로 다룬다.
-- 자동화의 작업용 worktree에는 수명이 같은 임시 작업 브랜치만 연결하고, 삭제 전 결과가 지속 가능한
-  ref에 보존됐는지 확인한다.
+- 참여 프로젝트가 자동화 작업용 worktree를 사용할 때는 수명이 같은 임시 작업 브랜치만 연결하고, 삭제 전
+  결과가 지속 가능한 ref에 보존됐는지 확인한다. 하네스 저장소 자체의 변경은 primary checkout에서만 한다.
 - 살아 있는 세션은 위험 경계에서만 직접 조정하고, 세션 간 통신에는 트랜잭션 총량과 사람 프롬프트 이후
   수신량이라는 독립된 예산을 적용한다.
 - worker·reviewer·curator는 책임 역할이며 프로젝트 정체성을 대체하지 않는다.
@@ -164,6 +169,8 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 | Harness Evolution | 후보를 기존 지침과 비교해 어떻게 추가·병합·수정·기각하고 효과를 재검증하는가? | topic 지침을 cross-task canon으로 승격 |
 | Review Snapshot | 사람이 검토할 정확한 checkpoint는 무엇인가? | 로컬 `review/<topic>_<UTC timestamp>` |
 | Promotion | 승인된 변경이 어느 통합·배포 단계로 이동할 수 있는가? | PR에서 feature로 승인 승격 |
+| Primary Checkout | 하네스 변경을 수행할 유일한 Git checkout은 어디인가? | Git dir와 common dir가 같은 checkout |
+| Linked Worktree | 하네스에서 가변 작업이 금지되는 추가 checkout은 무엇인가? | Git dir와 common dir가 다른 checkout |
 | Coordination Transaction | 어떤 충돌 위험·협업 판단을 위해 세션들이 주고받은 메시지 묶음인가? | 계약 파일 소유 확인을 위한 tx |
 | Storage Space | 어떤 정보 특성·질의·비용을 위해 어디에 어떤 계약으로 저장하는가? | event record 또는 relation projection 공간 |
 | Storage Role | 이 공간이 원본 근거, 직접 기록, 파생 표현, index, cache 중 무엇인가? | `evidence`, `record`, `projection`, `index`, `cache` |
@@ -190,3 +197,6 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 
 에이전트의 권한·위임·검증·완료 계약은 [`docs/agent-execution.md`](docs/agent-execution.md), 검증 결과를
 하네스 지침으로 승격하는 절차는 [`docs/harness-evolution.md`](docs/harness-evolution.md)를 따른다.
+하네스의 primary checkout 전용 경계와 판정 명령은
+[`docs/change-promotion.md`](docs/change-promotion.md)와
+[`operators/harness-worktree-guard.md`](operators/harness-worktree-guard.md)를 따른다.

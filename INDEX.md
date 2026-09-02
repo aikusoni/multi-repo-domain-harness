@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0016 · 최종 갱신: 2026-09-02 01:38:20 UTC · 에이전트 실행·증거 기반 하네스 진화 계약 추가**
+**규칙 버전: r0017 · 최종 갱신: 2026-09-02 06:16:57 UTC · 하네스 primary checkout 전용 정책 추가**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -48,6 +48,7 @@
    `git status --short`를 확인해 기존 변경과 자기 작업 범위가 겹치는지 판단한다.
    - 한 프로젝트 저장소의 같은 작업트리에는 동시에 한 에이전트만 작업하는 것을 권장한다.
    - 병렬 작업이 필요하면 별도 worktree를 우선하고, 불가능하면 서로 겹치지 않는 경로를 사전에 나눈다.
+     단, `project-id: harness`는 규칙 35의 primary checkout 전용 예외를 따른다.
    - 기존 변경은 다른 작업의 소유물로 간주한다. 조사나 검증이 막혀도 임의 수정·삭제·stage 해제하지 않고
      사용자에게 충돌 범위와 가능한 격리 방법을 알린다.
 2. **프로젝트 기반 에이전트 식별**: 에이전트의 기본 정체성은 사람·세션·모델·브랜치가 아니라 현재
@@ -383,20 +384,36 @@
     - 새 marker·field·schema·index·검사는 같은 변경에서 backfill 또는 UTC cutover를 정한다. append-only
       기록은 소급 개작하지 않는다. 폐지한 규칙 번호는 재사용하지 않고 대체 조항을 가리키는 tombstone을
       남긴다. 후보 형식·검증·rollback은 `docs/harness-evolution.md`를 따른다.
+35. **하네스 저장소는 primary checkout 전용**: `project-id: harness`의 조사·파일 생성·수정·생성형 검사·
+    build·stage·commit·merge·push는 Git dir와 common dir가 같은 primary checkout에서만 수행한다. linked
+    worktree는 읽기 전용 상태 확인 외의 작업 장소로 사용하지 않는다.
+    - 하네스에 대해 `git worktree add`를 실행하거나 데스크톱·자동화 작업을 linked worktree 환경으로
+      생성·handoff하지 않는다. 현재 위치가 linked이면 변경을 시작하지 않고 primary checkout의 동일 task로
+      전환한 뒤 `INDEX.md`와 동적 상태를 다시 읽는다.
+    - 작업 시작·재개와 stage·commit·push 직전에 `operator:harness-worktree-guard`의 `check`를 통과한다.
+      문서상 primary라고 추측하거나 경로 이름으로 판정하지 않는다.
+    - cutover 이전 linked worktree는 새 작업에 사용하지 않는다. dirty·미보존 commit이 있을 수 있으므로
+      자동 삭제·clean·reset·prune하지 않고, 소유·보존 ref·미커밋 상태를 확인한 명시적 정리 작업에서만
+      제거한다.
+    - 이 예외는 하네스 저장소에만 적용한다. 제품·참여 프로젝트는 각 프로젝트 규칙과 규칙 1·27의 격리된
+      worktree 계약을 계속 사용할 수 있다. 상세 판정·복구는 `docs/change-promotion.md`와
+      `operators/harness-worktree-guard.md`를 따른다.
 
 ## 권장 시작 순서
 
 1. `PROJECTS.md`에서 자기 프로젝트 식별자를 확인한다.
-2. operator 관련 작업이면 `OPERATORS.md`에서 식별자·소유 프로젝트·계약 문서를 확인한다.
-3. `./operators/curation-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
-4. `./operators/feedback-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
-5. `INITIATIVES.md`에서 자기 프로젝트·operator가 참여하는 활성 이니셔티브를 확인한다.
-6. `ISSUES.md`에서 자기 프로젝트와 관련 operator의 활성 이슈를 확인한다.
-7. `changed/`에서 자기 프로젝트나 operator가 아직 확인하지 않은 영향을 확인한다.
-8. 해당 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업 제목만 확인한다.
-9. `AGENDA.md`에서 자기 프로젝트·operator가 참여하는 열린 논의를 확인한다.
-10. 지금 수행할 작업과 직접 관련된 문서와 `docs/quirks.md`의 관련 project·symbol만 연다.
-11. 작업이 여러 정보 표현의 저장·조회·문맥 조립을 바꾸면 `storage/registry.json`과 관련 definition을
+2. `project-id: harness`면 `./operators/harness-worktree-guard.sh check .`를 실행하고 linked 판정이면
+   가변 작업을 시작하지 않는다.
+3. operator 관련 작업이면 `OPERATORS.md`에서 식별자·소유 프로젝트·계약 문서를 확인한다.
+4. `./operators/curation-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
+5. `./operators/feedback-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
+6. `INITIATIVES.md`에서 자기 프로젝트·operator가 참여하는 활성 이니셔티브를 확인한다.
+7. `ISSUES.md`에서 자기 프로젝트와 관련 operator의 활성 이슈를 확인한다.
+8. `changed/`에서 자기 프로젝트나 operator가 아직 확인하지 않은 영향을 확인한다.
+9. 해당 `tasks/<project>/` 또는 `tasks/operator-<id>/`의 미완료 작업 제목만 확인한다.
+10. `AGENDA.md`에서 자기 프로젝트·operator가 참여하는 열린 논의를 확인한다.
+11. 지금 수행할 작업과 직접 관련된 문서와 `docs/quirks.md`의 관련 project·symbol만 연다.
+12. 작업이 여러 정보 표현의 저장·조회·문맥 조립을 바꾸면 `storage/registry.json`과 관련 definition을
     확인하고 `operator:storage-spaces audit`을 실행한다.
 
 ## 커밋 메시지 권장 형식

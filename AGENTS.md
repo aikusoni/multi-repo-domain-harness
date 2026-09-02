@@ -15,7 +15,9 @@
 ## Entry
 
 1. `INDEX.md` 전체를 읽는다.
-2. `git status --short`로 기존 변경과 현재 범위가 겹치는지 확인한다.
-3. `PROJECTS.md`에서 현재 `project-id`를, 자동화 작업이면 `OPERATORS.md`에서 operator와 owner를 확인한다.
-4. `INDEX.md`의 권장 시작 순서에 따라 현재 작업과 직접 관련된 상태·문서만 읽는다.
-5. 실행·위임·리뷰·중단·완료 판단은 `docs/agent-execution.md`를 따른다.
+2. `./operators/harness-worktree-guard.sh check .`를 실행한다. linked 판정이면 읽기 전용 상태 확인 외의
+   작업을 중단하고 primary checkout으로 전환한다.
+3. `git status --short`로 기존 변경과 현재 범위가 겹치는지 확인한다.
+4. `PROJECTS.md`에서 현재 `project-id`를, 자동화 작업이면 `OPERATORS.md`에서 operator와 owner를 확인한다.
+5. `INDEX.md`의 권장 시작 순서에 따라 현재 작업과 직접 관련된 상태·문서만 읽는다.
+6. 실행·위임·리뷰·중단·완료 판단은 `docs/agent-execution.md`를 따른다.

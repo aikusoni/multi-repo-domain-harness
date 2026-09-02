@@ -8,8 +8,9 @@ feature 통합, release·정본을 분리하고, 각 지점의 검토 대상을 
 
 ## 공통 불변식
 
-- 변경을 만드는 작업용 worktree에는 그 worktree와 수명이 같은 임시 작업 브랜치만 연결한다. 작업
-  브랜치는 배포 트리거가 될 수 없다.
+- 참여 프로젝트가 변경을 만드는 작업용 worktree를 사용할 때는 그 worktree와 수명이 같은 임시 작업
+  브랜치만 연결한다. 하네스 저장소는 아래 primary checkout 전용 예외를 따른다. 작업 브랜치는 배포
+  트리거가 될 수 없다.
 - 로컬 `review/*`는 어느 committed checkpoint든 가리킬 수 있는 제출 스냅샷이다. 승격 경로의 단계가
   아니며, 원격에 push하지 않고 생성 뒤 이동, amend, reset, 직접 커밋하지 않는다.
 - 승인 뒤 검토한 commit 또는 tree가 바뀌면 기존 승인은 무효다. 바뀐 checkpoint에서 새 로컬 리뷰
@@ -28,7 +29,7 @@ feature 통합, release·정본을 분리하고, 각 지점의 검토 대상을 
 
 | 역할 | 권장 형식 | 위치 | 변경 가능성 | 원격 push | 배포 |
 |---|---|---|---|---|---|
-| 임시 작업 | `<tool>/work/<topic>` 또는 프로젝트 규약 | 작업용 worktree | 가능 | 프로젝트 정책 | 금지 |
+| 임시 작업 | `<tool>/work/<topic>` 또는 프로젝트 규약 | 참여 프로젝트의 작업용 worktree 또는 하네스 primary checkout | 가능 | 프로젝트 정책 | 금지 |
 | 로컬 리뷰 스냅샷 | `review/<topic>_YYYYMMDDTHHMMSSZ` | 로컬 ref | 불변 | 금지 | 금지 |
 | 공동 PR | `<tool>/pr/<topic>` 또는 프로젝트 규약 | 원격 | PR 수명 동안 가능 | 허용 | 금지 |
 | 기능 통합 | `feature/<topic>` | 원격 | 승인된 결과만 | 허용 | 직접 배포 금지 |
@@ -39,6 +40,28 @@ feature 통합, release·정본을 분리하고, 각 지점의 검토 대상을 
 `YYYYMMDDTHHMMSSZ`를 사용한다. 저장소가 `codex/` 같은 필수 namespace를 정하면 작업·PR 브랜치에
 적용하되, 로컬 리뷰 브랜치는 검색과 push 차단을 위해 `review/`를 최상위 prefix로 유지한다. 임시 작업
 브랜치 prefix는 프로젝트가 명시하고 종료 검사에도 같은 값을 사용한다.
+
+## 하네스 저장소 예외: primary checkout 전용
+
+`project-id: harness`는 Git dir와 common dir가 같은 **Primary Checkout** 하나에서만 조사·편집·생성형
+검사·build·stage·commit·merge·push를 수행한다. Git dir와 common dir가 다른 **Linked Worktree**는
+읽기 전용 상태 확인 외의 작업 장소로 사용하지 않는다. 경로명, branch명이나 앱이 표시하는 환경 이름이
+아니라 `operator:harness-worktree-guard`의 Git metadata 판정을 사용한다.
+
+- 하네스에 `git worktree add`를 실행하지 않는다. 데스크톱 앱과 자동화도 하네스 task를 linked worktree로
+  만들거나 handoff하지 않고 기존 primary checkout에서 직접 실행한다.
+- 작업 시작·재개와 stage·commit·push 직전에
+  `./operators/harness-worktree-guard.sh check .`를 실행한다. `BLOCKED` 또는 non-zero면 가변 행동을
+  시작하지 않는다.
+- primary에서 cutover 이전 linked worktree가 발견되면 `ATTENTION`을 보고하되 primary 작업은 계속할 수
+  있다. 발견한 linked worktree는 새 작업에 재사용하지 않는다.
+- 기존 linked worktree에는 dirty 변경이나 미보존 commit이 있을 수 있다. 자동 remove·clean·reset·prune
+  하지 않고, 소유자·미커밋 상태·지속 가능한 보존 ref를 확인한 별도 명시적 정리 작업에서만 제거한다.
+- 병렬 하네스 작업은 linked worktree로 격리하지 않는다. primary checkout의 소유권을 세션 조정 계약으로
+  직렬화하고, clean 상태와 현재 branch를 확인한 뒤 다음 작업으로 전환한다.
+
+이 예외는 하네스 운영 기록이 여러 checkout에서 동시에 분기·수정되는 위험을 줄이기 위한 저장소 한정
+정책이다. 참여 프로젝트와 제품 저장소는 각 프로젝트의 worktree·격리 정책을 계속 적용한다.
 
 ## 승격 경로와 리뷰 체크포인트
 
@@ -76,10 +99,10 @@ review A·B·C는 필요할 때만 만든다. 최초 작업 결과, PR 수정 �
 만든다. PR head가 바뀌면 기존 승인을 무효화하고 필수 CI와 공동 리뷰를 다시 수행한다. feature 통합 뒤
 다시 확인해야 하는 결과도 기존 review를 옮기지 않고 새 checkpoint review로 동결한다.
 
-## 작업용 worktree와 임시 브랜치 수명
+## 참여 프로젝트의 작업용 worktree와 임시 브랜치 수명
 
-자동화가 생성하는 편집용 worktree에는 `<tool>/work/*`처럼 프로젝트가 임시 작업용으로 선언한 브랜치만
-연결한다. 로컬 `review/*`, 원격 PR, feature, 통합·검증·release·배포·정본 ref는 작업용 worktree의
+참여 프로젝트의 자동화가 생성하는 편집용 worktree에는 `<tool>/work/*`처럼 프로젝트가 임시 작업용으로
+선언한 브랜치만 연결한다. 로컬 `review/*`, 원격 PR, feature, 통합·검증·release·배포·정본 ref는 작업용 worktree의
 브랜치로 연결하지 않는다. 연결된 브랜치는 다른 worktree에서 checkout하거나 안전하게 이동할 수 없기
 때문이다.
 
@@ -87,6 +110,11 @@ review는 브랜치 자체를 checkout하지 않고 `git switch --detach review/
 `git worktree add --detach <path> review/<name>`처럼 정확한 commit을 detached 상태로 연다. 통합 후보도
 검토만 할 때는 같은 방식으로 열며, 프로젝트 절차상 통합 ref를 checkout해야 한다면 그 ref를 강제로
 이동하기 전에 연결된 worktree와 소유자를 확인한다.
+
+위 detached worktree 예시는 참여 프로젝트에만 적용한다. 하네스 review는 linked worktree로 열지 않고
+primary checkout에서 `git show`, `git diff`, `git log`와 commit을 직접 지정하는 read-only 검사로 검토한다.
+하네스의 기존 linked worktree는 이 절의 일반 종료 순서로 자동 정리하지 않고 위 예외의 보존 확인을 먼저
+거친다.
 
 작업 종료 시 다음 순서를 지킨다.
 
@@ -118,6 +146,8 @@ task, request 또는 프로젝트의 PR 시스템에 다음을 남긴다.
 
 ## 강제 장치
 
+- 하네스에서는 `operator:harness-worktree-guard check`로 현재 checkout이 linked이면 작업 시작과
+  stage·commit·push를 non-zero로 차단하고, `audit`로 등록 linked worktree 잔존을 경로 없이 보고한다.
 - pre-push 검사로 `refs/heads/review/*`의 source 또는 destination push를 거부한다.
 - 감사 검사로 `review/*`가 worktree 브랜치로 연결된 상태를 경고하고 detached 검토로 전환하게 한다.
 - 자동 push는 `git push <remote> <명시한-브랜치>`처럼 ref를 명시하고 `--all`, `--mirror`를 금지한다.

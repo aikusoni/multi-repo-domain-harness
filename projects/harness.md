@@ -17,6 +17,7 @@
 - 검증된 성공·실수의 집계와 지침 개선 피드백
 - 실행 결과에서 Guidance Candidate와 범위 있는 지침을 만드는 증거 기반 하네스 진화
 - 로컬 review·원격 PR·feature·release·정본의 변경 승격 계약
+- 하네스 primary checkout 전용 변경 경계와 linked worktree 판정·차단
 
 ## 제공 계약
 
@@ -25,7 +26,7 @@
 - `INVALIDATIONS.md`, `CURATION.md`
 - `FEEDBACK.md`, `feedback/README.md`
 - `operators/curation-status.md`, `operators/harness-audit.md`, `operators/feedback-status.md`,
-  `operators/review-branch.md`
+  `operators/harness-worktree-guard.md`, `operators/review-branch.md`
 - 각 운영 폴더의 `README.md`와 템플릿
 
 ## 소비 계약
@@ -46,6 +47,7 @@
 - 큐레이션 현재 상태: `CURATION.md`
 - 검증 결과 집계 설정: `FEEDBACK.md`
 - 변경 승격: `docs/change-promotion.md`
+- 하네스 checkout 경계: `operators/harness-worktree-guard.md`
 - 에이전트 실행: `docs/agent-execution.md`
 - 하네스 진화: `docs/harness-evolution.md`
 

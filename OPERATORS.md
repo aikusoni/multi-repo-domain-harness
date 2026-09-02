@@ -38,6 +38,14 @@
 - **계약**: `operators/harness-audit.md`
 - **영향**: 전체
 
+### operator:harness-worktree-guard
+- **목적**: 하네스의 현재 checkout이 primary인지 판정해 linked worktree의 가변 작업을 차단하고, 잔존
+  linked worktree 수를 경로 없이 감사한다.
+- **owner**: harness
+- **구현**: `operators/harness-worktree-guard.sh`
+- **계약**: `operators/harness-worktree-guard.md`
+- **영향**: harness
+
 ### operator:feedback-status
 - **목적**: 최근 검증 결과의 성공·실수 수, major 이상 실수, 반복 pattern과 이벤트 스키마 오류를 보고한다.
 - **owner**: harness

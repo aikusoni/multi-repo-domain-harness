@@ -79,7 +79,9 @@ clean 작업 HEAD 또는 명시한 committed checkpoint에서 UTC 타임스탬�
   존재, Git ref 쓰기 실패
 - 복구 절차: 작업 변경을 커밋·정리하거나 topic·source ref를 수정한 뒤 다시 생성. `R002`는 원격 존재를
   별도 확인하고 삭제 권한과 보존 정책에 따라 복구한다. `R003`은 해당 worktree를 detached commit으로
-  전환하거나 제거한 뒤 다시 감사한다.
+  전환하거나 제거한 뒤 다시 감사한다. 단, `project-id: harness`에서는 새 detached worktree를 만들지 않고
+  primary checkout에서 commit을 직접 검토하며, 기존 linked worktree는 소유·미커밋·보존 상태를 확인한
+  별도 명시적 정리 작업 전에는 전환·제거하지 않는다.
 - issue 승격 조건: hook 우회로 review ref가 반복 push되거나 승인되지 않은 결과가 다음 단계로 승격됨
 
 ## 실행 증거
