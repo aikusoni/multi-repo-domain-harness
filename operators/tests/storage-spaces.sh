@@ -23,7 +23,7 @@ mkdir -p \
   "${FIXTURE}/proposals" \
   "${FIXTURE}/issues" \
   "${FIXTURE}/changed" \
-  "${FIXTURE}/feedback" \
+  "${FIXTURE}/feedback/candidates" \
   "${FIXTURE}/tasks" \
   "${FIXTURE}/indexes" \
   "${FIXTURE}/research"
@@ -141,7 +141,7 @@ cat >"${FIXTURE}/storage/catalog/observation.json" <<'JSON'
 JSON
 
 AUDIT_OUTPUT="$("${OPERATOR}" --root "${FIXTURE}" audit)"
-[[ "${AUDIT_OUTPUT}" == OK\ storage-spaces:*active_spaces=9*adapters=1*research_refs=6*catalog_entries=1*transformations=1* ]]
+[[ "${AUDIT_OUTPUT}" == OK\ storage-spaces:*active_spaces=9*adapters=1*research_refs=8*catalog_entries=1*transformations=1* ]]
 
 "${OPERATOR}" --root "${FIXTURE}" build-index >/dev/null
 cp "${FIXTURE}/indexes/storage-catalog.json" "${TEST_ROOT}/first-index.json"

@@ -92,7 +92,52 @@
       "possible_use": ["derived record lineage reference", "provenance model reference"],
       "adoption_status": "reference-only",
       "license_review": "not-required-reference-only"
+    },
+    {
+      "id": "research:evo-harness",
+      "type": "paper",
+      "title": "Evo-Harness: Context-to-Harness Skill Compilation for Self-Evolving Agents",
+      "source": {
+        "url": "https://arxiv.org/abs/2608.15071",
+        "verified_at": "2026-09-01 07:44:45 UTC"
+      },
+      "supports": [
+        "context-to-harness skill compilation",
+        "general and topic guidance separation",
+        "evidence-grounded harness evolution",
+        "bounded guidance selection"
+      ],
+      "relevant_spaces": ["feedback evidence", "guidance candidates", "context composition"],
+      "possible_use": [
+        "candidate lesson schema reference",
+        "harness curation operation reference",
+        "selective guidance budget reference"
+      ],
+      "adoption_status": "reference-only",
+      "license_review": "not-required-reference-only"
+    },
+    {
+      "id": "research:evoharness-rl",
+      "type": "paper",
+      "title": "EvoHarness-RL: Learning Self-Evolving Runtime Harness for Long-Horizon LLM Agents",
+      "source": {
+        "url": "https://arxiv.org/abs/2608.05446",
+        "verified_at": "2026-09-02 01:34:58 UTC"
+      },
+      "supports": [
+        "belief progress and experience state separation",
+        "selective cost-aware external state access",
+        "experience consolidation and revisable recall"
+      ],
+      "relevant_spaces": ["current state", "task progress", "feedback evidence", "context composition"],
+      "possible_use": [
+        "long-horizon external state responsibility reference",
+        "selective harness access reference",
+        "experience consolidation boundary reference"
+      ],
+      "adoption_status": "reference-only",
+      "license_review": "not-required-reference-only"
     }
   ],
-  "recorded_at": "2026-08-28 05:27:55 UTC"
+  "recorded_at": "2026-09-02 01:34:58 UTC"
 }

@@ -1,7 +1,7 @@
 # 하네스 역할
 
-역할은 에이전트가 현재 수행하는 책임 묶음이며 프로젝트 정체성을 대체하지 않는다. worker나 curator 역할을
-맡아도 에이전트의 기본 정체성은 계속 현재 저장소 또는 역할의 `project-id`다.
+역할은 에이전트가 현재 수행하는 책임 묶음이며 프로젝트 정체성을 대체하지 않는다. worker, reviewer나
+curator 역할을 맡아도 에이전트의 기본 정체성은 계속 현재 저장소 또는 역할의 `project-id`다.
 
 ## Worker
 
@@ -21,6 +21,17 @@
 - 하네스 정책·설계·용어를 열린 상태로 탐색할 필요가 있으면 `explorations/`에 비정본 종합을 남길 수 있다.
   exploration을 현재 규칙이나 작업 지시로 사용하지 않고 실행 항목이 확정될 때만 정식 경로로 승격한다.
 - 다른 프로젝트의 작업은 request로 넘기고 자기 프로젝트의 task·changed 기록만 관리한다.
+
+## Reviewer
+
+고정된 commit·diff·산출물을 기준에 대조해 독립적인 검증 근거를 제공하는 역할이다. 기본값은 read-only다.
+
+- 검토할 정확한 checkpoint, 범위, 기준과 실행 가능한 검증을 먼저 확인한다.
+- finding은 영향·우선순위·재현 가능한 근거와 좁은 상대 경로를 포함한다.
+- 보지 못한 범위, 실행하지 않은 검사와 판단할 수 없는 항목을 함께 보고한다.
+- 별도 수정 권한이 없으면 파일 수정, stage, commit, push나 외부 상태 변경을 하지 않는다.
+- 자기 리뷰나 다른 에이전트의 동의가 사람 승인, 보호 ref 승격 또는 공개 판단을 대신한다고 주장하지 않는다.
+- worker는 reviewer 결과를 직접 재현·확인한 뒤 반영하고, 최종 완료와 통합 책임을 유지한다.
 
 ## Curator
 
@@ -46,7 +57,11 @@
     신뢰성 문서가 active 기능을 주장하지 않는지와 파일 기반 fallback이 유지되는지도 함께 확인한다.
 11. exploration의 가설을 canon으로 자동 승격하지 않는다. 구체적 제안·사람 결정·실행 항목이 생긴 경우에만
     proposal·agenda·task와 승인된 canon으로 연결됐는지 확인한다.
-12. 완료 후 `CURATION.md`의 `last_curated_at`을 실제 완료 시각의 UTC 값으로 갱신한다.
+12. 검증된 feedback에서 Guidance Candidate를 만들 때 lesson·trigger·evidence·scope를 분리하고 현행
+    지침과 비교해 `ADD`·`MERGE`·`REVISE`·`SKIP`을 기록한다. topic 근거를 cross-task 규칙으로 과장하지
+    않고 `feedback/candidates/`의 상태·결정 생명주기와 `docs/harness-evolution.md`의 회귀·cutover 계약을
+    확인한다.
+13. 완료 후 `CURATION.md`의 `last_curated_at`을 실제 완료 시각의 UTC 값으로 갱신한다.
 
 Curator도 분쟁을 임의 확정하지 않는다. 해석·소유권·정책 결정이 필요하면 근거를 `AGENDA.md`에 올리고
 사용자 결정을 기다린다. 자동 교정이나 과거 본문 재작성은 하지 않는다.

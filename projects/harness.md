@@ -12,9 +12,10 @@
 - request·issue·changed·task 상태 모델
 - 기준 문서·제안·저널·아젠다의 생명주기
 - 저널 판단의 유효성·무효화 색인과 큐레이션 상태
-- worker·curator 역할과 비직관적 현행 불변식 등록부
+- worker·reviewer·curator 역할, 에이전트 실행 계약과 비직관적 현행 불변식 등록부
 - 현재 상태 요약·살아있는 문서의 현재성·로컬 참조 정합 감사
 - 검증된 성공·실수의 집계와 지침 개선 피드백
+- 실행 결과에서 Guidance Candidate와 범위 있는 지침을 만드는 증거 기반 하네스 진화
 - 로컬 review·원격 PR·feature·release·정본의 변경 승격 계약
 
 ## 제공 계약
@@ -45,6 +46,8 @@
 - 큐레이션 현재 상태: `CURATION.md`
 - 검증 결과 집계 설정: `FEEDBACK.md`
 - 변경 승격: `docs/change-promotion.md`
+- 에이전트 실행: `docs/agent-execution.md`
+- 하네스 진화: `docs/harness-evolution.md`
 
 ## 현재 제약과 후속 작업
 

@@ -25,8 +25,8 @@ related_initiatives: []
 ## 입력 계약
 
 - `ISSUES.md`의 활성 request·proposal 표
-- `INDEX.md`, 루트 등재부, `docs/`, `storage/`, `schemas/`, `indexes/`, `views/`, `research/`,
-  `explorations/` Markdown의 로컬 Markdown·JSON 포인터
+- `AGENTS.md`, `CLAUDE.md`, `INDEX.md`, 루트 등재부, `docs/`, `storage/`, `schemas/`, `indexes/`,
+  `views/`, `research/`, `explorations/` Markdown의 로컬 Markdown·JSON 포인터
 - `requests/`, `proposals/`의 루트와 아카이브
 - `docs/README.md`의 살아있는 문서 등록부와 등록 문서 머리말
 - Python 3 표준 라이브러리
@@ -42,12 +42,17 @@ related_initiatives: []
 
 - 활성 행이 가리키는 request·proposal 파일의 존재와 표 열 수
 - 현재 문서가 가리키는 로컬 Markdown·JSON 파일의 존재
+- `AGENTS.md`·`CLAUDE.md`의 `<!-- harness-bootstrap: read-index-first -->` marker와 `INDEX.md` 최초 필독
+  포인터 존재
 - 활성 요약의 800자 초과 또는 UTC 시각 3개 이상 누적
 - 활성 요약이 아카이브된 request·proposal을 현행 근거로 참조하는지
 - 살아있는 문서 등록 파일의 존재와 `기준 시각`·`그 뒤 미반영분`·`현행 정본` 머리말
 
 `ATTENTION`은 정합 검토 신호이며 작업 게이트가 아니다. 실제 오류인지 자리표시자·외부 정본인지 판단한 뒤
 문서 또는 검사 계약을 수정한다.
+
+bootstrap 포인터 검사 `A301`은 규칙 r0016 이후 현재 `AGENTS.md`·`CLAUDE.md`에만 적용한다. 과거 commit과
+다른 프로젝트의 bootstrap 파일을 소급 검사하지 않는다.
 
 ## 권한과 부작용
 
@@ -79,6 +84,7 @@ related_initiatives: []
 
 - 빈 활성 표와 빈 살아있는 문서 등록부에서 `OK` 확인
 - 누락 파일·비대한 요약·아카이브 참조·현재성 머리말 누락 fixture에서 각각 `ATTENTION` 확인
+- 정상 marker와 marker 누락·`INDEX.md` 부정형 bootstrap fixture 확인
 - 저장소 위치와 로컬 시간대가 달라도 결과가 같은지 확인
 
 ## 변경 호환성

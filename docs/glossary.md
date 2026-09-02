@@ -6,6 +6,9 @@
 | Initiative | 둘 이상의 프로젝트·역할·operator가 측정 가능한 공동 결과를 달성하기 위한 협업 단위 | harness | `initiative:<id>` | 프로젝트 정체성이나 task 상태를 대체하지 않음 |
 | Initiative Outcome | initiative가 완료됐다고 판정할 수 있는 측정 가능한 공동 목표 | initiative lead | 결과, 완료 기준 | 구현 목록보다 사용자·시스템 결과 중심 |
 | Outcome Feedback | 검증된 성공·실수가 지침의 효과와 개선 필요성에 제공하는 증거 | worker, curator | `feedback/`, `FEEDBACK.md` | 개인·에이전트 성과 점수가 아님 |
+| Agent Execution Contract | 요청 권한·비정본 입력·위임·재개·검증과 완료 주장을 에이전트 공통 행동으로 정한 계약 | harness | `docs/agent-execution.md` | 모델·세션·도구가 권한을 넓히지 않음 |
+| Guidance Candidate | 검증된 결과에서 추출한 lesson·trigger·evidence·scope_hint를 가진 비정본 지침 후보 | curator | `feedback/candidates/gc-xxxxxxxx.md` | 승인 전 canon이나 작업 지시가 아님 |
+| Harness Evolution | candidate를 현행 지침과 비교해 추가·병합·수정·기각하고 범위·효과·회귀를 검증하는 절차 | harness | `docs/harness-evolution.md` | 자동 자기수정이나 원시 경험 append가 아님 |
 | Review Snapshot | 사람이 검토할 어느 committed checkpoint든 가리킬 수 있는 로컬 전용 불변 브랜치 | 작업 project | `review/<topic>_<UTC timestamp>` | 승격 경로의 단계가 아니며 원격 push와 생성 뒤 변경 금지 |
 | Promotion | 승인·검증된 변경을 PR, feature, release·정본의 다음 통합 단계로 이동하는 행위 | 작업 project와 승인자 | `docs/change-promotion.md` | review 생성이나 브랜치 생성만으로 승인된 것이 아님 |
 | Task | 한 프로젝트 또는 operator owner가 직접 수행하는 실행 단위 | 해당 프로젝트 | `tasks/<project>/...` | 프로젝트 내부 상태 |
@@ -32,4 +35,5 @@
 | Invalidation | 과거 저널 판단이 대체되거나 기각됐음을 명시하는 지식 유효성 기록 | harness | `INVALIDATIONS.md` | 실행 항목의 dropped/cancelled와 구분 |
 | Quirk | 코드만 읽으면 오해하기 쉬우며 모르고 변경하면 동작을 깨뜨리는 현행 불변식 | 해당 프로젝트 | `Q-NNN` | 단순 복잡성이나 과거 경위는 제외 |
 | Worker | 프로젝트 작업과 그 실행 기록을 남기는 기본 역할 | 해당 프로젝트 | `docs/roles.md` | project-id를 대체하지 않음 |
+| Reviewer | 고정된 checkpoint를 기본 read-only로 검토해 근거 있는 finding을 반환하는 역할 | 검토 project | `docs/roles.md` | 사람 승인·승격 권한을 대신하지 않음 |
 | Curator | 하네스의 승격·무효화·아카이브·정합을 관리하는 역할 | harness | `docs/roles.md`, `CURATION.md` | project-id를 대체하지 않음 |

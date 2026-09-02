@@ -42,6 +42,7 @@
 | `mistake` | `instruction-missed` | 명확한 현행 지침을 따르지 않음 |
 | `mistake` | `instruction-ambiguous` | 지침의 복수 해석 때문에 잘못된 결과가 발생함 |
 | `mistake` | `instruction-missing` | 필요한 지침이 없어 잘못된 결과가 발생함 |
+| `mistake` | `instruction-ineffective` | 지침을 준수했지만 의도한 예방·효과가 나타나지 않음 |
 | `mistake` | `execution-error` | 지침과 무관한 구현·명령·판단 오류가 발생함 |
 | `mistake` | `external-failure` | 외부 시스템이나 환경 실패가 결과를 깨뜨림 |
 
@@ -54,6 +55,10 @@
 - `introduced_at`은 원인이 들어간 가장 이른 단계, `detected_at`은 검증으로 확인된 단계다. 원인 주입 개념이
   없는 성공은 둘 다 검증 단계로 기록할 수 있다.
 - `instruction`은 결과와 직접 관련된 현행 지침을 가리킨다. 지침 누락이나 무관한 외부 실패는 `none`이다.
+- `instruction-ineffective`는 준수 증거와 의도한 효과가 실패했다는 검증을 모두 요구한다. 단순 미준수나
+  적용 trigger가 아니었던 사례를 이 category로 분류하지 않는다.
+- `instruction-ineffective`는 2026-09-02 01:38:20 UTC 이후 새 event부터 사용할 수 있다. 기존 event를
+  소급 분류하지 않으며 `operator:feedback-status`는 이 cutover 이전 분류를 오류로 보고한다.
 - `evidence`는 다른 사람이 결과를 확인할 수 있어야 하며 비밀·개인정보·내부 경로를 포함하지 않는다.
 - 정정 이벤트는 원본과 반대 outcome을 자동으로 의미하지 않는다. 현재 확인된 결과를 새로 기록하고
   `supersedes`만 연결한다.
@@ -63,3 +68,6 @@
 `operator:feedback-status`는 `FEEDBACK.md`의 관찰 기간 안에서 검증된 이벤트를 집계하고, 잘못된 스키마,
 중복 ID, major 이상 실수와 반복 실수 패턴을 보고한다. 자세한 개선 판단은 `docs/outcome-feedback.md`를
 따른다.
+
+검증된 event에서 지침 후보를 만들면 `feedback/candidates/README.md`의 안정 ID·상태·결정 생명주기를
+사용한다. event는 evidence이고 candidate는 비정본 파생 record이므로 서로를 대신하지 않는다.

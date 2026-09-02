@@ -124,7 +124,7 @@ Query Planner service·Context Composer·단일 broker는 도입된 구성 요�
 
 | 기존 영역 | 등록 공간 | 성격 |
 |---|---|---|
-| `journal/`, `requests/`, `proposals/` | narrative | 조사·의도·결정 과정의 record |
+| `journal/`, `requests/`, `proposals/`, `feedback/candidates/` | narrative | 조사·의도·결정 과정과 비정본 지침 후보의 record |
 | `explorations/` | narrative | 정책·설계·용어의 비정본 토론 종합, 명시적 승격 전 실행 없음 |
 | `issues/`, `changed/`, `feedback/` | event | UTC 시간순 append-only record |
 | `ISSUES.md`, `AGENDA.md`, `INITIATIVES.md`, `tasks/` | current-state table | 재작성형 상태와 폴더 상태 record |

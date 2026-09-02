@@ -9,7 +9,7 @@
 - 검증하지 않은 내용은 `[미검증]` 표시
 - 사람의 결정·리뷰나 프로젝트 간 합의를 기다리는 안건은 journal이 아니라 request/proposal 본문과
   `AGENDA.md`에 기록
-- 살아 있는 세션을 관측하거나 세션 간 메시지를 주고받으면 아래 `SESSION-COMM` 형식으로 기록
+- 살아 있는 세션의 관측이나 통신이 상태·소유권·결정에 영향을 주면 아래 `SESSION-COMM` 형식으로 기록
 - 오래되어 현행 판단에 필요하지 않은 기록은 `journal/archive/YYYY-MM/`로 이동하며 기본 스캔에서 제외
 
 ## 지식 유효성
@@ -43,7 +43,8 @@
 ## 세션 관측·통신 로그
 
 `INDEX.md` 규칙 28과 `docs/session-coordination.md`에 따라 위험 경계에서 다른 세션을 관측하거나
-메시지를 주고받았으면 해당 섹션에 한 줄을 append한다.
+상태·소유권·결정에 영향을 주는 메시지를 주고받았으면 해당 섹션에 한 줄을 append한다. 중앙 조정자의
+읽기 전용 위임은 worker마다 중복 기록하지 않고 조정자가 tx 전체와 채택한 결과를 기록한다.
 
 ```markdown
 **SESSION-COMM:** 2026-08-21 09:20:00 UTC · observe · peer: project-a@worktree-a · reason: INDEX 수정 전 소유 확인

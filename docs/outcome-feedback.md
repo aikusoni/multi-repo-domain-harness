@@ -21,7 +21,7 @@
 - 성공은 일상 행동을 반복 집계하지 않는다. 비직관적 지침이 실제로 도움을 줬거나 명시적 검증을 통과한
   경우처럼 지침 평가에 정보가 있는 결과만 기록한다.
 - 실수는 행위자 비난보다 원인 분류에 사용한다. `instruction-missed`, `instruction-ambiguous`,
-  `instruction-missing`, `execution-error`, `external-failure`를 구분한다.
+  `instruction-missing`, `instruction-ineffective`, `execution-error`, `external-failure`를 구분한다.
 - 동일 `pattern`의 수만 보지 않고 어느 승격 단계에서 도입·발견됐는지 함께 본다. 뒤 단계에서 발견될수록
   앞 단계의 체크리스트나 검증 게이트를 우선 검토한다.
 - 표본이 작거나 인과관계가 확인되지 않으면 `[미검증]` 저널로 남기고 지침을 바꾸지 않는다.
@@ -38,6 +38,7 @@
 | release 또는 canonical에서 반복 발견 | 통합·회귀 검증과 승격 조건 |
 | production까지 유출 | 배포 게이트, 롤백과 hotfix 계약 |
 | 특정 지침의 반복 성공 | 지침 유지, 간결화 가능성, 자동 검사 승격 |
+| 지침 준수 뒤 반복 실패 | trigger·범위·검증 계약 개정, 지침 축소 또는 철회 |
 
 major·critical 실수는 횟수가 적어도 즉시 검토한다. 단, 외부 실패처럼 지침 변경으로 예방할 수 없는 원인은
 복구 절차나 operator 계약의 문제로 보내며 억지로 공통 규칙을 추가하지 않는다.
@@ -54,3 +55,11 @@ major·critical 실수는 횟수가 적어도 즉시 검토한다. 단, 외부 �
 - 지침을 되돌리거나 다시 검토할 사건 기반 트리거
 
 카운트 임계값은 proposal 생성을 검토하게 하는 신호다. canon 변경의 승인이나 작업 게이트를 대신하지 않는다.
+
+## Guidance Candidate 컴파일
+
+curator는 feedback event를 그대로 규칙으로 복사하지 않는다. 검증된 결과에서 lesson·trigger·evidence·
+scope_hint를 분리하고 현행 지침에 대해 `ADD`, `MERGE`, `REVISE`, `SKIP` 중 하나를 판단한다. 한 작업의
+교훈은 topic 범위로 시작하며, 서로 다른 작업에서 공통 효과가 확인되기 전에는 cross-task canon으로
+승격하지 않는다. 후보는 `feedback/candidates/`에 안정 ID와 상태·결정·재검토 trigger를 보존한다. 형식과
+회귀 검증은 `docs/harness-evolution.md`와 `feedback/candidates/README.md`를 따른다.

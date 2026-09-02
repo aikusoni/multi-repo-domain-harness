@@ -34,6 +34,28 @@
     },
     {
       "adoption_status": "reference-only",
+      "id": "research:evo-harness",
+      "possible_use": [
+        "candidate lesson schema reference",
+        "harness curation operation reference",
+        "selective guidance budget reference"
+      ],
+      "title": "Evo-Harness: Context-to-Harness Skill Compilation for Self-Evolving Agents",
+      "type": "paper"
+    },
+    {
+      "adoption_status": "reference-only",
+      "id": "research:evoharness-rl",
+      "possible_use": [
+        "long-horizon external state responsibility reference",
+        "selective harness access reference",
+        "experience consolidation boundary reference"
+      ],
+      "title": "EvoHarness-RL: Learning Self-Evolving Runtime Harness for Long-Horizon LLM Agents",
+      "type": "paper"
+    },
+    {
+      "adoption_status": "reference-only",
       "id": "research:memgpt",
       "possible_use": [
         "context budget reference",
@@ -63,7 +85,7 @@
     }
   ],
   "schema_version": 1,
-  "source_digest": "sha256:3051846824b96fbf98a42ba56610ac92db62a8a814c8d0b7810bec94d9539e93",
+  "source_digest": "sha256:500d1193c1547aa5d1c46017fd5519a2b91ba99051c4c8323345ad52edd6af0e",
   "spaces": [
     {
       "id": "space:cross-space-catalog",
@@ -257,7 +279,8 @@
         "journal",
         "explorations",
         "requests",
-        "proposals"
+        "proposals",
+        "feedback/candidates"
       ],
       "losses": [
         "Direct structured state queries"

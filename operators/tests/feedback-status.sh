@@ -10,6 +10,7 @@ TODAY="$(date -u '+%Y-%m-%d')"
 
 make_root() {
   local root="$1"
+  local required_since="${2:-${TODAY}}"
   mkdir -p "${root}/operators" "${root}/feedback"
   cp "${OPERATOR_SOURCE}" "${root}/operators/feedback-status.sh"
   chmod +x "${root}/operators/feedback-status.sh"
@@ -17,7 +18,7 @@ make_root() {
 - observation_window_days: 30
 - repeated_mistake_warning: 3
 - major_mistake_warning: 1
-- schema_required_since: ${TODAY} UTC
+- schema_required_since: ${required_since} UTC
 EOF
 }
 
@@ -27,8 +28,10 @@ event() {
   local category="$3"
   local severity="$4"
   local pattern="$5"
+  local event_date="${6:-${TODAY}}"
+  local event_time="${7:-00:00:00}"
   cat <<EOF
-## [${id}] ${TODAY} 00:00:00 UTC · project: harness
+## [${id}] ${event_date} ${event_time} UTC · project: harness
 - outcome: ${outcome}
 - category: ${category}
 - severity: ${severity}
@@ -69,6 +72,25 @@ make_root "${MAJOR_ROOT}"
 } >"${MAJOR_ROOT}/feedback/status-${TODAY}.md"
 MAJOR_OUTPUT="$("${MAJOR_ROOT}/operators/feedback-status.sh")"
 [[ "${MAJOR_OUTPUT}" == ATTENTION\ feedback:*major_or_critical=1/1* ]]
+
+INEFFECTIVE_ROOT="${TEST_ROOT}/ineffective"
+make_root "${INEFFECTIVE_ROOT}"
+{
+  printf '# fixture\n\n'
+  event f-00000006 mistake instruction-ineffective minor ineffective-rule "${TODAY}" 23:59:59
+} >"${INEFFECTIVE_ROOT}/feedback/status-${TODAY}.md"
+INEFFECTIVE_OUTPUT="$("${INEFFECTIVE_ROOT}/operators/feedback-status.sh")"
+[[ "${INEFFECTIVE_OUTPUT}" == OK\ feedback:*mistakes=1*invalid_events=0* ]]
+
+PRECUTOVER_ROOT="${TEST_ROOT}/ineffective-pre-cutover"
+make_root "${PRECUTOVER_ROOT}" 2026-09-02
+{
+  printf '# fixture\n\n'
+  event f-00000007 mistake instruction-ineffective minor ineffective-rule 2026-09-02 01:38:19
+} >"${PRECUTOVER_ROOT}/feedback/status-2026-09-02.md"
+PRECUTOVER_OUTPUT="$("${PRECUTOVER_ROOT}/operators/feedback-status.sh")"
+[[ "${PRECUTOVER_OUTPUT}" == ATTENTION\ feedback:*invalid_events=* ]]
+[[ "${PRECUTOVER_OUTPUT}" == *"F014"* ]]
 
 INVALID_ROOT="${TEST_ROOT}/invalid"
 make_root "${INVALID_ROOT}"

@@ -62,6 +62,8 @@ for line in active_rows:
             findings.append(("A006", f"ISSUES.md: 활성 요약이 아카이브 참조 {relative} -> {reference}"))
 
 targets = [
+    "AGENTS.md",
+    "CLAUDE.md",
     "README.md",
     "INDEX.md",
     "ISSUES.md",
@@ -73,6 +75,14 @@ targets = [
     "CURATION.md",
     "FEEDBACK.md",
 ]
+bootstrap_marker = "<!-- harness-bootstrap: read-index-first -->"
+for bootstrap in ("AGENTS.md", "CLAUDE.md"):
+    body = read(bootstrap)
+    negative_read = re.search(
+        r"`INDEX\.md`[^\n]{0,60}(?:읽지|건너뛰|생략)", body
+    )
+    if bootstrap_marker not in body or "`INDEX.md`" not in body or negative_read:
+        findings.append(("A301", f"{bootstrap}: INDEX.md 최초 필독 bootstrap marker·포인터 없음"))
 targets.extend(str(path.relative_to(root)) for path in sorted((root / "docs").rglob("*.md")))
 for area in ("storage", "schemas", "indexes", "views", "research", "explorations"):
     targets.extend(str(path.relative_to(root)) for path in sorted((root / area).rglob("*.md")))

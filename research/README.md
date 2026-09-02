@@ -14,6 +14,9 @@ reference 등록은 도입 승인이 아니다.
 information compression, forecasting, planning 같은 주제로 찾는다. 별도 해설이 필요해질 때만 하위 문서를
 만들고 catalog entry에서 연결한다.
 
+에이전트 지침 개선에는 online harness learning, execution reflection, skill compilation, feedback
+grounding과 bounded context selection 연구도 참고할 수 있다.
+
 ## 운영 경계
 
 - 제목·지원 개념·가능한 용도는 공개 원문에서 확인한 범위만 기록한다.

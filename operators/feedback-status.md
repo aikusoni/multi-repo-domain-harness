@@ -76,6 +76,8 @@ proposal을 만든다.
 - 빈 이벤트에서 `OK`와 0 집계 확인
 - 같은 mistake pattern이 임계값에 도달한 fixture에서 `ATTENTION` 확인
 - major mistake 하나가 임계값에 도달한 fixture에서 `ATTENTION` 확인
+- 지침 준수 뒤 효과가 없었던 `instruction-ineffective` event가 유효한 mistake로 집계되는지 확인
+- `instruction-ineffective` cutover 직전 event가 `F014`로 거부되는지 확인
 - 중복 ID, 누락 필드와 잘못된 outcome/category fixture에서 안정 검사 코드 확인
 - 로컬 시간대 변경과 관계없이 UTC 관찰 기간이 같은지 확인
 

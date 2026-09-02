@@ -76,6 +76,9 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 관리한다면 루트 `CLAUDE.md`에 `@AGENTS.md`를 적어 같은 규칙을 재사용할 수 있다. 개인별 경로나 설정은
 커밋 대상 파일 대신 `~/.claude/CLAUDE.md` 또는 gitignore된 `CLAUDE.local.md`에 둔다.
 
+이 하네스 저장소에 포함된 루트 `AGENTS.md`와 `CLAUDE.md`는 세부 규칙을 복제하지 않고 `INDEX.md`와
+에이전트 실행 계약으로 연결하는 최소 bootstrap만 제공한다.
+
 ### 4. 적용 확인
 
 설정 파일을 바꾼 뒤에는 이미 열려 있던 대화를 재사용하지 말고 새 작업 또는 새 세션을 시작한다.
@@ -113,6 +116,12 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
   않으며 구체적인 변경·판단·실행이 생길 때만 proposal·agenda·task·canon으로 명시적으로 승격한다.
 - 변경에 따라 낡을 수 있는 문서는 기준 시각·미반영분·현행 정본을 스스로 밝힌다.
 - 세션·사람·도구가 아니라 프로젝트 식별자를 작업 주체로 사용한다.
+- 요청의 목표와 권한을 분리한다. 조사·리뷰·수정·외부 반영은 서로 다른 허가이며, 위임과 지속 요구도
+  원래 권한을 넓히지 않는다.
+- 하위 에이전트·도구 결과와 exit code를 완료 증거로 자동 해석하지 않는다. 최신 변경 뒤 실제 대상과
+  범위를 검증하고 작성·검증·commit·push·merge·배포 상태를 구분한다.
+- 긴 작업의 현재 판단·진행·재사용 경험을 구분하고, 과거 경험은 현재 환경의 정답이 아니라 재검증할 prior로
+  취급한다. 현재 결정에 필요한 외부 상태만 선택적으로 읽고 갱신한다.
 - 실행 자동화는 `operator:<id>`로 등록하되 이를 에이전트 정체성과 혼동하지 않는다.
 - 공동 목표는 `initiative:<id>`로 등록하되 프로젝트·task·request의 정체성과 상태를 대체하지 않는다.
 - 과거 기록과 그 안의 판단이 지금도 유효한지는 분리하고, 대체·기각된 판단을 검색 가능한 색인에 남긴다.
@@ -123,7 +132,10 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
   ref에 보존됐는지 확인한다.
 - 살아 있는 세션은 위험 경계에서만 직접 조정하고, 세션 간 통신에는 트랜잭션 총량과 사람 프롬프트 이후
   수신량이라는 독립된 예산을 적용한다.
-- worker와 curator는 책임 역할이며 프로젝트 정체성을 대체하지 않는다.
+- worker·reviewer·curator는 책임 역할이며 프로젝트 정체성을 대체하지 않는다.
+- 검증된 실행 결과는 곧바로 규칙에 붙이지 않고 trigger·evidence·scope가 있는 Guidance Candidate로
+  컴파일해 `feedback/candidates/`에 생명주기를 보존한다. 기존 지침과 비교해 추가·병합·수정·기각하고
+  승인된 최소 지침만 선택적으로 읽는다.
 - 비직관적 현행 불변식은 검증 근거·영향·검색 가능한 symbol과 함께 quirk로 관리한다.
 - 식별자와 순번은 처음 언급할 때 짧은 헤드라인을 함께 붙여 사람이 문맥을 되짚지 않게 한다.
 - 전체 문서를 매번 읽지 않고 현재 작업에 관련된 문서만 선택한다.
@@ -147,6 +159,9 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 | Issue | 무엇이 위험하거나 작업을 막는가? | 이벤트 계약 불일치 |
 | Operator | 어떤 반복 실행을 자동화하는가? | 복구 시나리오 검증 실행기 |
 | Outcome Feedback | 어떤 검증 결과가 지침의 효과나 개선 필요성을 보여 주는가? | 리뷰에서 반복 발견된 누락 |
+| Agent Execution Contract | 에이전트가 어떤 권한으로 무엇을 검증하고 어느 단계까지 완료했다고 말할 수 있는가? | read-only 리뷰와 push 권한의 분리 |
+| Guidance Candidate | 실행 결과에서 어떤 lesson을 언제·어디에 적용할 후보로 만들었는가? | 특정 task 유형의 검증 누락 방지 후보 |
+| Harness Evolution | 후보를 기존 지침과 비교해 어떻게 추가·병합·수정·기각하고 효과를 재검증하는가? | topic 지침을 cross-task canon으로 승격 |
 | Review Snapshot | 사람이 검토할 정확한 checkpoint는 무엇인가? | 로컬 `review/<topic>_<UTC timestamp>` |
 | Promotion | 승인된 변경이 어느 통합·배포 단계로 이동할 수 있는가? | PR에서 feature로 승인 승격 |
 | Coordination Transaction | 어떤 충돌 위험·협업 판단을 위해 세션들이 주고받은 메시지 묶음인가? | 계약 파일 소유 확인을 위한 tx |
@@ -172,3 +187,6 @@ Claude Code의 `@절대경로` 표기는 해당 파일을 세션 시작 문맥�
 [`docs/memory-reliability.md`](docs/memory-reliability.md), 활성 구성은
 [`storage/registry.json`](storage/registry.json), 실행 명령은
 [`operators/storage-spaces.md`](operators/storage-spaces.md)를 따른다.
+
+에이전트의 권한·위임·검증·완료 계약은 [`docs/agent-execution.md`](docs/agent-execution.md), 검증 결과를
+하네스 지침으로 승격하는 절차는 [`docs/harness-evolution.md`](docs/harness-evolution.md)를 따른다.

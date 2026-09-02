@@ -6,9 +6,11 @@
 - `domain-map.md`: 도메인 경계와 각 도메인의 책임
 - `glossary.md`: 저장소 사이에서 의미가 달라질 수 있는 용어
 - `decision-log.md`: 확정된 횡단 결정과 대체된 결정
-- `roles.md`: worker·curator 책임과 프로젝트 정체성의 경계
+- `roles.md`: worker·reviewer·curator 책임과 프로젝트 정체성의 경계
+- `agent-execution.md`: 요청 권한, 비정본 입력, 외부 상태, 위임·리뷰, 중단·재개와 증거 기반 완료 계약
 - `quirks.md`: 모르고 단순화하면 동작을 깨뜨리는 비직관적 현행 불변식
 - `outcome-feedback.md`: 검증된 성공·실수를 지침 개선으로 연결하는 절차
+- `harness-evolution.md`: 실행 결과를 생명주기 있는 guidance candidate와 범위 있는 규칙으로 승격하는 절차
 - `change-promotion.md`: 로컬 review, 원격 PR, feature, release·정본의 승격 계약
 - `session-coordination.md`: 살아 있는 세션 식별, 위험 경계 조정, tx 총 10건과 프롬프트 후 수신 5건 제한
 - `storage-architecture.md`: 목적별 저장공간, 여러 표현의 lineage, query planning과 제한 context 조립

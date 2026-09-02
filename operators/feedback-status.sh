@@ -40,6 +40,9 @@ required_since_text = required_config(
     "schema_required_since",
 )
 required_since = datetime.strptime(required_since_text, "%Y-%m-%d").date()
+instruction_ineffective_since = datetime.strptime(
+    "2026-09-02 01:38:20 UTC", "%Y-%m-%d %H:%M:%S UTC"
+).replace(tzinfo=timezone.utc)
 
 now = datetime.now(timezone.utc)
 window_start = now.date() - timedelta(days=window_days - 1)
@@ -73,6 +76,7 @@ categories = {
         "instruction-missed",
         "instruction-ambiguous",
         "instruction-missing",
+        "instruction-ineffective",
         "execution-error",
         "external-failure",
     },
@@ -144,6 +148,7 @@ for path in sorted(feedback_dir.glob("status-????-??-??.md")):
             findings.append(f"F004 {prefix} unknown fields {','.join(unknown)}")
             invalid = True
 
+        timestamp: datetime | None = None
         try:
             timestamp = datetime.strptime(timestamp_text, "%Y-%m-%d %H:%M:%S UTC").replace(
                 tzinfo=timezone.utc
@@ -162,6 +167,13 @@ for path in sorted(feedback_dir.glob("status-????-??-??.md")):
         severity = fields["severity"]
         if outcome not in categories or category not in categories.get(outcome, set()):
             findings.append(f"F006 {prefix} invalid outcome/category {outcome}/{category}")
+            invalid = True
+        if (
+            category == "instruction-ineffective"
+            and timestamp is not None
+            and timestamp < instruction_ineffective_since
+        ):
+            findings.append(f"F014 {prefix} instruction-ineffective predates cutover")
             invalid = True
         if (outcome == "success" and severity != "none") or (
             outcome == "mistake" and severity not in {"minor", "major", "critical"}
