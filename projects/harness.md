@@ -18,6 +18,7 @@
 - 실행 결과에서 Guidance Candidate와 범위 있는 지침을 만드는 증거 기반 하네스 진화
 - 로컬 review·원격 PR·feature·release·정본의 변경 승격 계약
 - 하네스 primary checkout 전용 변경 경계와 linked worktree 판정·차단
+- 여러 세션이 최신 하네스 기록을 다시 읽는 공유 working-directory 가시성과 통신 계층 경계
 
 ## 제공 계약
 

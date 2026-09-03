@@ -15,8 +15,13 @@ related_initiatives: []
 non-zero로 차단한다. 등록된 linked worktree는 경로를 노출하지 않고 잔존 수만 감사한다. worktree 생성·
 삭제·정리, 파일 변경, branch 이동, commit과 원격 작업은 수행하지 않는다.
 
+primary 전용 정책은 여러 하네스 세션이 하나의 working directory에서 request·changed·task·journal과
+미커밋 변경을 다시 읽게 하는 공유 가시성 경계다. primary 판정은 물리적 checkout을 뜻하며 `main` 같은
+정본 branch에서 직접 작업하라는 뜻이 아니다.
+
 이 operator는 `project-id: harness` 전용이다. 참여 프로젝트와 제품 저장소의 worktree 정책을 검사하거나
-바꾸지 않는다.
+바꾸지 않는다. 스크립트는 fixture와 진단을 위해 임의 repository 경로를 받을 수 있지만, 대상이 harness가
+아니면 결과에 정책 효력이 없으며 그 프로젝트의 worktree 규칙을 우선한다.
 
 ## 실행 조건
 
@@ -24,7 +29,8 @@ non-zero로 차단한다. 등록된 linked worktree는 경로를 노출하지 �
 - 수동 호출:
   - 위치 게이트: `./operators/harness-worktree-guard.sh check [repository]`
   - 잔존 상태 감사: `./operators/harness-worktree-guard.sh audit [repository]`
-- Git hook 연계: 하네스의 pre-commit·pre-push hook은 다른 검사보다 먼저 `check`를 호출할 수 있다.
+- Git hook 연계: 사용자가 별도 설치한 하네스 pre-commit·pre-push hook은 다른 검사보다 먼저 `check`를
+  호출할 수 있다. 이 저장소는 hook 설치나 `core.hooksPath` 설정을 자동 수행하지 않는다.
 - 스케줄 시간대: 해당 없음. 시각 기반 상태를 만들지 않음
 - 중단 조건: 대상이 Git worktree가 아니거나 Git dir·common dir·worktree registry를 읽을 수 없음
 
@@ -107,10 +113,11 @@ fixture가 만드는 linked worktree는 임시 일회용 Git 저장소 안에서
 
 - 저장소 안의 guard는 데스크톱 앱이나 자동화가 작업 환경을 만들기 **전**에는 실행될 수 없다. Git에는
   worktree 생성 직전 전용 hook이 없으므로 task 생성 단계에서 하네스를 local/direct primary checkout으로
-  선택해야 한다. 잘못 생성된 linked 환경에서는 bootstrap `check`와 설치된 pre-commit·pre-push hook이
-  후속 가변 작업을 차단한다.
-- 별도 `git clone`은 자기 Git dir와 common dir가 같으므로 이 operator에서 primary로 판정된다. 이 계약은
-  linked worktree 금지이며, 독립 clone의 생성·동기화 정책은 별도 결정 대상이다.
+  선택해야 한다. 잘못 생성된 linked 환경에서는 bootstrap의 절차상 `check`가 작업 중단을 요구하며,
+  사용자가 hook을 별도 설치·연결한 경우에만 pre-commit·pre-push에서도 기술적으로 차단한다.
+- 별도 `git clone`은 자기 Git dir와 common dir가 같으므로 이 operator에서 primary로 판정된다. 그러나
+  working directory를 공유하지 않아 primary-only 정책의 가시성 목적을 충족하지 않는다. 모든 로컬 세션을
+  동일한 configured primary 경로로 연결하는 것은 bootstrap 설정 계약이며 이 operator만으로 강제되지 않는다.
 
 ## 변경 호환성
 

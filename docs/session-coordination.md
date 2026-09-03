@@ -6,6 +6,33 @@
 세션끼리의 통신이 사람의 시야 밖에서 무제한으로 이어지지 않게 한다. 이 문서의 제한은 세션 간 메시지에
 적용하며 사람이 보낸 프롬프트, 세션 목록 조회와 읽기 전용 관측 자체는 메시지 수에 포함하지 않는다.
 
+## 공유 상태와 통신 계층
+
+하네스 세션의 상태 공유는 한 채널에 모두 맡기지 않는다.
+
+| 계층 | 맡는 역할 | 정본·보존 경계 |
+|---|---|---|
+| primary working directory | 다른 세션이 최신 파일과 미커밋 변경을 다시 읽을 수 있는 공통 가시성 | 위치 공유 자체는 승인·정본 승격이 아님 |
+| 세션 간 직접 메시지 | 파일 소유, 충돌 위험, 짧은 질문과 handoff의 저지연 조정 | 휘발성 비정본이며 아래 통신 예산 적용 |
+| request·changed·task·journal | 후속 세션과 프로젝트가 다시 읽어야 하는 실행·변경·결정 기록 | 각 파일의 기존 durable record 계약 적용 |
+| 실시간 append 작업 신호 | 아직 미구현인 소유·checkpoint·발견·handoff event 후보 | active 기능이나 새 정본이 아니며 별도 proposal 필요 |
+
+같은 primary checkout을 사용하면 디스크의 변경은 공유되지만 각 세션의 이미 구성된 문맥까지 자동으로
+갱신되지는 않는다. 공유 기록을 사용하기 직전에 파일과 Git 상태를 다시 읽으며, append-only가 아닌 파일은
+아래 소유권 절차로 단일 writer를 정한다.
+
+세션 간 메시지는 durable record를 대신하지 않는다. 반대로 진행 중인 모든 도구 호출과 중간 생각을
+journal이나 changed에 영구 기록해 직접 메시지를 우회하지도 않는다. 세션별 append stream과 소비자별
+cursor가 실제로 필요해지면 비정본 설계인 `explorations/shared-harness-live-signals.md`의 도입 조건을
+검증하고 proposal·Storage Space Definition·operator 계약으로 별도 승격한다.
+
+향후 append stream이나 watcher를 도입해도 통신 예산을 우회할 수 없다. 특정 세션을 대상으로 하거나 다른
+세션의 새 가변 행동을 유발하는 signal은 전달 방식과 무관하게 세션 간 메시지로 취급해 기존 tx id와 송·수신
+카운터를 계승한다. 수신자를 특정할 수 없는 broadcast는 예산을 안전하게 계산할 수 없으므로 행동 유발
+신호로 사용하지 않는다. 수동 read-only 상태 관측 자체는 예산 밖이지만 그 결과로 새 작업을 시작하려면
+다른 세션이 소유할 수 있는 경로·커서·공유 자원과 겹치는 위험 경계인지 판정하고, 겹칠 때만 기존 소유권
+확인과 해당 통신 기록을 먼저 거친다. 모든 읽기나 작업 시작을 새 메시지 게이트로 만들지 않는다.
+
 ## 용어
 
 - **살아 있는 세션**: 종료되지 않았고 후속 메시지를 받을 수 있는 독립 실행 문맥. 지금 모델 턴을
@@ -24,8 +51,10 @@
 
 1. 확인 커서나 `ack`처럼 다른 세션이 아직 보지 못한 항목을 되돌릴 수 없이 건너뛰게 하는 상태 전진
 2. `ISSUES.md`, `AGENDA.md`, `INDEX.md`, 공통 canon처럼 append-only가 아닌 공유 파일 수정
-3. worktree·브랜치·캐시의 일괄 정리
-4. dev server, devstack, 포트, 테스트 환경처럼 동시에 하나만 점유해야 하는 공유 런타임의 시작·중지·교체
+3. 하네스 primary checkout에서 stage·commit·switch·checkout·merge·rebase·amend·reset·stash처럼 공유
+   working tree·Git index·현재 branch·refs를 바꾸는 작업
+4. worktree·브랜치·캐시의 일괄 정리
+5. dev server, devstack, 포트, 테스트 환경처럼 동시에 하나만 점유해야 하는 공유 런타임의 시작·중지·교체
 
 런타임이 제공하는 세션 등록부와 직접 메시지 기능이 있으면 다음 순서로 확인한다.
 
@@ -45,6 +74,10 @@
 
 - append-only가 아닌 공유 파일이나 단일 공유 자원은 응답을 먼저 받아 소유권을 확인한 세션 하나만
   변경한다. 나머지 세션은 읽기·자기 기록만 수행한다.
+- 하네스 primary의 working tree·Git index·현재 branch와 refs는 하나의 공유 자원이다. 권한이 있는
+  stage·commit·switch·checkout·merge·rebase·amend·reset·stash도 응답을 받은 단일 writer만 수행한다.
+  stage는 현재 task의 명시적 경로만 대상으로 하고, 완료·해제 뒤 다음 세션은 status·HEAD·branch와
+  대상 파일을 다시 읽는다. 이 조항은 금지되거나 승인되지 않은 Git 행동에 새 권한을 부여하지 않는다.
 - 소유 세션은 변경을 커밋하거나 자원을 해제한 뒤, 파일·커밋 또는 자원 상태를 붙여 `회신 불요` 메시지로
   다음 세션에 넘긴다. 다음 세션은 디스크와 Git 상태를 다시 읽은 뒤 자기 변경을 적용한다.
 - 무응답을 쓰기 허가로 해석하지 않는다. 안전한 다른 경로가 없으면 사용자에게 알리고 멈춘다.
@@ -127,6 +160,9 @@
 메시지의 답이나 합의가 프로젝트 간 계약, 현재 상태, 하네스 규칙 또는 다른 세션의 후속 작업 근거가 되면
 통신 로그로 끝내지 않는다. request 왕복, `changed/`, decision/ADR 또는 관련 canon에 승격하고 통신 로그가
 그 포인터를 가리키게 한다. 세션 간 메시지는 정본을 우회하는 비공개 합의 채널이 아니다.
+
+현재 active `space:harness-events`는 issue·changed·feedback의 durable event history를 소유한다. 실시간
+세션 progress stream, watcher나 소비자 cursor를 제공하지 않으며 그러한 기능이 있다고 추정하지 않는다.
 
 이 형식과 카운터는 이 문서 도입 뒤 새 통신부터 적용한다. 기존 journal과 과거 세션 메시지는 소급해
 채우거나 번호를 다시 매기지 않는다.

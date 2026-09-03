@@ -12,7 +12,7 @@
 - `outcome-feedback.md`: 검증된 성공·실수를 지침 개선으로 연결하는 절차
 - `harness-evolution.md`: 실행 결과를 생명주기 있는 guidance candidate와 범위 있는 규칙으로 승격하는 절차
 - `change-promotion.md`: 로컬 review, 원격 PR, feature, release·정본의 승격과 하네스 primary checkout 예외
-- `session-coordination.md`: 살아 있는 세션 식별, 위험 경계 조정, tx 총 10건과 프롬프트 후 수신 5건 제한
+- `session-coordination.md`: 공유 working directory·durable record·직접 통신의 역할, 위험 경계 조정과 통신 예산
 - `storage-architecture.md`: 목적별 저장공간, 여러 표현의 lineage, query planning과 제한 context 조립
 - `storage-adapters.md`: 재사용 우선 구현 평가, 공통 adapter API, 이식성·fallback과 채택 게이트
 - `local-storage-runtime.md`: 파일 정본 위의 장기 로컬 실행 계층, broker와 단계적 도입 게이트

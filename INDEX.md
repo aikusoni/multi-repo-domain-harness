@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0017 · 최종 갱신: 2026-09-02 06:16:57 UTC · 하네스 primary checkout 전용 정책 추가**
+**규칙 버전: r0019 · 최종 갱신: 2026-09-02 08:48:57 UTC · 하네스 공유 경로 식별과 Git 상태 단일 writer 계약 보강**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -384,14 +384,29 @@
     - 새 marker·field·schema·index·검사는 같은 변경에서 backfill 또는 UTC cutover를 정한다. append-only
       기록은 소급 개작하지 않는다. 폐지한 규칙 번호는 재사용하지 않고 대체 조항을 가리키는 tombstone을
       남긴다. 후보 형식·검증·rollback은 `docs/harness-evolution.md`를 따른다.
-35. **하네스 저장소는 primary checkout 전용**: `project-id: harness`의 조사·파일 생성·수정·생성형 검사·
-    build·stage·commit·merge·push는 Git dir와 common dir가 같은 primary checkout에서만 수행한다. linked
-    worktree는 읽기 전용 상태 확인 외의 작업 장소로 사용하지 않는다.
+35. **하네스 저장소는 primary checkout 전용**: 이 정책의 직접 목적은 동일하게 설정된 하나의 absolute
+    path를 가리키는 로컬 세션들이 물리적 working directory를 공유해 request·changed·task·journal과
+    미커밋 변경을 지연 없이 다시 읽도록 하는 것이다. linked worktree마다 파일·index·branch 상태가 갈라져
+    한 세션의 최신 기록이 다른 세션에 보이지 않는 문제를 막는다. `project-id: harness`의 조사·파일 생성·
+    수정·생성형 검사·build·stage·commit·merge·push는 Git dir와 common dir가 같은 primary checkout에서만
+    수행하고, linked worktree는 읽기 전용 상태 확인 외의 작업 장소로 사용하지 않는다.
+    - primary checkout은 **공유 물리 위치**이고 `main` 같은 정본 branch는 **승인된 Git 이력의 역할**이다.
+      둘을 동일시하지 않으며, 하네스 작업은 primary checkout 안의 임시 작업 branch에서 수행할 수 있다.
+      이 규칙은 `main`에 직접 commit하라는 뜻이 아니다.
+    - 모든 로컬 세션의 bootstrap은 같은 configured primary absolute path를 가리킨다. 별도 clone은 자기
+      Git dir와 common dir가 같아 guard를 통과하더라도 working directory를 공유하지 않으므로 대체 작업
+      위치로 사용하지 않는다. guard의 `OK`는 linked가 아님만 증명하고 configured path 동일성은 증명하지
+      않는다.
     - 하네스에 대해 `git worktree add`를 실행하거나 데스크톱·자동화 작업을 linked worktree 환경으로
       생성·handoff하지 않는다. 현재 위치가 linked이면 변경을 시작하지 않고 primary checkout의 동일 task로
       전환한 뒤 `INDEX.md`와 동적 상태를 다시 읽는다.
     - 작업 시작·재개와 stage·commit·push 직전에 `operator:harness-worktree-guard`의 `check`를 통과한다.
       문서상 primary라고 추측하거나 경로 이름으로 판정하지 않는다.
+    - 같은 디렉터리를 공유해도 활성 세션의 문맥이 자동 갱신되지는 않는다. 공유 기록을 판단·수정하기
+      직전에 대상 파일과 Git 상태를 다시 읽고, append-only가 아닌 파일은 규칙 28에 따라 한 세션이 소유한다.
+    - primary의 working tree·Git index·현재 branch와 refs도 세션들이 공유한다. 권한이 있는 stage·commit·
+      switch·checkout·merge·rebase·amend·reset·stash를 수행하기 전에는 규칙 28로 primary Git 상태의 단일
+      writer를 정하고, 명시적 경로만 stage하며 완료·해제 뒤 다른 세션이 상태를 다시 읽게 한다.
     - cutover 이전 linked worktree는 새 작업에 사용하지 않는다. dirty·미보존 commit이 있을 수 있으므로
       자동 삭제·clean·reset·prune하지 않고, 소유·보존 ref·미커밋 상태를 확인한 명시적 정리 작업에서만
       제거한다.

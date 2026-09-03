@@ -48,6 +48,18 @@ feature 통합, release·정본을 분리하고, 각 지점의 검토 대상을 
 읽기 전용 상태 확인 외의 작업 장소로 사용하지 않는다. 경로명, branch명이나 앱이 표시하는 환경 이름이
 아니라 `operator:harness-worktree-guard`의 Git metadata 판정을 사용한다.
 
+이 제한은 여러 세션이 하나의 working directory를 함께 읽어 request·changed·task·journal과 아직
+commit되지 않은 최신 기록까지 바로 관찰하게 하는 공유 가시성 계약이다. linked worktree는 working tree와
+index를 격리하므로 한 세션의 기록이 commit·merge되기 전 다른 세션에서 누락되고, 오래된 상태로 판단할 수
+있다. primary checkout을 공유해도 이미 열린 세션의 문맥이 자동 갱신되는 것은 아니므로 판단·수정 직전에
+대상 파일과 Git 상태를 다시 읽는다.
+
+Primary Checkout은 물리적 작업 위치이고 `main` 같은 정본 branch는 승인된 Git 이력의 역할이다. 하네스는
+primary 안의 임시 작업 branch에서 변경한 뒤 정상 승격 절차를 따를 수 있으며, 이 예외는 `main`에 직접
+commit하라는 뜻이 아니다. 같은 하네스의 로컬 세션은 모두 동일한 primary 절대경로를 사용한다. 별도 clone은
+자기 Git metadata에서 primary로 보이더라도 working directory를 공유하지 않으므로 대체 작업 위치로 쓰지
+않는다.
+
 - 하네스에 `git worktree add`를 실행하지 않는다. 데스크톱 앱과 자동화도 하네스 task를 linked worktree로
   만들거나 handoff하지 않고 기존 primary checkout에서 직접 실행한다.
 - 작업 시작·재개와 stage·commit·push 직전에
@@ -58,10 +70,13 @@ feature 통합, release·정본을 분리하고, 각 지점의 검토 대상을 
 - 기존 linked worktree에는 dirty 변경이나 미보존 commit이 있을 수 있다. 자동 remove·clean·reset·prune
   하지 않고, 소유자·미커밋 상태·지속 가능한 보존 ref를 확인한 별도 명시적 정리 작업에서만 제거한다.
 - 병렬 하네스 작업은 linked worktree로 격리하지 않는다. primary checkout의 소유권을 세션 조정 계약으로
-  직렬화하고, clean 상태와 현재 branch를 확인한 뒤 다음 작업으로 전환한다.
+  직렬화한다. working tree·Git index·현재 branch·refs를 바꾸는 stage·commit·switch·checkout·merge·
+  rebase·amend·reset·stash는 응답을 받은 단일 writer만 수행하고, 상태와 현재 branch를 확인한 뒤 다음
+  작업으로 전환한다. 이 목록은 별도 승인이나 권한이 필요한 행동을 허가하지 않는다.
 
-이 예외는 하네스 운영 기록이 여러 checkout에서 동시에 분기·수정되는 위험을 줄이기 위한 저장소 한정
-정책이다. 참여 프로젝트와 제품 저장소는 각 프로젝트의 worktree·격리 정책을 계속 적용한다.
+이 예외는 하네스 운영 기록이 여러 checkout에서 동시에 분기·수정되거나 세션마다 다르게 보이는 위험을
+줄이기 위한 저장소 한정 정책이다. 참여 프로젝트와 제품 저장소는 각 프로젝트의 worktree·격리 정책을
+계속 적용한다.
 
 ## 승격 경로와 리뷰 체크포인트
 
@@ -146,8 +161,9 @@ task, request 또는 프로젝트의 PR 시스템에 다음을 남긴다.
 
 ## 강제 장치
 
-- 하네스에서는 `operator:harness-worktree-guard check`로 현재 checkout이 linked이면 작업 시작과
-  stage·commit·push를 non-zero로 차단하고, `audit`로 등록 linked worktree 잔존을 경로 없이 보고한다.
+- 하네스에서는 호출자가 `operator:harness-worktree-guard check`를 작업 시작과 stage·commit·push 직전에
+  실행하는 절차상 게이트로 사용한다. 현재 checkout이 linked이면 non-zero를 반환하고, `audit`는 등록 linked
+  worktree 잔존을 경로 없이 보고한다. hook에 연결하지 않은 저장소에서 Git 자체를 가로채지는 않는다.
 - pre-push 검사로 `refs/heads/review/*`의 source 또는 destination push를 거부한다.
 - 감사 검사로 `review/*`가 worktree 브랜치로 연결된 상태를 경고하고 detached 검토로 전환하게 한다.
 - 자동 push는 `git push <remote> <명시한-브랜치>`처럼 ref를 명시하고 `--all`, `--mirror`를 금지한다.

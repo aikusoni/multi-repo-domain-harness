@@ -118,6 +118,10 @@ evidence나 record의 정본이 되지 않는다. 상세 평가·API·fallback �
 Query Planner service·Context Composer·단일 broker는 도입된 구성 요소가 아니다. 반복 병목이 측정되면
 `docs/local-storage-runtime.md`의 단계와 rollback 경계로 별도 proposal을 검토한다.
 
+`space:harness-events`는 issue·changed·feedback의 durable event history이며 실시간 세션 작업 stream이나
+메시지 bus가 아니다. 세션별 append 신호·watcher·cursor는 현재 active capability가 아니고, 실제 공유
+지연·중복·소유권 병목이 확인되면 `explorations/shared-harness-live-signals.md`에서 proposal로 승격한다.
+
 ## 기존 하네스 기록의 위치
 
 기존 구조는 이동하거나 세계 모델 형식으로 일괄 변환하지 않는다.
