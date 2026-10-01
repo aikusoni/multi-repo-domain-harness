@@ -1,7 +1,7 @@
 ---
 operator_id: operator:feedback-status
 owner: harness
-implementation: operators/feedback-status.sh
+implementation: operators/feedback-status.py
 affected_projects:
   - all
 related_initiatives: []
@@ -17,7 +17,7 @@ related_initiatives: []
 ## 실행 조건
 
 - 자동 트리거: 에이전트 시작 절차와 curator의 피드백 검토
-- 수동 호출: `./operators/feedback-status.sh`
+- 수동 호출: `python3 operators/feedback-status.py`
 - 스케줄 시간대: UTC (`+00:00`, 서머타임 미적용)
 - 중단 조건: `FEEDBACK.md`가 없거나 필수 설정 형식이 잘못됨
 
@@ -25,7 +25,8 @@ related_initiatives: []
 
 - 하네스 루트 `FEEDBACK.md`
 - `feedback/status-YYYY-MM-DD.md`
-- Python 3 표준 라이브러리
+- Python 3.10 이상 표준 라이브러리
+- 선택 인자 `--root <path>`: 생략하면 스크립트가 속한 하네스 루트; fixture·진단용
 
 ## 출력과 성공 판정
 

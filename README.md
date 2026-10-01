@@ -213,3 +213,17 @@ commit할 필요는 없다.
 하네스의 primary checkout 전용 경계와 판정 명령은
 [`docs/change-promotion.md`](docs/change-promotion.md)와
 [`operators/harness-worktree-guard.md`](operators/harness-worktree-guard.md)를 따른다.
+
+## 운영 도구 실행
+
+Python 3.10 이상으로 운영 도구와 테스트를 직접 실행한다. Git 관련 도구에는 Git CLI가 필요하다.
+
+```text
+python3 operators/harness-worktree-guard.py check .
+python3 operators/curation-status.py
+python3 operators/feedback-status.py
+python3 -B -m unittest discover -s operators/tests -v
+```
+
+Windows에서는 `python3` 대신 `py -3` 또는 `python`을 사용한다. 기존 `.sh` 호출과 별도 설치한 hook은
+Python 호출로 바꾼다. 전체 명령과 전환 안내는 [`operators/README.md`](operators/README.md)를 따른다.

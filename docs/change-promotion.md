@@ -63,7 +63,7 @@ commit하라는 뜻이 아니다. 같은 하네스의 로컬 세션은 모두 �
 - 하네스에 `git worktree add`를 실행하지 않는다. 데스크톱 앱과 자동화도 하네스 task를 linked worktree로
   만들거나 handoff하지 않고 기존 primary checkout에서 직접 실행한다.
 - 작업 시작·재개와 stage·commit·push 직전에
-  `./operators/harness-worktree-guard.sh check .`를 실행한다. `BLOCKED` 또는 non-zero면 가변 행동을
+  `python3 operators/harness-worktree-guard.py check .`를 실행한다. `BLOCKED` 또는 non-zero면 가변 행동을
   시작하지 않는다.
 - primary에서 cutover 이전 linked worktree가 발견되면 `ATTENTION`을 보고하되 primary 작업은 계속할 수
   있다. 발견한 linked worktree는 새 작업에 재사용하지 않는다.

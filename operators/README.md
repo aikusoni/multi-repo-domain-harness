@@ -61,3 +61,40 @@ operator가 자동으로 하네스 파일을 수정할 때도 `INDEX.md`의 공�
 적용한다. 특히 `project-id: harness`의 가변 operator 실행은 primary checkout에서만 허용하며 시작·재개와
 stage·commit·push 직전에 `operator:harness-worktree-guard check`를 통과한다. 참여 프로젝트를 대상으로
 실행하는 operator의 worktree 정책은 해당 프로젝트 계약을 따른다.
+
+## Python 실행 환경과 전환
+
+모든 운영 도구와 회귀 검사는 Python 3.10 이상 표준 라이브러리로 실행한다. 별도 pip 패키지, Bash,
+배치 파일, `awk`, `sed`, `date`, `mktemp`가 필요하지 않다. Git 관련 도구와 해당 테스트에는 PATH에서
+실행 가능한 Git CLI가 필요하다. 출력 인코딩은 UTF-8이고 날짜 계산은 UTC다.
+
+macOS·Linux에서는 `python3`, Windows에서는 `py -3` 또는 Python 3.10 이상을 가리키는 `python`을
+사용한다. 실행 권한이나 shebang에 의존하지 않고 인터프리터로 직접 실행한다.
+
+```text
+python3 operators/harness-worktree-guard.py check .
+python3 operators/curation-status.py
+python3 operators/feedback-status.py
+python3 operators/harness-audit.py
+python3 operators/review-branch.py audit .
+python3 operators/storage-spaces.py audit
+python3 -B -m unittest discover -s operators/tests -v
+```
+
+기존 `.sh` 진입점과 셸 테스트는 Python 구현·unittest로 교체했다. 기존 외부 bootstrap, 자동화와 사용자가
+별도 설치한 Git hook의 호출 경로도 `.py`와 Python 인터프리터로 변경해야 한다. 이 저장소 밖의 설정이나
+hook은 자동 수정하지 않는다. 출력 접두사·검사 코드·정상 종료 코드와 primary/review 차단 계약은 유지한다.
+`review-branch pre-push`는 Git의 remote 인자를 허용하고 stdin을 그대로 검사하며, 형식 오류는 exit code
+`2`로 거부한다. Git 조회 실패를 정상 상태로 삼키지 않는다.
+
+`curation-status`, `feedback-status`, `harness-audit`의 `--root <path>`는 fixture·진단용 선택 인자다.
+생략하면 현재 작업 디렉터리가 아닌 스크립트가 속한 하네스 루트를 사용한다. Git 도구의 repository 인자는
+기존처럼 생략 시 현재 디렉터리를 사용한다. 공백이 있는 경로는 터미널에서 따옴표로 감싼다.
+
+Windows 명령 예시:
+
+```text
+py -3 operators/harness-worktree-guard.py check .
+py -3 operators/curation-status.py
+py -3 -B -m unittest discover -s operators/tests -v
+```

@@ -1,6 +1,6 @@
 # Multi-Repo Domain Harness 운영 규칙
 
-**규칙 버전: r0019 · 최종 갱신: 2026-09-02 08:48:57 UTC · 하네스 공유 경로 식별과 Git 상태 단일 writer 계약 보강**
+**규칙 버전: r0020 · 최종 갱신: 2026-10-01 03:57:29 UTC · Python 운영 도구와 셸 독립 실행 안내로 전환**
 
 여러 도메인과 코드 저장소를 하나의 작업 흐름으로 연결하기 위한 진입점이자 운영 규칙의 유일한 정본이다.
 
@@ -417,11 +417,11 @@
 ## 권장 시작 순서
 
 1. `PROJECTS.md`에서 자기 프로젝트 식별자를 확인한다.
-2. `project-id: harness`면 `./operators/harness-worktree-guard.sh check .`를 실행하고 linked 판정이면
+2. `project-id: harness`면 `python3 operators/harness-worktree-guard.py check .`를 실행하고 linked 판정이면
    가변 작업을 시작하지 않는다.
 3. operator 관련 작업이면 `OPERATORS.md`에서 식별자·소유 프로젝트·계약 문서를 확인한다.
-4. `./operators/curation-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
-5. `./operators/feedback-status.sh`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
+4. `python3 operators/curation-status.py`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
+5. `python3 operators/feedback-status.py`를 실행하고 `ATTENTION`이면 첫 사용자 응답에 상태를 알린다.
 6. `INITIATIVES.md`에서 자기 프로젝트·operator가 참여하는 활성 이니셔티브를 확인한다.
 7. `ISSUES.md`에서 자기 프로젝트와 관련 operator의 활성 이슈를 확인한다.
 8. `changed/`에서 자기 프로젝트나 operator가 아직 확인하지 않은 영향을 확인한다.

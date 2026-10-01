@@ -1,7 +1,7 @@
 ---
 operator_id: operator:review-branch
 owner: harness
-implementation: operators/review-branch.sh
+implementation: operators/review-branch.py
 affected_projects:
   - all
 related_initiatives: []
@@ -19,11 +19,11 @@ clean 작업 HEAD 또는 명시한 committed checkpoint에서 UTC 타임스탬�
 
 - 자동 트리거: 없음
 - 수동 호출:
-  - 현재 clean HEAD에서 생성: `./operators/review-branch.sh create <topic> [repository]`
-  - 명시한 checkpoint에서 생성: `./operators/review-branch.sh create <topic> <repository> <source-ref>`
-  - 감사: `./operators/review-branch.sh audit [repository]`
-  - pre-commit hook: `./operators/review-branch.sh pre-commit [repository]`
-  - pre-push hook: `./operators/review-branch.sh pre-push`
+  - 현재 clean HEAD에서 생성: `python3 operators/review-branch.py create <topic> [repository]`
+  - 명시한 checkpoint에서 생성: `python3 operators/review-branch.py create <topic> <repository> <source-ref>`
+  - 감사: `python3 operators/review-branch.py audit [repository]`
+  - pre-commit hook: `python3 operators/review-branch.py pre-commit [repository]`
+  - pre-push hook: `python3 operators/review-branch.py pre-push`
 - 스케줄 시간대: UTC (`+00:00`, 서머타임 미적용)
 - 중단 조건: 대상이 Git worktree가 아니거나, 기본 HEAD 생성 시 worktree가 clean하지 않거나, topic이
   규약과 다르거나 source ref가 committed checkpoint로 해석되지 않음
@@ -35,7 +35,7 @@ clean 작업 HEAD 또는 명시한 committed checkpoint에서 UTC 타임스탬�
 - `audit`, `pre-commit`: 선택적 저장소 경로, 기본값은 현재 디렉터리
 - `pre-push`: Git pre-push hook이 표준 입력으로 제공하는
   `<local-ref> <local-sha> <remote-ref> <remote-sha>` 행
-- Git CLI와 UTC `date`
+- Git CLI와 Python 3.10 이상 표준 라이브러리 (`datetime`의 UTC 시각)
 
 ## 출력과 성공 판정
 

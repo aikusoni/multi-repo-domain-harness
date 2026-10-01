@@ -15,7 +15,7 @@
 ## Entry
 
 1. `INDEX.md` 전체를 읽는다.
-2. `./operators/harness-worktree-guard.sh check .`를 실행한다. linked 판정이면 읽기 전용 상태 확인 외의
+2. `python3 operators/harness-worktree-guard.py check .`를 실행한다. linked 판정이면 읽기 전용 상태 확인 외의
    작업을 중단하고 primary checkout으로 전환한다.
 3. `git status --short`로 기존 변경과 현재 범위가 겹치는지 확인한다.
 4. `PROJECTS.md`에서 현재 `project-id`를, 자동화 작업이면 `OPERATORS.md`에서 operator와 owner를 확인한다.

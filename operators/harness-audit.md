@@ -1,7 +1,7 @@
 ---
 operator_id: operator:harness-audit
 owner: harness
-implementation: operators/harness-audit.sh
+implementation: operators/harness-audit.py
 affected_projects:
   - all
 related_initiatives: []
@@ -17,7 +17,7 @@ related_initiatives: []
 ## 실행 조건
 
 - 자동 트리거: 없음
-- 수동 호출: `./operators/harness-audit.sh`
+- 수동 호출: `python3 operators/harness-audit.py`
 - 권장 호출: 큐레이션 중, 아카이브 이동 후, 공통 규칙·canon 커밋 전
 - 스케줄 시간대: UTC (`+00:00`, 서머타임 미적용)
 - 중단 조건: 필수 루트 문서를 읽을 수 없음
@@ -29,7 +29,8 @@ related_initiatives: []
   `views/`, `research/`, `explorations/` Markdown의 로컬 Markdown·JSON 포인터
 - `requests/`, `proposals/`의 루트와 아카이브
 - `docs/README.md`의 살아있는 문서 등록부와 등록 문서 머리말
-- Python 3 표준 라이브러리
+- Python 3.10 이상 표준 라이브러리
+- 선택 인자 `--root <path>`: 생략하면 스크립트가 속한 하네스 루트; fixture·진단용
 
 ## 출력과 성공 판정
 

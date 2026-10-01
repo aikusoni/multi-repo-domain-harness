@@ -34,12 +34,12 @@ adapter·비용·portability·fallback·소급 여부를 proposal에서 승인�
 
 ## 명령
 
-```bash
-./operators/storage-spaces.py audit
-./operators/storage-spaces.py build-index
-./operators/storage-spaces.py query --role record --text event
-./operators/storage-spaces.py plan --mode relation --mode evidence
-./operators/storage-spaces.py context <catalog-entry-id> --limit 20
+```text
+python3 operators/storage-spaces.py audit
+python3 operators/storage-spaces.py build-index
+python3 operators/storage-spaces.py query --role record --text event
+python3 operators/storage-spaces.py plan --mode relation --mode evidence
+python3 operators/storage-spaces.py context <catalog-entry-id> --limit 20
 ```
 
 상세 설계는 `docs/storage-architecture.md`, 구현 선택은 `docs/storage-adapters.md`, 형식 정본은

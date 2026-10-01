@@ -18,19 +18,19 @@ index, 제한 조회, query plan과 catalog 단위 context를 제공한다. 실�
 ## 실행 조건
 
 - 자동 트리거: 없음
-- 수동 호출: `./operators/storage-spaces.py <command>`
+- 수동 호출: `python3 operators/storage-spaces.py <command>`
 - 권장 호출: 저장공간 정의·adapter·research catalog·catalog·transformation 변경 후, 공통 규칙 커밋 전
 - 스케줄 시간대: UTC (`+00:00`, 서머타임 미적용)
 - 중단 조건: `storage/registry.json` 부재·파싱 실패 또는 잘못된 인자
 
 ## 명령 계약
 
-```bash
-./operators/storage-spaces.py audit
-./operators/storage-spaces.py build-index
-./operators/storage-spaces.py query --role record --text event --limit 20
-./operators/storage-spaces.py plan --mode relation --mode evidence --limit 20
-./operators/storage-spaces.py context <catalog-entry-id> --limit 20
+```text
+python3 operators/storage-spaces.py audit
+python3 operators/storage-spaces.py build-index
+python3 operators/storage-spaces.py query --role record --text event --limit 20
+python3 operators/storage-spaces.py plan --mode relation --mode evidence --limit 20
+python3 operators/storage-spaces.py context <catalog-entry-id> --limit 20
 ```
 
 - `audit`: registry와 definition 일치, v2 구현·portability·fallback, adapter 동작·license, 공개 research
@@ -49,7 +49,7 @@ index, 제한 조회, query plan과 catalog 단위 context를 제공한다. 실�
 - `research/catalog.json`
 - `storage/catalog/*.json`, `storage/transformations/*.json`
 - 해당 JSON의 `schemas/*.schema.json` 계약
-- Python 3 표준 라이브러리
+- Python 3.10 이상 표준 라이브러리
 
 ## 출력과 성공 판정
 

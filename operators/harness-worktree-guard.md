@@ -1,7 +1,7 @@
 ---
 operator_id: operator:harness-worktree-guard
 owner: harness
-implementation: operators/harness-worktree-guard.sh
+implementation: operators/harness-worktree-guard.py
 affected_projects:
   - harness
 related_initiatives: []
@@ -27,8 +27,8 @@ primary 전용 정책은 여러 하네스 세션이 하나의 working directory�
 
 - 자동 트리거: 하네스 작업 시작·재개와 stage·commit·push 직전의 `check`
 - 수동 호출:
-  - 위치 게이트: `./operators/harness-worktree-guard.sh check [repository]`
-  - 잔존 상태 감사: `./operators/harness-worktree-guard.sh audit [repository]`
+  - 위치 게이트: `python3 operators/harness-worktree-guard.py check [repository]`
+  - 잔존 상태 감사: `python3 operators/harness-worktree-guard.py audit [repository]`
 - Git hook 연계: 사용자가 별도 설치한 하네스 pre-commit·pre-push hook은 다른 검사보다 먼저 `check`를
   호출할 수 있다. 이 저장소는 hook 설치나 `core.hooksPath` 설정을 자동 수행하지 않는다.
 - 스케줄 시간대: 해당 없음. 시각 기반 상태를 만들지 않음

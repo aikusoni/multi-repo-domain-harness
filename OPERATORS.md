@@ -27,14 +27,14 @@
 ### operator:curation-status
 - **목적**: 루트·아카이브의 미큐레이션 저널 수, 마지막 큐레이션 경과와 유효성 메타데이터 누락을 보고한다.
 - **owner**: harness
-- **구현**: `operators/curation-status.sh`
+- **구현**: `operators/curation-status.py`
 - **계약**: `operators/curation-status.md`
 - **영향**: 전체
 
 ### operator:harness-audit
 - **목적**: 활성 항목 파일, 현재 참조, 상태 요약과 살아있는 문서의 정합을 읽기 전용으로 검사한다.
 - **owner**: harness
-- **구현**: `operators/harness-audit.sh`
+- **구현**: `operators/harness-audit.py`
 - **계약**: `operators/harness-audit.md`
 - **영향**: 전체
 
@@ -42,14 +42,14 @@
 - **목적**: 하네스의 현재 checkout이 primary인지 판정해 linked worktree의 가변 작업을 차단하고, 잔존
   linked worktree 수를 경로 없이 감사한다.
 - **owner**: harness
-- **구현**: `operators/harness-worktree-guard.sh`
+- **구현**: `operators/harness-worktree-guard.py`
 - **계약**: `operators/harness-worktree-guard.md`
 - **영향**: harness
 
 ### operator:feedback-status
 - **목적**: 최근 검증 결과의 성공·실수 수, major 이상 실수, 반복 pattern과 이벤트 스키마 오류를 보고한다.
 - **owner**: harness
-- **구현**: `operators/feedback-status.sh`
+- **구현**: `operators/feedback-status.py`
 - **계약**: `operators/feedback-status.md`
 - **영향**: 전체
 
@@ -57,7 +57,7 @@
 - **목적**: 어느 committed checkpoint에서나 로컬 review 스냅샷을 생성하고 이름·원격 유출·worktree
   연결을 감사하며 hook에서 직접 커밋과 원격 push를 차단한다.
 - **owner**: harness
-- **구현**: `operators/review-branch.sh`
+- **구현**: `operators/review-branch.py`
 - **계약**: `operators/review-branch.md`
 - **영향**: 전체
 
