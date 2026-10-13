@@ -24,6 +24,13 @@
 
 ## 등록된 operator
 
+### operator:room-server
+- **목적**: 선택적 로컬 룸 서버·웹 화면에서 작업별 방·전달 예산·사람 승인 실행·인수인계를 조정한다.
+- **owner**: harness
+- **구현**: `room/server.py`
+- **계약**: `operators/room-server.md`
+- **영향**: 전체
+
 ### operator:curation-status
 - **목적**: 루트·아카이브의 미큐레이션 저널 수, 마지막 큐레이션 경과와 유효성 메타데이터 누락을 보고한다.
 - **owner**: harness

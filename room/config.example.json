@@ -1,0 +1,11 @@
+{
+  "projects": {
+    "project-a": "/absolute/path/to/project-a"
+  },
+  "drivers": {
+    "claude-read": {"type": "claude", "mode": "read-only", "timeout": 300},
+    "claude-edit": {"type": "claude", "mode": "workspace-write", "timeout": 300},
+    "codex-read": {"type": "codex", "mode": "read-only", "timeout": 300},
+    "codex-edit": {"type": "codex", "mode": "workspace-write", "timeout": 300}
+  }
+}

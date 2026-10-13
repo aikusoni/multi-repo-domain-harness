@@ -15,6 +15,7 @@
 | primary working directory | 다른 세션이 최신 파일과 미커밋 변경을 다시 읽을 수 있는 공통 가시성 | 위치 공유 자체는 승인·정본 승격이 아님 |
 | 세션 간 직접 메시지 | 파일 소유, 충돌 위험, 짧은 질문과 handoff의 저지연 조정 | 휘발성 비정본이며 아래 통신 예산 적용 |
 | request·changed·task·journal | 후속 세션과 프로젝트가 다시 읽어야 하는 실행·변경·결정 기록 | 각 파일의 기존 durable record 계약 적용 |
+| 선택적 로컬 룸 서버·웹 화면 | 작업별 방·멤버·전달 기록·승인 실행·인수인계 조정 | 로컬 비정본. `docs/room-harness.md`의 경계와 기존 두 통신 예산 적용 |
 | 실시간 append 작업 신호 | 아직 미구현인 소유·checkpoint·발견·handoff event 후보 | active 기능이나 새 정본이 아니며 별도 proposal 필요 |
 
 같은 primary checkout을 사용하면 디스크의 변경은 공유되지만 각 세션의 이미 구성된 문맥까지 자동으로

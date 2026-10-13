@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Multi-Repo Rooms</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body>
+<header><span class="mark">◈</span><div><strong>Multi-Repo Rooms</strong><small>작업을 조율하고, 이어갈 근거를 남깁니다.</small></div><span id="connection">연결 중</span></header>
+<div id="error" role="alert" hidden></div>
+<div id="locked" hidden><h2>로컬 룸에 연결</h2><p>서버가 출력한 주소를 여세요. 토큰은 이 브라우저 세션에만 저장합니다.</p></div>
+<main id="workspace">
+<aside class="rooms"><div class="section-title"><h2>작업 방</h2><button id="new-room">＋ 새 방</button></div><div id="room-list"></div><div class="local-hint">LOCAL VIEW<br>대화와 노트는 로컬에 보관됩니다.<br>공유 기록은 하네스 정본에 반영하세요.</div></aside>
+<section class="conversation"><div id="empty"><span>◈</span><h1>함께 해결할 작업을 열어보세요.</h1><p>방에 목표와 레포 담당을 연결하고 대화·실행·인수인계를 한곳에서 확인합니다.</p></div>
+<div id="room-content" hidden><div class="room-head"><div><h1 id="room-title"></h1><p id="room-goal"></p><small id="room-meta"></small></div><div><button id="export">기록 내보내기</button><button id="close-room">방 종료</button></div></div>
+<div class="toolbar"><span id="budget"></span><input id="search" type="search" placeholder="이 방의 대화·노트 검색" aria-label="대화 검색"></div>
+<div id="messages" aria-live="polite"></div>
+<form id="message-form" class="composer"><div class="composer-options"><label>기록한 발신자 <select id="sender"></select></label><label>수신자 <select id="targets" multiple aria-label="수신자 복수 선택"></select></label></div><textarea id="message" required maxlength="24000" placeholder="다음 행동, 확인한 근거, 필요한 답을 남기세요." aria-label="메시지"></textarea><div class="composer-footer"><small>수신자를 선택하지 않으면 표시만 합니다. 자동 에이전트 호출은 없습니다.</small><button type="submit" class="primary">대화 기록</button></div></form>
+</div></section>
+<aside class="details" id="details" hidden><div class="section-title"><h2>레포 담당</h2><button id="add-member">＋ 멤버</button></div><div id="members"></div><div class="section-title"><h2>실행과 승인</h2><button id="request-run">실행 요청</button></div><p class="hint">설정된 실행기를 사람이 승인하면 호출합니다. 종료 코드와 업무 검증은 별도로 확인하세요.</p><div id="jobs"></div><div class="section-title"><h2>인수인계 노트</h2><button id="add-note">＋ 노트</button></div><div id="notes"></div><details><summary>변경 이벤트</summary><div id="events"></div></details><details><summary>현재 하네스 규칙</summary><p id="stamp" class="hint"></p></details></aside>
+</main>
+<dialog id="dialog"><form id="dialog-form"><div class="section-title"><h2 id="dialog-title"></h2><button type="button" id="dismiss">닫기</button></div><div id="dialog-fields"></div><div class="dialog-footer"><button type="submit" class="primary">저장</button></div></form></dialog>
+</body></html>

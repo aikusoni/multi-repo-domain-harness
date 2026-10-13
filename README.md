@@ -10,6 +10,11 @@
 
 여러 도메인과 여러 코드 저장소를 하나의 작업 맥락으로 연결하는 문서 기반 하네스다.
 
+작업별 방에서 조율하려면 선택적 [룸 서버·웹 화면](room/README.md)을 사용한다.
+`python3 -B room/server.py`로 실행하며 외부 패키지 설치 없이 방·대화·멤버·승인 실행·인수인계와 기록
+내보내기를 제공한다. 모델 실행기는 로컬 설정으로 연결한다. [룸 협업 계약](docs/room-harness.md)에 따라
+공유 파일 정본과 primary checkout을 유지한다.
+
 이 저장소는 제품 코드를 소유하지 않는다. 대신 저장소별 책임, 공통 계약, 교차 저장소 요청,
 영향 있는 변경, 활성 이슈와 실행 작업을 한곳에서 추적한다. AI 코딩 세션과 사람이 같은 운영
 규칙을 사용해 작업을 이어받을 수 있도록 현재 상태와 이력을 분리한다.
@@ -222,7 +227,9 @@ Python 3.10 이상으로 운영 도구와 테스트를 직접 실행한다. Git 
 python3 operators/harness-worktree-guard.py check .
 python3 operators/curation-status.py
 python3 operators/feedback-status.py
+python3 -B room/server.py
 python3 -B -m unittest discover -s operators/tests -v
+python3 -B -m unittest discover -s room/tests -v
 ```
 
 Windows에서는 `python3` 대신 `py -3` 또는 `python`을 사용한다. 기존 `.sh` 호출과 별도 설치한 hook은

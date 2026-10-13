@@ -19,6 +19,7 @@
 - 로컬 review·원격 PR·feature·release·정본의 변경 승격 계약
 - 하네스 primary checkout 전용 변경 경계와 linked worktree 판정·차단
 - 여러 세션이 최신 하네스 기록을 다시 읽는 공유 working-directory 가시성과 통신 계층 경계
+- 선택적 로컬 룸 서버·웹 뷰, 통신 예산·승인 실행과 Claude·Codex의 독립 실행기 설정
 
 ## 제공 계약
 
@@ -28,6 +29,7 @@
 - `FEEDBACK.md`, `feedback/README.md`
 - `operators/curation-status.md`, `operators/harness-audit.md`, `operators/feedback-status.md`,
   `operators/harness-worktree-guard.md`, `operators/review-branch.md`
+- `docs/room-harness.md`, `operators/room-server.md`, `room/README.md`
 - 각 운영 폴더의 `README.md`와 템플릿
 
 ## 소비 계약
