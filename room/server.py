@@ -2,6 +2,7 @@
 
 import argparse
 import copy
+import hashlib
 import hmac
 import json
 import os
@@ -25,6 +26,12 @@ else:
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB = Path(__file__).resolve().parent / "web"
+ASSETS = {"/": ("index.html", "text/html; charset=utf-8"),
+          "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+          "/style.css": ("style.css", "text/css; charset=utf-8"),
+          "/board": ("board.html", "text/html; charset=utf-8"),
+          "/board.js": ("board.js", "text/javascript; charset=utf-8"),
+          "/board.css": ("board.css", "text/css; charset=utf-8")}
 MAX_TEXT = 24000
 MAX_OUTPUT = 64000
 
@@ -108,7 +115,8 @@ class Store:
         for room in self.state["rooms"].values():
             for job in room["jobs"].values():
                 if job["status"] == "running":
-                    job.update(status="interrupted", output="서버 중단. 외부 부작용을 확인한 후 새 실행을 요청하세요.")
+                    job.update(status="interrupted", recovery="pending",
+                               output="서버 중단. 외부 부작용을 확인한 후 새 실행을 요청하세요.")
         self.save()
 
     def save(self):
@@ -137,6 +145,30 @@ class Hub:
         result["stamp"] = self.stamp()
         result["capabilities"] = {"auto_dispatch": False, "canonical_write": False}
         return result
+
+    @staticmethod
+    def needs_recovery(job):
+        return job["status"] in ("interrupted", "timed_out") and job.get("recovery", "pending") == "pending"
+
+    def board(self):
+        """Build an allowlisted observation projection, never redact a full snapshot."""
+        with self.store.lock:
+            rooms = []
+            for ordinal, room in enumerate(self.store.state["rooms"].values(), 1):
+                jobs = list(room["jobs"].values())
+                running = sum(j["status"] == "running" for j in jobs)
+                pending = sum(j["status"] == "pending" for j in jobs)
+                recovery = sum(self.needs_recovery(j) for j in jobs)
+                status = ("closed" if room["closed"] else "paused" if room["paused"] else
+                          "running" if running else "recovery" if recovery else "approval" if pending else "idle")
+                rooms.append({"alias": f"Room {ordinal:02}", "status": status,
+                              "members": sum(m["active"] for m in room["members"].values()),
+                              "running": running, "pending": pending, "recovery": recovery,
+                              "tx_count": room["tx_count"], "tx_limit": 10})
+            return {"rooms": rooms, "totals": {"rooms": len(rooms),
+                    "running": sum(r["running"] for r in rooms),
+                    "pending": sum(r["pending"] for r in rooms),
+                    "recovery": sum(r["recovery"] for r in rooms)}}
 
     def stamp(self):
         for line in (self.root / "INDEX.md").read_text().splitlines():
@@ -265,6 +297,27 @@ class Hub:
                                    "status": "pending", "at": now(), "output": "", "stamp": self.stamp()}
             self.event(room, "approval", f"{jid} 실행 승인 대기")
             return {"job_id": jid}
+        elif action == "recover_job":
+            job = room["jobs"].get(data.get("job_id"))
+            if not job or not self.needs_recovery(job):
+                raise ValueError("복구 판단이 필요한 중단 실행을 찾을 수 없습니다.")
+            if data.get("reviewed") is not True:
+                raise ValueError("Git·외부 상태·부분 부작용을 먼저 확인하세요.")
+            decision = data.get("decision")
+            if decision == "discard":
+                job.update(recovery="discarded", reviewed_at=now())
+                self.event(room, "recovery", f"{job['id']} 재실행 안 함 · 부분 부작용 확인")
+            elif decision == "prepare":
+                if room["stamp"] != self.stamp():
+                    raise ValueError("INDEX가 변경되었습니다. 새 규칙을 읽고 새 방에서 이어가세요.")
+                result = self.room_action(room, "request_run", {"member_id": job["member_id"],
+                                          "driver": job["driver"], "prompt": data.get("prompt")})
+                room["jobs"][result["job_id"]]["source_job"] = job["id"]
+                job.update(recovery="reviewed", reviewed_at=now(), replacement_job=result["job_id"])
+                self.event(room, "recovery", f"{job['id']} → {result['job_id']} 새 승인 대기")
+                return result
+            else:
+                raise ValueError("복구 결정은 prepare 또는 discard입니다.")
         elif action in ("approve", "reject", "cancel"):
             job = room["jobs"].get(data.get("job_id"))
             if job is None:
@@ -386,6 +439,8 @@ class Hub:
                 job.update(status=result, ended=now(), exit_code=exit_code,
                            output=output.decode("utf-8", errors="replace"),
                            output_limit_bytes=MAX_OUTPUT)
+                if result in ("interrupted", "timed_out"):
+                    job["recovery"] = "pending"
                 self.event(self.room(room_id), "run", f"{job_id} {result} · 업무 검증은 별도 확인")
                 self.store.save()
 
@@ -460,8 +515,12 @@ class Handler(BaseHTTPRequestHandler):
         if self.headers.get("Sec-Fetch-Site") not in (None, "same-origin", "none"):
             self.send(403, {"error": "교차 사이트 요청 거부"})
             return False
-        if mutation or self.path.startswith("/api/"):
-            if not hmac.compare_digest(self.headers.get("X-Room-Token", ""), self.server.token):
+        path = urlsplit(self.path).path
+        if mutation or (path.startswith("/api/") and path != "/api/version"):
+            token = self.headers.get("X-Room-Token", "")
+            owner = hmac.compare_digest(token, self.server.token)
+            viewer = path == "/api/board" and not mutation and hmac.compare_digest(token, self.server.view_token)
+            if not (owner or viewer):
                 self.send(403, {"error": "로컬 룸 토큰 필요"})
                 return False
         return True
@@ -472,20 +531,25 @@ class Handler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         try:
             if path == "/api/state":
-                self.send(200, self.server.hub.snapshot())
+                result = self.server.hub.snapshot()
+                result.update(version=self.server.version, board_url="/board#" + self.server.view_token)
+                self.send(200, result)
+            elif path == "/api/board":
+                result = self.server.hub.board()
+                result["version"] = self.server.version
+                self.send(200, result)
+            elif path == "/api/version":
+                self.send(200, {"version": self.server.version})
             elif path == "/api/export":
                 from urllib.parse import parse_qs
                 rid = parse_qs(urlsplit(self.path).query).get("room_id", [""])[0]
                 self.send(200, self.server.hub.export(rid).encode(), "text/markdown; charset=utf-8")
             else:
-                assets = {"/": ("index.html", "text/html; charset=utf-8"),
-                          "/app.js": ("app.js", "text/javascript; charset=utf-8"),
-                          "/style.css": ("style.css", "text/css; charset=utf-8")}
-                asset = assets.get(path)
+                asset = self.server.assets.get(path)
                 if not asset:
                     self.send(404, {"error": "찾을 수 없습니다."})
                     return
-                self.send(200, (WEB / asset[0]).read_bytes(), asset[1])
+                self.send(200, asset[0], asset[1])
         except (ValueError, OSError):
             self.send(400, {"error": "조회할 수 없습니다."})
 
@@ -521,10 +585,18 @@ class LocalServer(ThreadingHTTPServer):
         self.server_port = self.server_address[1]
 
 
-def make_server(hub, port=8765):
+def make_server(hub, port=8765, web_dir=WEB):
+    assets = {url: ((web_dir / filename).read_bytes(), mime) for url, (filename, mime) in ASSETS.items()}
+    digest = hashlib.sha256()
+    for url in sorted(assets):
+        digest.update(url.encode() + b"\0" + assets[url][0])
+    for source in (Path(__file__), Path(__file__).with_name("drivers.py")):
+        digest.update(source.read_bytes())
     server = LocalServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True
     server.hub, server.token = hub, secrets.token_urlsafe(32)
+    server.view_token = secrets.token_urlsafe(32)
+    server.assets, server.version = assets, digest.hexdigest()[:16]
     return server
 
 

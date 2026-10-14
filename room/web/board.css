@@ -1,0 +1,41 @@
+:root {font-family:system-ui,-apple-system,sans-serif;color:#233f36;background:#eef3ec}
+* {box-sizing:border-box}
+body {margin:0;padding:40px max(24px,calc((100vw - 1200px)/2));min-height:100vh}
+header {display:flex;justify-content:space-between;align-items:center;gap:24px}
+h1 {font-size:32px;letter-spacing:-1px;margin:5px 0}
+h2 {font-size:16px;margin:0}
+.eyebrow {font-size:11px;letter-spacing:2px;color:#6f8377;margin:0}
+#connection {font-size:12px;border:1px solid #cedacf;border-radius:18px;padding:8px 13px;white-space:nowrap}
+.intro,footer {font-size:13px;line-height:1.9;color:#6a7c71}
+.intro {margin:22px 0 30px}
+#notice {padding:14px 18px;background:#fff1d9;color:#654825;border-radius:9px;font-size:13px}
+#totals {display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:38px}
+.total {border:1px solid #d7e1d4;background:#f8faf5;border-radius:14px;padding:22px}
+.total strong {display:block;font-size:30px;font-weight:600;margin-bottom:7px}
+.total small {font-size:12px;color:#6a7c71}
+.section-heading {display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}
+button {border:1px solid #cad8c8;border-radius:8px;background:#f8faf5;color:#365847;padding:10px 14px;cursor:pointer;font:inherit;font-size:12px}
+button:disabled {opacity:.45;cursor:default}
+button:focus-visible {outline:2px solid #598069;outline-offset:3px}
+#rooms {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.room {border:1px solid #d1dfcf;border-radius:16px;background:#f9fbf6;padding:22px;overflow:hidden}
+.room-head {display:flex;justify-content:space-between;align-items:center;gap:12px}
+.room-head strong {font-size:15px;letter-spacing:.4px}
+.badge {font-size:11px;border-radius:14px;padding:6px 10px;background:#e8eee5;color:#5c7364}
+.garden {height:105px;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:17px 0;background:radial-gradient(ellipse at center,#dfead7 0,transparent 66%);border-bottom:1px solid #e3eadf}
+.member {width:14px;height:26px;border-radius:7px 7px 5px 5px;background:#95b287;position:relative;margin:10px 2px}
+.member::before {content:'';position:absolute;left:2px;top:-9px;width:10px;height:10px;border-radius:50%;background:#5c8266}
+.room[data-status=running] .member {animation:working 2s ease-in-out infinite}
+.room[data-status=running] .badge {background:#dcebdd;color:#2e6043}
+.room[data-status=approval] .badge {background:#fff0cd;color:#876526}
+.room[data-status=recovery] .badge {background:#e9e2f2;color:#685b8d}
+.room[data-status=paused] .badge {background:#f5e6d7;color:#865d34}
+.room[data-status=closed] {opacity:.58}
+.room p {font-size:12px;color:#6c8072;line-height:1.9;margin:5px 0}
+.budget {display:block;height:4px;width:100%;margin-top:13px;accent-color:#76936a}
+.empty {grid-column:1/-1;padding:65px;text-align:center;border:1px dashed #bdceba;border-radius:14px;color:#7a8d7e;font-size:14px}
+footer {margin:30px 0 10px;font-size:11px}
+@keyframes working {50% {transform:translateY(-5px)}}
+@media(prefers-reduced-motion:reduce) {.room[data-status=running] .member {animation:none}}
+@media(max-width:900px) {#rooms {grid-template-columns:repeat(2,1fr)}body {padding:30px 20px}}
+@media(max-width:560px) {#rooms {grid-template-columns:1fr}#totals {grid-template-columns:repeat(2,1fr)}h1 {font-size:24px}header {align-items:flex-start;flex-direction:column}}

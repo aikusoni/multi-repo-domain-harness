@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rooms · 관찰 보드</title>
+  <link rel="stylesheet" href="/board.css"><script src="/board.js" defer></script>
+</head>
+<body>
+  <header><div><p class="eyebrow">LOCAL · READ ONLY</p><h1>작업이 흐르는 곳</h1></div><span id="connection" role="status">연결 중</span></header>
+  <p class="intro">방의 흐름만 살펴봅니다. 이름, 방 제목, 레포, 대화와 실행 출력은 이 화면에 전달되지 않습니다.</p>
+  <p id="notice" role="alert" hidden></p>
+  <section id="totals" aria-label="전체 작업 현황"></section>
+  <div class="section-heading"><h2>작업 방</h2><button id="download" disabled>익명 현황 저장</button></div>
+  <section id="rooms" aria-label="방별 상태"></section>
+  <footer>각 점은 연결된 멤버 수를 나타냅니다. 상태는 서버 관리 실행 기준이며 업무 검증·배포 완료를 뜻하지 않습니다.</footer>
+</body>
+</html>
