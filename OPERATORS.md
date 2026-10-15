@@ -24,6 +24,13 @@
 
 ## 등록된 operator
 
+### operator:room-evaluate
+- **목적**: 비동기 API·skill·권한·품질 판정·trace·복구를 독립 fixture와 baseline으로 평가한다.
+- **owner**: harness
+- **구현**: `room/evaluate.py`
+- **계약**: `operators/room-evaluate.md`
+- **영향**: 전체
+
 ### operator:room-server
 - **목적**: 선택적 로컬 룸 서버·웹 화면에서 작업별 방·전달 예산·사람 승인 실행·인수인계를 조정한다.
 - **owner**: harness

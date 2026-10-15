@@ -130,6 +130,31 @@ sessionStorage에만 보관해 새로고침 후 복원한다. 승인 체크는 �
 출력된 새 오너 주소를 같은 탭에서 열고, 관찰 보드도 오너 화면의 새 링크로 다시 연다.
 초안·오너 화면·전체 transcript에는 개인 정보가 있을 수 있으며 보드의 제외 정책이 그것까지 지우지는 않는다.
 
+## Skills·비동기 API·Trace·평가
+
+investigate·review-change·implement-change는 version·역할·mode·산출물을 가진 룸 workflow다. 기존 호출은
+general로 유지한다. mode 없는 custom 실행기는 제한 skill에 연결할 수 없다. 오너 GET /api/skills로
+계약을 조회한다. 개인 Codex/Claude plugin skill을 설치하는 기능은 아니다.
+
+오너 POST /api/runs는 room_id·member_id·driver·prompt와 선택적 skill·references를 받아 202·job_id·
+trace_id·Location을 반환한다. GET /api/runs/<job-id>?room_id=<room-id>에서 조회하며 pending은 승인
+대기다. 실행은 별도 approve가 필요하다. 관찰 token에는 접근 권한이 없다. references는 사람이 제공한
+비정본 자료이며 자동 검색 RAG는 아니다.
+
+조회 trace는 요청·승인·실행·검증·복구 span과 duration·exit·출력 잘림만 담는다. 프롬프트·참고 자료·출력·
+경로·이름·검증 근거 본문과 모델 사고 과정은 포함하지 않는다. 모델 tool call·token은 미수집이다.
+exit 0이어도 검증은 NOT_RUN이며 실제 검사 후 오너 action record_verification으로 job_id·status·evidence를
+기록한다. source=owner-recorded로 자동 평가와 구분한다.
+
+```text
+python3 -B -m room.evaluate --output local/evaluations/current.json
+python3 -B -m room.evaluate --case api-async-run
+```
+
+이 데모·평가는 합성 fixture와 가짜 실행기다. 0건·실패·입력 오류를 성공으로 처리하지 않으며 실제 모델
+품질·운영 실적으로 표현하지 않는다. [구현·검증 범위](../docs/agent-engineering.md)와
+[평가 operator](../operators/room-evaluate.md)에 전체 계약·추가 검증 기준이 있다.
+
 ## 범위와 제한
 
 방·멤버·실행·승인·대화 검색·노트·내보내기와 기존 하네스 통신 예산을 제공한다. 모델 자동 선택,

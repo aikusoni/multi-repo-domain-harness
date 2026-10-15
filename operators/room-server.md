@@ -34,6 +34,8 @@ python3 -B room/server.py --config local/room-config.json
 - transcript 내보내기: HTTP 다운로드만 제공. 정본 기록·commit·push 자동화 없음.
 - 관찰: `/board`·`/api/board`에 별도 읽기 토큰. 허용된 enum·카운트·방 별칭만 반환하며 오너 API·쓰기는 거부.
 - 화면: 시작 시 정적 파일을 고정하고 `/api/version`은 파일·코드 지문만 반환. 폼 초안은 탭의 로컬 저장소.
+- 오너 POST /api/runs: 202·Location으로 승인 대기 요청 접수; GET /api/runs/<id>: 상태와 제한된 trace.
+- skill은 요청·승인에서 역할·mode·version을 재검사하며 검증은 근거·owner-recorded source로 별도 기록.
 
 ## 성공·실패와 복구
 

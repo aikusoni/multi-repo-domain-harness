@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"id": "api-async-run", "category": "api", "scenario": "async_run"},
+    {"id": "security-reviewer-boundary", "category": "security", "scenario": "reviewer_boundary"},
+    {"id": "security-untrusted-reference", "category": "security", "scenario": "untrusted_reference"},
+    {"id": "security-private-trace", "category": "security", "scenario": "private_trace"},
+    {"id": "quality-exit-is-not-pass", "category": "quality", "scenario": "verification_required"},
+    {"id": "quality-check-evidence", "category": "quality", "scenario": "verification_evidence"},
+    {"id": "reliability-timeout", "category": "reliability", "scenario": "timeout"},
+    {"id": "reliability-recovery", "category": "reliability", "scenario": "recovery"},
+    {"id": "observability-lineage", "category": "observability", "scenario": "trace_lineage"}
+  ]
+}

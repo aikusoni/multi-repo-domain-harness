@@ -21,8 +21,11 @@ from urllib.parse import urlsplit
 
 if __package__:
     from .drivers import command as cli_command
+    from . import skills, tracing
 else:
     from drivers import command as cli_command
+    import skills
+    import tracing
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB = Path(__file__).resolve().parent / "web"
@@ -117,6 +120,7 @@ class Store:
                 if job["status"] == "running":
                     job.update(status="interrupted", recovery="pending",
                                output="서버 중단. 외부 부작용을 확인한 후 새 실행을 요청하세요.")
+                    tracing.record(job, "execution", "interrupted")
         self.save()
 
     def save(self):
@@ -175,6 +179,18 @@ class Hub:
             if "규칙 버전:" in line:
                 return line
         raise ValueError("INDEX 규칙 스탬프가 없습니다.")
+
+    def run_status(self, room_id, job_id):
+        with self.store.lock:
+            job = self.room(room_id)["jobs"].get(job_id)
+            if not job:
+                raise ValueError("실행 요청을 찾을 수 없습니다.")
+            return {"job_id": job["id"], "status": job["status"],
+                    "skill": job.get("skill", "general"), "duration_ms": job.get("duration_ms"),
+                    "exit_code": job.get("exit_code"), "output_truncated": job.get("output_truncated"),
+                    "verification": job.get("verification", {}).get("status", "NOT_RUN"),
+                    "verification_source": job.get("verification", {}).get("source", "not_recorded"),
+                    "trace": tracing.project(job)}
 
     def room(self, room_id):
         room = self.store.state["rooms"].get(room_id)
@@ -271,6 +287,7 @@ class Hub:
             for job in room["jobs"].values():
                 if job["member_id"] == member["id"] and job["status"] == "pending":
                     job["status"] = "rejected"
+                    tracing.record(job, "approval", "rejected")
             self.event(room, "handoff", f"{member['id']} 퇴장 · {summary}")
         elif action == "close":
             if any(j["status"] == "running" for j in room["jobs"].values()):
@@ -278,6 +295,7 @@ class Hub:
             for job in room["jobs"].values():
                 if job["status"] == "pending":
                     job["status"] = "rejected"
+                    tracing.record(job, "approval", "rejected")
             room["closed"] = True
             self.event(room, "close", text(data.get("summary")))
         elif action == "request_run":
@@ -291,12 +309,29 @@ class Hub:
                 raise ValueError("observer는 실행할 수 없습니다.")
             if member["role"] == "reviewer" and self.config["drivers"][driver].get("mode") != "read-only":
                 raise ValueError("reviewer에는 read-only 실행기만 연결할 수 있습니다.")
+            skill_id = data.get("skill", "general")
+            skill = skills.select(skill_id, member["role"], self.config["drivers"][driver].get("mode", "unspecified"))
+            refs = skills.references(data.get("references", []))
             jid = identifier("job-")
             room["jobs"][jid] = {"id": jid, "member_id": member["id"], "driver": driver,
                                    "project": member["project"], "prompt": text(data.get("prompt")),
+                                   "skill": skill_id, "skill_version": skill["version"], "references": refs,
                                    "status": "pending", "at": now(), "output": "", "stamp": self.stamp()}
+            tracing.record(room["jobs"][jid], "request", "accepted")
             self.event(room, "approval", f"{jid} 실행 승인 대기")
-            return {"job_id": jid}
+            return {"job_id": jid, "trace_id": room["jobs"][jid]["trace"]["trace_id"]}
+        elif action == "record_verification":
+            job = room["jobs"].get(data.get("job_id"))
+            status = data.get("status")
+            if not job or job["status"] not in ("finished", "failed", "interrupted", "timed_out"):
+                raise ValueError("종료된 실행에만 검증 결과를 기록할 수 있습니다.")
+            if status not in ("PASS", "FAIL", "PARTIAL", "NOT_RUN"):
+                raise ValueError("검증 상태는 PASS, FAIL, PARTIAL, NOT_RUN입니다.")
+            if status == "PASS" and job["status"] != "finished":
+                raise ValueError("실행 실패·중단 상태를 PASS로 바꿀 수 없습니다.")
+            evidence = text(data.get("evidence"), 4000)
+            job["verification"] = {"status": status, "source": "owner-recorded", "evidence": evidence, "at": now()}
+            tracing.record(job, "verification", status)
         elif action == "recover_job":
             job = room["jobs"].get(data.get("job_id"))
             if not job or not self.needs_recovery(job):
@@ -306,14 +341,17 @@ class Hub:
             decision = data.get("decision")
             if decision == "discard":
                 job.update(recovery="discarded", reviewed_at=now())
+                tracing.record(job, "recovery", "discarded")
                 self.event(room, "recovery", f"{job['id']} 재실행 안 함 · 부분 부작용 확인")
             elif decision == "prepare":
                 if room["stamp"] != self.stamp():
                     raise ValueError("INDEX가 변경되었습니다. 새 규칙을 읽고 새 방에서 이어가세요.")
                 result = self.room_action(room, "request_run", {"member_id": job["member_id"],
-                                          "driver": job["driver"], "prompt": data.get("prompt")})
+                                          "driver": job["driver"], "prompt": data.get("prompt"),
+                                          "skill": job.get("skill", "general"), "references": job.get("references", [])})
                 room["jobs"][result["job_id"]]["source_job"] = job["id"]
                 job.update(recovery="reviewed", reviewed_at=now(), replacement_job=result["job_id"])
+                tracing.record(job, "recovery", "prepared")
                 self.event(room, "recovery", f"{job['id']} → {result['job_id']} 새 승인 대기")
                 return result
             else:
@@ -327,6 +365,7 @@ class Hub:
                     raise ValueError("실행 중인 요청만 중지할 수 있습니다.")
                 process = self.processes.get(job["id"])
                 job["cancel_requested"] = True
+                tracing.record(job, "cancellation", "requested")
                 if process:
                     self.stop_process(process)
                 self.event(room, "cancel", f"{job['id']} 중지 요청 · 부분 부작용 확인 필요")
@@ -335,9 +374,14 @@ class Hub:
                 raise ValueError("이미 처리된 승인입니다.")
             if action == "reject":
                 job["status"] = "rejected"
+                tracing.record(job, "approval", "rejected")
                 self.event(room, "approval", f"{job['id']} 거절")
                 return
             member = self.member(room, job["member_id"])
+            selected = skills.select(job.get("skill", "general"), member["role"],
+                                     self.config["drivers"][job["driver"]].get("mode", "unspecified"))
+            if job.get("skill_version", selected["version"]) != selected["version"]:
+                raise ValueError("skill 버전이 변경되었습니다. 새 요청을 만드세요.")
             if room["paused"] or member["received"] >= 5 or room["stamp"] != self.stamp() or job["stamp"] != self.stamp():
                 raise ValueError("예산 또는 INDEX 규칙이 변경되었습니다. 새 방에서 지침을 다시 확인하세요.")
             # A project is a single writable resource, even across rooms.
@@ -346,6 +390,8 @@ class Hub:
                 raise ValueError("이 프로젝트에서 다른 실행이 진행 중입니다.")
             job["status"] = "running"
             job["started"] = now()
+            tracing.record(job, "approval", "approved")
+            tracing.record(job, "execution", "running")
             self.event(room, "approval", f"{job['id']} 사람 승인 · 실행 시작")
             # Persist the consumed approval before launching an external command.
             self.store.save()
@@ -367,6 +413,8 @@ class Hub:
 
     def execute(self, room_id, job_id):
         output = bytearray()
+        total_output_bytes = 0
+        started = time.perf_counter()
         result = "failed"
         exit_code = None
         try:
@@ -384,10 +432,12 @@ class Hub:
                 self.processes[job_id] = process
 
             def read_output():
+                nonlocal total_output_bytes
                 while True:
                     chunk = process.stdout.read(4096)
                     if not chunk:
                         break
+                    total_output_bytes += len(chunk)
                     remaining = MAX_OUTPUT - len(output)
                     if remaining > 0:
                         output.extend(chunk[:remaining])
@@ -403,7 +453,7 @@ class Hub:
                                f"Project: {job['project']}. Role: {member['role']}. "
                                "This approval covers only this prompt; push, merge, deployment and external messages "
                                "need separate human authorization. Report observed verification and partial effects.\n\n"
-                               + job["prompt"])
+                               + skills.prompt(job, member["role"], driver.get("mode", "unspecified")))
                     process.stdin.write(context.encode())
                     process.stdin.close()
                 except (BrokenPipeError, OSError):
@@ -438,7 +488,9 @@ class Hub:
                     result = "interrupted"
                 job.update(status=result, ended=now(), exit_code=exit_code,
                            output=output.decode("utf-8", errors="replace"),
-                           output_limit_bytes=MAX_OUTPUT)
+                           output_limit_bytes=MAX_OUTPUT, output_truncated=total_output_bytes > MAX_OUTPUT,
+                           duration_ms=round((time.perf_counter() - started) * 1000, 3))
+                tracing.record(job, "execution", result, job["duration_ms"])
                 if result in ("interrupted", "timed_out"):
                     job["recovery"] = "pending"
                 self.event(self.room(room_id), "run", f"{job_id} {result} · 업무 검증은 별도 확인")
@@ -464,6 +516,8 @@ class Hub:
                                      driver.get("model"), driver.get("effort"))
                          if driver.get("type") in ("claude", "codex") else driver["argv"])
             return {"argv": driver["argv"], "effective_argv": effective,
+                    "skill": job.get("skill", "general"), "skill_version": job.get("skill_version"),
+                    "references": job.get("references", []),
                     "cwd": self.config["projects"][job["project"]], "prompt": job["prompt"],
                     "timeout": self.config["drivers"][job["driver"]]["timeout"]}
 
@@ -493,7 +547,7 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass  # URLs and message bodies are not operational logs.
 
-    def send(self, status, body, content_type="application/json; charset=utf-8"):
+    def send(self, status, body, content_type="application/json; charset=utf-8", headers=None):
         payload = json.dumps(body, ensure_ascii=False).encode() if isinstance(body, dict) else body
         self.send_response(status)
         self.send_header("Content-Type", content_type)
@@ -501,6 +555,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'")
+        for key, value in (headers or {}).items():
+            self.send_header(key, value)
         self.end_headers()
         self.wfile.write(payload)
 
@@ -540,6 +596,12 @@ class Handler(BaseHTTPRequestHandler):
                 self.send(200, result)
             elif path == "/api/version":
                 self.send(200, {"version": self.server.version})
+            elif path == "/api/skills":
+                self.send(200, {"skills": skills.SKILLS})
+            elif path.startswith("/api/runs/"):
+                from urllib.parse import parse_qs
+                room_id = parse_qs(urlsplit(self.path).query).get("room_id", [""])[0]
+                self.send(200, self.server.hub.run_status(room_id, path.rsplit("/", 1)[1]))
             elif path == "/api/export":
                 from urllib.parse import parse_qs
                 rid = parse_qs(urlsplit(self.path).query).get("room_id", [""])[0]
@@ -569,6 +631,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.send(200, self.server.hub.action(data))
             elif self.path == "/api/approval-details":
                 self.send(200, self.server.hub.approval_details(data.get("room_id"), data.get("job_id")))
+            elif self.path == "/api/runs":
+                result = self.server.hub.action({**data, "action": "request_run"})
+                from urllib.parse import urlencode
+                location = "/api/runs/" + result["job_id"] + "?" + urlencode({"room_id": data["room_id"]})
+                self.send(202, {**result, "status": "pending", "status_url": location}, headers={"Location": location})
             else:
                 self.send(404, {"error": "찾을 수 없습니다."})
         except (ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
@@ -590,7 +657,7 @@ def make_server(hub, port=8765, web_dir=WEB):
     digest = hashlib.sha256()
     for url in sorted(assets):
         digest.update(url.encode() + b"\0" + assets[url][0])
-    for source in (Path(__file__), Path(__file__).with_name("drivers.py")):
+    for source in (Path(__file__), *(Path(__file__).with_name(name) for name in ("drivers.py", "skills.py", "tracing.py"))):
         digest.update(source.read_bytes())
     server = LocalServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True
