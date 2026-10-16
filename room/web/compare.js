@@ -1,6 +1,6 @@
 'use strict';
 window.RoomCompare = (() => {
-  let context=null, file=null, entries=[], selected=null, anchor=null, selectionSide='new', dragging=false, threadRoot=null, sending=false, changeIndex=-1, generation=0;
+  let context=null, file=null, entries=[], selected=null, anchor=null, selectionSide='new', dragging=false, focusIndex=null, threadRoot=null, sending=false, changeIndex=-1, generation=0;
   const fail=e=>{$('compare-error').textContent=e.message||String(e);$('compare-error').hidden=false;};
   const clearError=()=>{$('compare-error').hidden=true;};
   const askKey=()=>context&&file ? 'room-code-question-'+context.room_id+'-'+context.project+'-'+file.path : null;
@@ -10,12 +10,12 @@ window.RoomCompare = (() => {
     let draft;try{draft=JSON.parse(raw);}catch{}
     $('code-question').value=draft&&typeof draft.text==='string'?draft.text:sessionStorage.getItem(askKey())||'';
     selected=draft?.digest===file.digest&&Array.isArray(draft?.selected)&&draft.selected.length===2&&draft.selected.every(Number.isInteger)&&draft.selected[0]>=0&&draft.selected[0]<=draft.selected[1]&&draft.selected[1]<file.rows.length?draft.selected:null;
-    selectionSide=draft?.selectionSide==='old'?'old':'new';anchor=selected?.[0]??null;
+    selectionSide=draft?.selectionSide==='old'?'old':'new';anchor=selected?.[0]??null;focusIndex=selected?.[1]??null;
     threadRoot=typeof draft?.threadRoot==='string'?draft.threadRoot:null;
   }
   const request=(path='')=>'/api/diff?'+new URLSearchParams({...context,...(path?{path}:{})});
   const editableTarget=element=>element?.matches('input,textarea,select,[contenteditable="true"]');
-  function clearSelection(){selected=null;anchor=null;renderSelection();saveQuestion();}
+  function clearSelection(){selected=null;anchor=focusIndex=null;renderSelection();saveQuestion();}
   function renderSelection(){
     const ranges=selectionRanges();
     $('compare-selection').textContent=Object.entries(ranges).map(([side,range])=>`${side==='old'?'변경 전':'변경 후'} L${range[0]}–${range[1]}`).join(' · ')||'바뀐 줄 첨부';
@@ -45,29 +45,45 @@ window.RoomCompare = (() => {
     if(!file)return;
     $('compare-path').textContent=file.path+(file.newline_changed?' · 끝 개행 변경':'');
     if(file.binary||file.unsupported){view.append(node('p',file.binary?'이진 파일입니다. 내용과 질문을 제공하지 않습니다.':'symlink·submodule 등 일반 소스 파일이 아닌 항목입니다.'));return;}
-    const table=node('table'), head=node('thead'), heading=node('tr');
-    for(const title of ['줄','변경 전','줄','변경 후'])heading.append(node('th',title));
-    head.append(heading);table.append(head);const body=node('tbody');
-    file.rows.forEach((row,index)=>{
-      const tr=node('tr',null,row.kind);tr.dataset.index=index;if(row.change!==null)tr.dataset.change=row.change;
-      for(const side of ['old','new']){
+    let syncing=false;
+    const panes=[];
+    for(const side of ['old','new']){
+      const pane=node('div',null,'code-side');pane.dataset.side=side;pane.tabIndex=0;pane.setAttribute('role','region');pane.setAttribute('aria-label',side==='old'?'변경 전 코드':'변경 후 코드');
+      const table=node('table'),head=node('thead'),heading=node('tr');
+      heading.append(node('th','줄'),node('th',(side==='old'?'변경 전 · ':'변경 후 · ')+(side==='old'?context.base.slice(0,8):context.head==='WORKTREE'?'현재 작업 파일':context.head.slice(0,8))));
+      head.append(heading);table.append(head);const body=node('tbody');
+      file.rows.forEach((row,index)=>{
+        const tr=node('tr',null,row.kind);tr.dataset.index=index;if(row.change!==null)tr.dataset.change=row.change;
         const number=node('td',row[side+'_line']??'', 'line-number'),content=node('td',null,'source '+side);
         number.dataset.side=content.dataset.side=side;
         content.append(row.kind==='change'&&row.old_line!==null&&row.new_line!==null?marked(row[side],row[side==='old'?'new':'old']):node('code',row[side]));
         if(row[side+'_line']===null)content.classList.add('missing');tr.append(number,content);
-      }
-      tr.onpointerdown=event=>{
-        if(event.button!==0)return;
-        const side=event.target.closest('td')?.dataset.side;if(!side||row[side+'_line']===null)return;
-        if(event.shiftKey&&anchor!==null&&selectionSide===side)selected=[Math.min(anchor,index),Math.max(anchor,index)];else{anchor=index;selectionSide=side;selected=[index,index];}
-        dragging=true;renderSelection();saveQuestion();
-      };
-      tr.onpointerenter=event=>{if(dragging&&event.buttons===1&&anchor!==null){selected=[Math.min(anchor,index),Math.max(anchor,index)];renderSelection();saveQuestion();}};
-      body.append(tr);
-    });
-    table.append(body);view.append(table);
+        tr.onpointerdown=event=>{
+          if(event.button!==0||row[side+'_line']===null)return;
+          if(event.shiftKey&&anchor!==null&&selectionSide===side)selected=[Math.min(anchor,index),Math.max(anchor,index)];else{anchor=index;selectionSide=side;selected=[index,index];}
+          focusIndex=index;dragging=true;pane.focus({preventScroll:true});renderSelection();saveQuestion();
+        };
+        tr.onpointerenter=event=>{if(dragging&&event.buttons===1&&anchor!==null&&selectionSide===side){focusIndex=index;selected=[Math.min(anchor,index),Math.max(anchor,index)];renderSelection();saveQuestion();}};
+        body.append(tr);
+      });
+      table.append(body);pane.append(table);panes.push(pane);view.append(pane);
+      pane.onscroll=()=>{if(syncing)return;const other=panes.find(p=>p!==pane);if(other&&Math.abs(other.scrollTop-pane.scrollTop)>1){syncing=true;other.scrollTop=pane.scrollTop;syncing=false;}};
+    }
     if(!file.rows.length)view.append(node('p','텍스트 줄 차이가 없습니다. 파일 모드 또는 개행 변경을 확인하세요.'));
+    alignRows();
     renderSelection();
+  }
+  function alignRows(){
+    const panes=[...$('compare-code').querySelectorAll('.code-side')];if(panes.length!==2)return;
+    const rows=panes.map(p=>[...p.querySelectorAll('tbody tr')]);
+    rows.flat().forEach(row=>{row.style.height='';});
+    if($('compare-wrap').checked){const heights=rows[0].map((row,index)=>Math.max(row.getBoundingClientRect().height,rows[1][index].getBoundingClientRect().height));rows.forEach(side=>side.forEach((row,index)=>{row.style.height=heights[index]+'px';}));}
+  }
+  let alignmentFrame;
+  new ResizeObserver(()=>{cancelAnimationFrame(alignmentFrame);alignmentFrame=requestAnimationFrame(alignRows);}).observe($('compare-code'));
+  function scrollRow(target){
+    const pane=target?.closest('.code-side');if(!pane)return;
+    pane.scrollTop+=target.getBoundingClientRect().top-pane.getBoundingClientRect().top-(pane.querySelector('thead')?.offsetHeight||0);
   }
   const questionText=job=>job.diff_context?.question||job.prompt.replace(/^코드 비교 질문: /,'').split('\n')[0];
   const fileJobs=()=>Object.values(state.rooms[context?.room_id]?.jobs||{}).filter(job=>job.diff_context?.project===context?.project&&job.diff_context?.path===file?.path);
@@ -81,7 +97,7 @@ window.RoomCompare = (() => {
     const disabled=sending||!file||file.binary||file.unsupported||room?.closed||!$('question-member').options.length||!$('question-driver').options.length||waiting||stale;
     $('compare-question-form').querySelector('button[type=submit]').disabled=!!disabled;
     $('ask-selection').disabled=!file||file.binary||file.unsupported;
-    $('code-chat-status').textContent=sending?'전송 내용을 준비하는 중…':waiting?'이 질문의 승인·응답을 기다리고 있습니다.':stale?'파일이 바뀌었습니다. 새 대화를 시작하세요.':latest?.status==='finished'?'앞선 질문·답변을 함께 전달합니다. Ctrl/Cmd+Enter로 보내기':'전송 내용을 확인하고 건별 승인 후 실행합니다.';
+    $('code-chat-status').textContent=sending?'전송 내용을 준비하는 중…':waiting?'이 질문의 승인·응답을 기다리고 있습니다.':stale?'파일이 바뀌었습니다. 새 대화를 시작하세요.':latest?.status==='finished'?'앞선 질문·답변을 함께 전달합니다. Enter 보내기 · Shift+Enter 줄바꿈':'전송 내용을 확인하고 건별 승인 후 실행합니다.';
   }
   function restoreJobSelection(job){
     if(job.diff_context.digest!==file?.digest)return;
@@ -89,8 +105,8 @@ window.RoomCompare = (() => {
     if(!range){clearSelection();return;}
     const indices=file.rows.flatMap((row,index)=>row[side+'_line']>=range[0]&&row[side+'_line']<=range[1]?[index]:[]);
     if(!indices.length)return;
-    selectionSide=side;selected=[indices[0],indices.at(-1)];anchor=selected[0];renderSelection();saveQuestion();
-    const target=$('compare-code').querySelector(`tr[data-index="${selected[0]}"]`);if(target)$('compare-code').scrollTop=target.offsetTop;
+    selectionSide=side;selected=[indices[0],indices.at(-1)];anchor=selected[0];focusIndex=selected[1];renderSelection();saveQuestion();
+    scrollRow($('compare-code').querySelector(`.code-side[data-side="${selectionSide}"] tr[data-index="${selected[0]}"]`));
   }
   function update(){
     if(!$('compare').open||!context)return;
@@ -121,7 +137,8 @@ window.RoomCompare = (() => {
     log.scrollTop=jobs.length?(nearEnd?log.scrollHeight:scroll):0;
   }
   async function loadFile(path){
-    saveQuestion();const revision=++generation;file=null;selected=anchor=null;threadRoot=null;changeIndex=-1;
+    saveQuestion();const revision=++generation;file=null;selected=anchor=focusIndex=null;threadRoot=null;changeIndex=-1;
+    renderSelection();update();
     $('compare-code').replaceChildren(node('p','파일을 읽는 중…'));$('compare-path').textContent=path;
     $('compare-files').querySelectorAll('button').forEach(b=>b.classList.toggle('selected',b.dataset.path===path));
     clearError();
@@ -131,16 +148,21 @@ window.RoomCompare = (() => {
     }catch(e){if(revision===generation){$('compare-code').replaceChildren(node('p','파일을 불러오지 못했습니다.'));fail(e);update();}}
   }
   async function load(){
-    saveQuestion();const revision=++generation;clearError();file=null;entries=[];
+    saveQuestion();const revision=++generation;clearError();file=null;entries=[];selected=anchor=focusIndex=null;threadRoot=null;renderSelection();
     context={room_id:context.room_id,project:$('compare-project').value,comparison:$('compare-mode').value,base:$('compare-base').value.trim(),head:$('compare-head').value.trim()};
     $('compare-files').replaceChildren();$('compare-code').replaceChildren(node('p','변경 목록을 읽는 중…'));
     try{
       const result=await api(request());if(revision!==generation||!$('compare').open)return;
       context.base=result.base;context.head=result.head;entries=result.files;
-      $('compare-info').textContent=`${result.base.slice(0,12)} → ${result.head==='WORKTREE'?'현재 작업 파일':result.head.slice(0,12)} · 변경 ${entries.length}개 · 인증/환경 경로 제외 ${result.excluded}개 · untracked 제외 · rename은 삭제/추가로 표시`;
+      $('compare-project-title').textContent=context.project;
+      $('compare-scope').textContent=`${result.base.slice(0,8)} → ${result.head==='WORKTREE'?'작업 파일':result.head.slice(0,8)}`;
+      $('compare-info').textContent=`파일 ${entries.length} · +${entries.reduce((n,f)=>n+(f.added||0),0)} −${entries.reduce((n,f)=>n+(f.deleted||0),0)}`;
+      $('compare-info').title=`추적 중인 파일 · 인증/환경 경로 제외 ${result.excluded}개 · untracked 제외 · rename은 삭제/추가`;
+      $('compare-settings').open=false;
+
       for(const item of entries){const b=button(`${item.status} ${item.path}`,()=>loadFile(item.path));b.dataset.path=item.path;b.append(node('small',item.binary?'이진 파일':`+${item.added??0} / −${item.deleted??0}`));$('compare-files').append(b);}
       if(entries.length)await loadFile(entries[0].path);
-      else{$('compare-path').textContent='변경 0개';$('compare-code').replaceChildren(node('p','선택한 범위에 추적 중인 파일 변경이 없습니다.'));update();}
+      else{$('change-position').textContent='변경 0/0';$('compare-path').textContent='변경 0개';$('compare-code').replaceChildren(node('p','선택한 범위에 추적 중인 파일 변경이 없습니다.'));update();}
     }catch(e){if(revision===generation){$('compare-code').replaceChildren(node('p','비교 범위를 불러오지 못했습니다.'));fail(e);update();}}
   }
   async function open(values={}){
@@ -155,15 +177,15 @@ window.RoomCompare = (() => {
   }
   function navigateFile(step){if(!entries.length)return;const index=entries.findIndex(entry=>entry.path===file?.path);const next=Math.min(entries.length-1,Math.max(0,index+step));if(next!==index)loadFile(entries[next].path);}
   function navigateChange(step){
-    const changes=[...new Set((file?.rows||[]).map(row=>row.change).filter(n=>n!==null))];if(!changes.length)return;
+    const changes=[...new Set((file?.rows||[]).map(row=>row.change).filter(n=>n!==null))];if(!changes.length){$('change-position').textContent='변경 0/0';return;}
     changeIndex=Math.max(0,Math.min(changes.length-1,changeIndex+step));
     const target=$('compare-code').querySelector(`tr[data-change="${changes[changeIndex]}"]`);
-    if(target)$('compare-code').scrollTop=target.offsetTop-($('compare-code').querySelector('thead')?.offsetHeight||0);
+    $('change-position').textContent=`변경 ${changeIndex+1}/${changes.length}`;scrollRow(target);
   }
   function modeChanged(){$('compare-head').disabled=$('compare-mode').value==='working';}
   function close(){saveQuestion();generation++;$('compare').close();}
   $('open-compare').onclick=()=>open().catch(error);
-  $('compare-close').onclick=close;
+  $('compare-close').onclick=close;$('compare-done').onclick=close;
   $('compare').addEventListener('cancel',event=>{if(selected){event.preventDefault();clearSelection();}else{saveQuestion();generation++;}});
   $('compare').addEventListener('close',()=>{saveQuestion();generation++;});
   $('compare-form').onsubmit=event=>{event.preventDefault();load();};
@@ -172,7 +194,7 @@ window.RoomCompare = (() => {
   $('previous-change').onclick=()=>navigateChange(-1);$('next-change').onclick=()=>navigateChange(1);
   $('changed-only').onchange=drawFile;
   $('compare-wrap').onchange=()=>{sessionStorage.setItem('room-compare-wrap',String($('compare-wrap').checked));drawFile();};
-  $('compare-wrap').checked=sessionStorage.getItem('room-compare-wrap')!=='false';
+  $('compare-wrap').checked=sessionStorage.getItem('room-compare-wrap')==='true';
   $('clear-selection').onclick=clearSelection;
   $('toggle-question').onclick=()=>{$('compare-question').hidden=!$('compare-question').hidden;};
   $('code-question').oninput=saveQuestion;
@@ -181,7 +203,7 @@ window.RoomCompare = (() => {
   $('code-chat-thread').onchange=()=>{threadRoot=$('code-chat-thread').value||null;saveQuestion();update();};
   for(const id of ['question-member','question-driver'])$(id).onchange=()=>{threadRoot=null;saveQuestion();update();};
   $('ask-selection').onclick=()=>{$('compare-question').hidden=false;$('code-question').focus();};
-  $('code-question').onkeydown=event=>{if(!event.isComposing&&event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();if(!$('compare-question-form').querySelector('button[type=submit]').disabled)$('compare-question-form').requestSubmit();}};
+  $('code-question').onkeydown=event=>{if(!event.isComposing&&event.key==='Enter'&&!event.shiftKey){event.preventDefault();if(!$('compare-question-form').querySelector('button[type=submit]').disabled)$('compare-question-form').requestSubmit();}};
   $('compare-question-form').onsubmit=async event=>{
     event.preventDefault();if(!file||sending)return;
     const submitted=file,scope={...context},question=$('code-question').value,latest=chatJobs().at(-1),replyTo=latest?.status==='finished'?latest.id:null;
@@ -195,7 +217,14 @@ window.RoomCompare = (() => {
   };
   $('compare-code').onkeydown=event=>{
     if(event.isComposing||editableTarget(event.target)||event.ctrlKey||event.metaKey)return;
-    const key=event.code;const view=$('compare-code');
+    const key=event.code;const view=event.target.closest('.code-side')||$('compare-code').querySelector('.code-side');if(!view)return;
+    if(key==='Tab'&&!event.shiftKey){event.preventDefault();$('compare-question').hidden=false;$('code-question').focus();return;}
+    if(event.shiftKey&&['ArrowUp','ArrowDown'].includes(key)&&file?.rows.length){
+      event.preventDefault();
+      const side=view.dataset.side;if(selectionSide!==side||anchor===null){selectionSide=side;anchor=focusIndex=0;}
+      focusIndex=Math.max(0,Math.min(file.rows.length-1,(focusIndex??anchor)+(key==='ArrowDown'?1:-1)));
+      selected=[Math.min(anchor,focusIndex),Math.max(anchor,focusIndex)];renderSelection();saveQuestion();scrollRow(view.querySelector(`tr[data-index="${focusIndex}"]`));return;
+    }
     const handlers={KeyJ:()=>navigateChange(1),KeyK:()=>navigateChange(-1),KeyN:()=>navigateFile(1),KeyP:()=>navigateFile(-1),KeyW:()=>{$('compare-wrap').click();},
       ArrowDown:()=>view.scrollBy(0,24),ArrowUp:()=>view.scrollBy(0,-24),ArrowRight:()=>view.scrollBy(80,0),ArrowLeft:()=>view.scrollBy(-80,0),
       PageDown:()=>view.scrollBy(0,view.clientHeight-48),PageUp:()=>view.scrollBy(0,-view.clientHeight+48),

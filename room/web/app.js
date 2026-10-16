@@ -14,6 +14,12 @@ async function api(path, data) {
 }
 async function act(action, data = {}) { const result = await api('/api/action', {action, room_id: active, ...data}); $('error').hidden = true; await refresh(); return result; }
 const current = () => state.rooms[active];
+function compareRequest(value){
+  const command=value.trim().match(/^\/(비교|diff|리뷰|review)(?:\s+(\S+))?(?:\s+(\S+)\.{3}(\S+))?$/i);
+  if(command)return {project:command[2],base:command[3],head:command[4],review:/^(리뷰|review)$/i.test(command[1])};
+  const natural=value.trim().match(/^(?:(\S+)\s+)?코드\s*리뷰\s*(?:(?:해\s*줘|해\s*주세요|보여\s*줘|보여\s*주세요|요청)(?:요)?)?[.!?]?$/);
+  return natural?{project:natural[1],review:true}:null;
+}
 const memberName = (room, id) => id === 'owner' ? '사람' : room.members[id]?.name || id;
 function options(select, choices, selected) { select.replaceChildren(); for (const [value, label] of choices) { const o = node('option', label); o.value = value; o.selected = Array.isArray(selected) ? selected.includes(value) : value === selected; select.append(o); } }
 function button(label, handler) { const b = node('button', label); b.type = 'button'; b.onclick = () => Promise.resolve().then(handler).catch(error); return b; }
@@ -89,6 +95,7 @@ function render() {
     b.id='message-'+m.id;
     if(m.reply_to){const original=originals.get(m.reply_to);const quote=button(original ? `↪ ${memberName(room,original.sender)}: ${original.text.replace(/\s+/g,' ').slice(0,120)}` : '원문을 찾을 수 없습니다.',()=>jumpToMessage(m.reply_to));quote.className='reply-quote';quote.disabled=!original;b.append(quote);}
     b.append(node('strong', `${memberName(room,m.sender)} → ${m.targets.map(id=>memberName(room,id)).join(', ') || '표시만'}`), node('small', `${m.at} · ${m.tx_count}/10`), node('div', m.text, 'body')); $('messages').append(b);
+    const review=m.sender==='owner'&&compareRequest(m.text);if(review?.review)b.append(button('현재 변경 비교 열기',()=>window.RoomCompare.open(review)));
     if(!room.closed){const reply=button('↪ 답글',()=>startReply(m));reply.className='reply-button';b.append(reply);}
   }
   $('members').replaceChildren();
@@ -157,8 +164,8 @@ $('request-run').onclick = () => {
 };
 $('close-room').onclick = () => modal('작업 방 종료', [{name:'summary',label:'도달점 · 남은 작업 정본 · 미검증 범위',type:'textarea'}],values=>act('close',values));
 $('message-form').onsubmit = async e => { e.preventDefault(); try {
-  const command=$('message').value.trim().match(/^\/(?:비교|diff)(?:\s+(\S+))?(?:\s+(\S+)\.{3}(\S+))?$/);
-  if(command){await window.RoomCompare.open({project:command[1],base:command[2],head:command[3]});}
+  const command=$('sender').value==='owner'&&compareRequest($('message').value);
+  if(command){if(command.review)await act('message',{sender:'owner',targets:[],text:$('message').value});await window.RoomCompare.open(command);}
   else await act('message',{sender:$('sender').value,targets:[...$('targets').selectedOptions].map(o=>o.value),text:$('message').value,reply_to:replyTo});
   $('message').value='';replyTo=null;saveDraft();render();$('messages').scrollTop=$('messages').scrollHeight;
 } catch(e) { error(e); } };

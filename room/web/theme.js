@@ -1,7 +1,7 @@
 'use strict';
 (() => {
   const key='rooms-theme-v1', media=window.matchMedia('(prefers-color-scheme: dark)');
-  const modes=['system','light','dark'], palettes=['forest','ocean','sand'];
+  const modes=['system','light','dark'], palettes=['forest','ocean','sand','charcoal'];
   let setting={mode:'system',palette:'forest'};
   function read(){try{const value=JSON.parse(localStorage.getItem(key)||'{}');setting={mode:modes.includes(value.mode)?value.mode:'system',palette:palettes.includes(value.palette)?value.palette:'forest'};}catch{setting={mode:'system',palette:'forest'};}}
   function apply(){
