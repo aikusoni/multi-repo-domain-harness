@@ -205,6 +205,84 @@ class ChatDiffTest(unittest.TestCase):
             self.f.act('message', reply_to='other-room-message', text='Invalid')
         self.assertEqual(before, self.f.hub.snapshot())
 
+    def test_selected_code_followup_delivers_previous_answer_only_after_new_approval(self):
+        result = self.diff(path='app.py')
+        first = self.query(result, selection={'new': [2, 2]}, question='Explain the new return')['job_id']
+        self.f.act('approve', job_id=first)
+        self.assertEqual(self.f.wait(first)['status'], 'finished')
+        second = self.query(result, reply_to=first, question='Follow-up about the old return', selection={'old': [2, 2]},
+                            history=['CLIENT HISTORY MUST NOT BE USED'])['job_id']
+        job = self.f.hub.room(self.f.rid)['jobs'][second]
+        self.assertEqual(job['status'], 'pending')
+        self.assertFalse(self.f.hub.processes)
+        self.assertEqual(job['diff_context']['thread_id'], first)
+        self.assertEqual(job['diff_context']['selection'], {'old': [2, 2]})
+        self.assertEqual(job['diff_context']['history_job_ids'], [first])
+        self.assertIn('FIXTURE CHECKED', ''.join(job['references']))
+        self.assertNotIn('CLIENT HISTORY', ''.join(job['references']))
+        self.assertNotIn('FIXTURE CHECKED', job['prompt'])
+        self.assertEqual(json.loads(job['references'][-1])['earlier_turns'][0]['selection'], {'new': [2, 2]})
+        self.assertIn('FIXTURE CHECKED', ''.join(self.f.hub.approval_details(self.f.rid, second)['references']))
+        public = json.dumps(self.f.hub.board()) + json.dumps(self.f.hub.run_status(self.f.rid, second))
+        self.assertNotIn('Explain the new return', public)
+        self.assertNotIn('FIXTURE CHECKED', public)
+        self.f.hub.config['drivers']['read']['argv'] = [os.sys.executable, '-c',
+            'import sys; value=sys.stdin.read(); print("HISTORY DELIVERED" if "FIXTURE CHECKED" in value and "Follow-up about the old return" in value else "MISSING")']
+        self.f.act('approve', job_id=second)
+        self.assertEqual(self.f.wait(second)['status'], 'finished')
+        self.assertIn('HISTORY DELIVERED', job['output'])
+
+    def test_followup_rejects_wrong_scope_and_unfinished_answers_atomically(self):
+        result = self.diff(path='app.py')
+        first = self.query(result)['job_id']
+        before = self.f.hub.snapshot()
+        for parent in ('missing', [], first):
+            with self.assertRaises(ValueError):
+                self.query(result, reply_to=parent)
+            self.assertEqual(before, self.f.hub.snapshot())
+        self.f.act('approve', job_id=first)
+        self.f.wait(first)
+        other = self.f.act('add_member', name='Other reviewer', project='product')['member_id']
+        other_room = self.f.hub.action({'action': 'create_room', 'title': 'Other', 'goal': 'Synthetic'})['room_id']
+        elsewhere = self.f.hub.action({'action': 'request_run', 'room_id': other_room,
+            'member_id': self.f.hub.action({'action': 'add_member', 'room_id': other_room,
+                'name': 'Other', 'project': 'product'})['member_id'], 'driver': 'read', 'prompt': 'Other'})['job_id']
+        general = self.f.request()
+        for changed, overrides in ((result, {'reply_to': elsewhere}), (result, {'reply_to': general}),
+                (result, {'reply_to': first, 'member_id': other}), (result, {'reply_to': first, 'driver': 'slow'}),
+                (self.diff(path='new file.txt'), {'reply_to': first})):
+            before = self.f.hub.snapshot()
+            with self.assertRaises(ValueError):
+                self.query(changed, **overrides)
+            self.assertEqual(before, self.f.hub.snapshot())
+        self.write('app.py', 'def greet():\n    return "later"\n')
+        before = self.f.hub.snapshot()
+        with self.assertRaises(ValueError):
+            self.query(self.diff(path='app.py'), reply_to=first)
+        self.assertEqual(before, self.f.hub.snapshot())
+
+    def test_code_history_keeps_recent_three_turns_with_visible_limits(self):
+        result = self.diff(path='app.py')
+        self.f.hub.config['drivers']['read']['argv'] = [os.sys.executable, '-c',
+            'import sys; sys.stdin.read(); print("SYNTHETIC ANSWER " + "a" * 1000)']
+        ids = []
+        for index in range(5):
+            jid = self.query(result, reply_to=ids[-1] if ids else None, question=f'Turn {index}')['job_id']
+            self.f.act('approve', job_id=jid)
+            self.assertEqual(self.f.wait(jid)['status'], 'finished')
+            ids.append(jid)
+        job = self.f.hub.room(self.f.rid)['jobs'][ids[-1]]
+        self.assertEqual(job['diff_context']['thread_id'], ids[0])
+        self.assertEqual(job['diff_context']['history_job_ids'], ids[1:4])
+        self.assertTrue(job['diff_context']['history_truncated'])
+        self.assertTrue(job['diff_context']['older_turns_omitted'])
+        self.assertLessEqual(sum(map(len, job['references'])), 16000)
+        self.assertTrue(all(len(ref) <= 4000 for ref in job['references']))
+        self.assertEqual(len(job['references']), len(gitdiff.question_references(result)) + 1)
+        history = json.loads(job['references'][-1])
+        self.assertEqual([turn['question'] for turn in history['earlier_turns']], ['Turn 1', 'Turn 2', 'Turn 3'])
+        self.assertTrue(all(turn['truncated'] for turn in history['earlier_turns']))
+
     def test_owner_http_only_and_no_automatic_model_call(self):
         with http_server(self.f) as server:
             url = '/api/diff?' + urlencode({'room_id': self.f.rid, 'project': 'product', 'path': 'app.py'})

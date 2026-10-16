@@ -12,6 +12,7 @@
     {"id": "observability-lineage", "category": "observability", "scenario": "trace_lineage"},
     {"id": "api-chat-reply", "category": "api", "scenario": "chat_reply"},
     {"id": "api-code-comparison", "category": "api", "scenario": "code_comparison"},
-    {"id": "security-diff-question", "category": "security", "scenario": "diff_question"}
+    {"id": "security-diff-question", "category": "security", "scenario": "diff_question"},
+    {"id": "api-selected-code-chat", "category": "api", "scenario": "code_chat"}
   ]
 }

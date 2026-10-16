@@ -337,10 +337,48 @@ class Hub:
             if not result.get('digest') or result['digest'] != data.get('digest'):
                 raise ValueError('비교 내용이 바뀌었습니다. 파일을 다시 불러온 뒤 질문하세요.')
             references = gitdiff.question_references(result, data.get('selection'))
+            parent_id = data.get('reply_to')
+            history, history_ids, omitted = [], [], False
+            scope_keys = ('project', 'path', 'base', 'head', 'digest', 'comparison')
+            parent = None
+            if parent_id is not None:
+                if not isinstance(parent_id, str):
+                    raise ValueError('이전 코드 답변 ID가 필요합니다.')
+                parent = room['jobs'].get(parent_id)
+                cursor, seen = parent, set()
+                if parent is None:
+                    raise ValueError('같은 방의 코드 답변만 이어갈 수 있습니다.')
+                while cursor and len(history) < 3:
+                    previous = cursor.get('diff_context', {})
+                    if (cursor['id'] in seen or cursor['status'] != 'finished'
+                            or any(previous.get(key) != result.get(key) for key in scope_keys)
+                            or cursor['member_id'] != member['id'] or cursor['driver'] != data.get('driver')):
+                        raise ValueError('같은 파일·비교 지문·담당·실행기의 완료 답변만 이어갈 수 있습니다. 새 대화를 시작하세요.')
+                    seen.add(cursor['id'])
+                    old_question = previous.get('question', '')
+                    answer = cursor.get('output', '')
+                    history.append({'question': old_question[:300], 'answer': answer[:600],
+                                    'selection': previous.get('selection', {}),
+                                    'truncated': len(old_question) > 300 or len(answer) > 600})
+                    history_ids.append(cursor['id'])
+                    next_id = previous.get('reply_to')
+                    cursor = room['jobs'].get(next_id) if next_id else None
+                    if next_id and cursor is None:
+                        raise ValueError('이전 대화 연결을 찾을 수 없습니다. 새 대화를 시작하세요.')
+                omitted = cursor is not None
+                # Quotes from earlier turns remain data, never new permissions.
+                content = json.dumps({'earlier_turns': list(reversed(history)), 'older_turns_omitted': omitted},
+                                     ensure_ascii=False)
+                references.extend(content[i:i + 4000] for i in range(0, len(content), 4000))
             requested = self.room_action(room, 'request_run', {'member_id': member['id'], 'driver': data.get('driver'),
                 'skill': 'investigate', 'prompt': '코드 비교 질문: ' + question + '\n주어진 코드 범위에서만 답하고 추론·미검증 사항을 구분하세요.',
                 'references': references})
-            room['jobs'][requested['job_id']]['diff_context'] = {k: result[k] for k in ('project', 'path', 'base', 'head', 'digest')}
+            room['jobs'][requested['job_id']]['diff_context'] = {
+                **{k: result[k] for k in scope_keys}, 'question': question,
+                'selection': copy.deepcopy(data.get('selection') or {}), 'reply_to': parent_id,
+                'thread_id': parent['diff_context'].get('thread_id', parent_id) if parent else requested['job_id'],
+                'history_job_ids': list(reversed(history_ids)), 'older_turns_omitted': omitted,
+                'history_truncated': any(turn['truncated'] for turn in history)}
             return requested
         elif action == "request_run":
             member = self.member(room, data.get("member_id"))

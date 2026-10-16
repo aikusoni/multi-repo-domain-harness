@@ -221,9 +221,27 @@ def diff_question(f):
             'fixture_finishes': final['status'] == 'finished', 'verification_separate': final['verification'] == 'NOT_RUN'}
 
 
+def code_chat(f):
+    result = comparison_fixture(f)
+    data = {'project': 'product', 'path': 'sample.txt', 'digest': result['digest'],
+            'member_id': f.mid, 'driver': 'read', 'selection': {'new': [1, 1]}}
+    first = f.act('request_diff_question', question='Explain selected code', **data)['job_id']
+    unfinished_denied = denied(lambda: f.act('request_diff_question', question='Follow up', reply_to=first, **data))
+    f.act('approve', job_id=first)
+    f.wait(first)
+    second = f.act('request_diff_question', question='Which check follows?', reply_to=first, **data)['job_id']
+    job = f.hub.room(f.rid)['jobs'][second]
+    changed = dict(data, digest='changed')
+    return {'pending_parent_denied': unfinished_denied, 'followup_waits_for_approval': job['status'] == 'pending',
+            'same_thread': job['diff_context']['thread_id'] == first,
+            'previous_answer_is_data': 'FIXTURE CHECKED' in ''.join(job['references']) and 'FIXTURE CHECKED' not in job['prompt'],
+            'changed_digest_denied': denied(lambda: f.act('request_diff_question', question='Stale', reply_to=first, **changed)),
+            'history_not_in_trace': 'FIXTURE CHECKED' not in json.dumps(f.hub.run_status(f.rid, second))}
+
+
 SCENARIOS = {name: globals()[name] for name in ("async_run", "reviewer_boundary", "untrusted_reference", "private_trace",
              "verification_required", "verification_evidence", "timeout", "recovery", "trace_lineage",
-             "chat_reply", "code_comparison", "diff_question")}
+             "chat_reply", "code_comparison", "diff_question", "code_chat")}
 
 
 def load_cases(path):

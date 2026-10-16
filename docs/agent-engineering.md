@@ -1,6 +1,6 @@
 # Agent 엔지니어링: 요구·구현·검증 연결
 
-> **기준 시각:** 2026-10-16 01:39:01 UTC
+> **기준 시각:** 2026-10-16 05:36:49 UTC
 > **그 뒤 미반영분:** 없음(로컬 구현·fixture/API·브라우저 검증 범위 기준)
 > **현행 정본:** `room/server.py`, `room/gitdiff.py`, `room/skills.py`, `room/tracing.py`, `room/evaluate.py`, `room/evals/cases.json`, `room/web/`
 
@@ -17,7 +17,7 @@
 | 권한·Prompt Injection·Guardrail | readonly skill/reviewer, 등록 driver, 비정본 참고 자료, 관찰 token 격리 | 호스트 권한 계약. 실제 모델 Injection 저항률·custom driver OS 격리 보장은 아님 |
 | Multi-Agent 협업 | 역할·project-id·승인·수신 예산·프로젝트별 직렬화 | 통제된 협업 기반. 자율 협업 모델 성능은 미측정 |
 | 요구→구축→시연 | 요청·승인·실행·검증 분리 API 시나리오 | 합성 fixture 데모이며 고객 실전 경험으로 표현하지 않음 |
-| 코드 리뷰·협업 UI | 인용 답글·원문 이동·Git 전후 비교·선택 줄 질문과 밝기/색상 테마 | 코드 질문도 read-only·별도 승인. 실제 모델 정답률은 미측정 |
+| 코드 리뷰·협업 UI | 인용 답글·원문 이동·Git 전후 비교·선택 코드 AI 채팅·후속 문답과 밝기/색상 테마 | 코드 질문도 read-only·별도 승인. 실제 모델 정답률은 미측정 |
 | Tool calling·RAG | CLI의 도구 사용과 사람이 제공한 untrusted_references를 분리 | 자체 tool router·자동 검색 RAG는 미구현. 참고 자료 첨부를 RAG로 부르지 않음 |
 | Git·컨테이너 | 명시 파일 commit·primary·불변 review 계약 | Git 흐름은 구현됨. 이번 환경에서 Docker daemon 연결 불가; 컨테이너 검증은 별도 |
 
@@ -64,13 +64,13 @@ JSON에는 실제 assertion·case 상태·시나리오 duration·측정 건수·
 시간이며 모델 latency·처리량·고객 효과를 뜻하지 않는다. 회귀 case를 재현한 뒤 원문 대신 ID와 안전한
 파일 포인터를 남긴다. 규칙 승격은 [하네스 진화](harness-evolution.md)의 검토·승인 흐름을 따른다.
 
-위 기준 시각의 로컬 확인: 룸 unittest 48개·operator unittest 11개, fixture 평가 12/12 PASS.
-답글·코드 비교·승인 기반 질문 3개를 기존 9개에 추가했고 manifest 검사를 다시 통과했다. case 집합이
-바뀌었으므로 이전 9개 baseline을 그대로 새 기준으로 간주하지 않는다. 원본 JSON은 gitignore된
-`local/evaluations/chat-diff-theme.json`과 `local/evaluations/chat-diff-theme-comparison.json`에 두며,
-공유된 검사 코드로 재실행한다. 이 결과는 해당 코드의 계약 검증이며 실제 모델 benchmark가 아니다.
-같은 12개 대상·검사 항목 baseline 비교는 회귀 0건이다. 합성 브라우저에서 답글·원문 이동·초안 복원,
-비교·선택 줄 질문·승인 대기/가짜 실행 결과·테마 저장과 탭 간 설정 반영도 확인했다.
+위 기준 시각의 로컬 확인: 룸 unittest 51개와 fixture 평가 13/13 PASS.
+기존 12개에 선택 코드 후속 채팅을 추가했고 manifest 검사를 통과했다. case 집합이 바뀌었으므로 이전
+9개·12개 baseline을 새 기준으로 간주하지 않는다. 원본 JSON은 gitignore된
+`local/evaluations/code-chat.json`에 두며 공유된 검사 코드로 재실행한다. 이 결과는 코드 계약 검증이며
+실제 모델 benchmark가 아니다. 합성 브라우저에서 선택 쪽·클릭/Shift/드래그 범위, 우측 채팅·후속 문답,
+건별 승인·가짜 실행기 결과·파일별 초안/선택/대화 복원과 좁은 화면 입력을 확인했다. 기존 답글·테마 검증은
+이전 기록에 보존한다. 실제 CLI 모델의 응답 품질·고객 부하·OS sandbox는 이번 검증 범위에 포함하지 않는다.
 
 ## 다음 기술의 채택 기준
 
