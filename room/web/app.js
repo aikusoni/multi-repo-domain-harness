@@ -4,7 +4,7 @@ let token = location.hash.slice(1) || sessionStorage.getItem('room-token') || ''
 if (token) sessionStorage.setItem('room-token', token);
 history.replaceState(null, '', location.pathname);
 let state = {rooms: {}, projects: [], drivers: []}, active = sessionStorage.getItem('room-active'), modalSubmit = null;
-let loadedVersion = null, draftRoom = null, modalKey = null;
+let loadedVersion = null, draftRoom = null, modalKey = null, replyTo = null;
 const node = (tag, value, cls) => { const e = document.createElement(tag); if (value != null) e.textContent = value; if (cls) e.className = cls; return e; };
 const error = e => { $('error').textContent = e.message || String(e); $('error').hidden = false; };
 async function api(path, data) {
@@ -18,6 +18,27 @@ const memberName = (room, id) => id === 'owner' ? '사람' : room.members[id]?.n
 function options(select, choices, selected) { select.replaceChildren(); for (const [value, label] of choices) { const o = node('option', label); o.value = value; o.selected = Array.isArray(selected) ? selected.includes(value) : value === selected; select.append(o); } }
 function button(label, handler) { const b = node('button', label); b.type = 'button'; b.onclick = () => Promise.resolve().then(handler).catch(error); return b; }
 function card(title, detail) { const c = node('div', null, 'card'); c.append(node('strong', title)); if (detail) c.append(node('small', detail)); return c; }
+function jumpToMessage(id) {
+  $('search').value='';render();
+  const original=$('message-'+id);original?.scrollIntoView({block:'center'});
+  original?.classList.add('jump-target');setTimeout(()=>original?.classList.remove('jump-target'),1800);
+}
+function startReply(message) {
+  replyTo=message.id;
+  const author=current().members[message.sender];
+  for(const option of $('targets').options)option.selected=!!author?.active&&option.value===message.sender;
+  saveDraft();render();$('message').focus();
+}
+async function approveJob(jobId, roomId=active) {
+  const details=await api('/api/approval-details',{room_id:roomId,job_id:jobId});
+  modal('이 실행 승인',[
+    {name:'details',label:'명령 · 위치 · 요청 · 전달 자료 · 제한 시간',type:'pre',value:JSON.stringify(details,null,2)},
+    {name:'check',label:'실행기의 권한과 전달 자료를 확인하고 이 요청 실행을 승인합니다.',type:'checkbox'}
+  ],async values=>{
+    if(values.check!==true)throw new Error('실행 승인 확인이 필요합니다.');
+    await api('/api/action',{action:'approve',room_id:roomId,job_id:jobId});await refresh();
+  },'승인하고 실행');
+}
 async function refresh() {
   state = await api('/api/state');
   if (loadedVersion && loadedVersion !== state.version) {
@@ -31,8 +52,11 @@ async function refresh() {
 }
 function render() {
   const scroll = $('messages').scrollTop;
+  let savedRoute=null;
   if (draftRoom !== active) {
     saveDraft();draftRoom=active;$('message').value=active ? sessionStorage.getItem('room-draft-'+active)||'' : '';
+    replyTo=active ? sessionStorage.getItem('room-reply-'+active)||null : null;
+    try{const route=JSON.parse(sessionStorage.getItem('room-route-'+active)||'null');if(route&&typeof route.sender==='string'&&Array.isArray(route.targets))savedRoute=route;}catch{}
     if(active)sessionStorage.setItem('room-active',active);
   }
   $('room-list').replaceChildren();
@@ -49,15 +73,23 @@ function render() {
   $('budget').textContent = `${room.paused ? '⏸ 중단' : '● 진행'} · tx ${room.tx_count}/10 · 수신 멤버별 최대 5`;
   $('stamp').textContent = state.stamp;
   const memberChoices = Object.values(room.members).filter(m => m.active).map(m => [m.id, `${m.name} · ${m.project || m.role}`]);
-  const sender = $('sender').value; const targets = [...$('targets').selectedOptions].map(o => o.value);
+  const sender = savedRoute?.sender||$('sender').value; const targets = savedRoute?.targets||[...$('targets').selectedOptions].map(o => o.value);
   options($('sender'), [['owner', '사람'], ...memberChoices], sender || 'owner'); options($('targets'), memberChoices, targets);
   for (const id of ['message','sender','targets','add-member','add-note','request-run','close-room']) $(id).disabled = room.closed;
   $('message-form').querySelector('button[type="submit"]').disabled = room.closed;
   const query = $('search').value.toLowerCase();
+  const originals=new Map(room.messages.map(message=>[message.id,message]));
+  const replying=originals.get(replyTo);
+  if(!replying||room.closed)replyTo=null;
+  $('reply-bar').hidden=!replyTo;
+  $('reply-text').textContent=replying ? `↪ ${memberName(room,replying.sender)}에게 답글: ${replying.text.replace(/\s+/g,' ').slice(0,120)}` : '';
   $('messages').replaceChildren();
   for (const m of room.messages.filter(m => m.text.toLowerCase().includes(query))) {
     const b = node('div', null, 'bubble' + (m.sender === 'owner' ? ' owner' : ''));
+    b.id='message-'+m.id;
+    if(m.reply_to){const original=originals.get(m.reply_to);const quote=button(original ? `↪ ${memberName(room,original.sender)}: ${original.text.replace(/\s+/g,' ').slice(0,120)}` : '원문을 찾을 수 없습니다.',()=>jumpToMessage(m.reply_to));quote.className='reply-quote';quote.disabled=!original;b.append(quote);}
     b.append(node('strong', `${memberName(room,m.sender)} → ${m.targets.map(id=>memberName(room,id)).join(', ') || '표시만'}`), node('small', `${m.at} · ${m.tx_count}/10`), node('div', m.text, 'body')); $('messages').append(b);
+    if(!room.closed){const reply=button('↪ 답글',()=>startReply(m));reply.className='reply-button';b.append(reply);}
   }
   $('members').replaceChildren();
   for (const m of Object.values(room.members)) {
@@ -73,10 +105,7 @@ function render() {
     c.append(node('p', j.prompt));
     if (j.status === 'pending' && !room.closed) {
       const actions = node('div', null, 'actions');
-      actions.append(button('실행 내용 확인 · 승인', async () => {
-        const d = await api('/api/approval-details', {room_id:active,job_id:j.id});
-        modal('이 실행 승인', [{name:'details', label:'호출할 명령 · 위치 · 제한 시간', type:'pre', value:JSON.stringify(d,null,2)}, {name:'check',label:'설정한 실행기의 권한·경계를 확인하고 이 요청 실행을 승인합니다.',type:'checkbox'}], async values => { if (values.check !== true) throw new Error('실행 승인 확인이 필요합니다.'); await act('approve',{job_id:j.id}); }, '승인하고 실행');
-      }), button('거절', () => act('reject',{job_id:j.id}))); c.append(actions);
+      actions.append(button('실행 내용 확인 · 승인',()=>approveJob(j.id)), button('거절', () => act('reject',{job_id:j.id}))); c.append(actions);
     }
     if (j.status === 'running') c.append(button('중지', () => act('cancel',{job_id:j.id})));
     if (needsRecovery(j) && !room.closed) {
@@ -94,6 +123,7 @@ function render() {
   for (const n of room.notes.filter(n => (n.title+' '+n.text).toLowerCase().includes(query)).reverse()) { const c = card(n.title, `${memberName(room,n.author)} · ${n.at}`); c.append(node('p',n.text)); $('notes').append(c); }
   $('events').replaceChildren(); for (const e of room.events.slice(-30).reverse()) { $('events').append(node('p', `${e.at} · ${e.text}`)); }
   $('messages').scrollTop = scroll;
+  window.RoomCompare?.update();
 }
 function modal(title, fields, submit, label='저장') {
   modalKey='room-dialog-'+(active||'new')+'-'+title;
@@ -126,13 +156,21 @@ $('request-run').onclick = () => {
   modal('에이전트 실행 요청', [{name:'member_id',label:'담당',type:'select',choices:members.map(m=>[m.id,m.name])},{name:'driver',label:'로컬 실행기',type:'select',choices:state.drivers.map(d=>[d,d])},{name:'prompt',label:'이번 실행 목표 · 허용 변경 · 검증 방법',type:'textarea'}], values=>act('request_run',values));
 };
 $('close-room').onclick = () => modal('작업 방 종료', [{name:'summary',label:'도달점 · 남은 작업 정본 · 미검증 범위',type:'textarea'}],values=>act('close',values));
-$('message-form').onsubmit = async e => { e.preventDefault(); try { await act('message',{sender:$('sender').value,targets:[...$('targets').selectedOptions].map(o=>o.value),text:$('message').value}); $('message').value='';saveDraft(); $('messages').scrollTop=$('messages').scrollHeight; } catch(e) { error(e); } };
+$('message-form').onsubmit = async e => { e.preventDefault(); try {
+  const command=$('message').value.trim().match(/^\/(?:비교|diff)(?:\s+(\S+))?(?:\s+(\S+)\.{3}(\S+))?$/);
+  if(command){await window.RoomCompare.open({project:command[1],base:command[2],head:command[3]});}
+  else await act('message',{sender:$('sender').value,targets:[...$('targets').selectedOptions].map(o=>o.value),text:$('message').value,reply_to:replyTo});
+  $('message').value='';replyTo=null;saveDraft();render();$('messages').scrollTop=$('messages').scrollHeight;
+} catch(e) { error(e); } };
 $('search').oninput = render;
 $('export').onclick = async () => { try { const response = await fetch('/api/export?room_id='+encodeURIComponent(active),{headers:{'X-Room-Token':token}}); if(!response.ok) throw new Error('내보내기 실패'); const url=URL.createObjectURL(await response.blob()); const a=node('a'); a.href=url; a.download=active+'-transcript.md'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); } catch(e) { error(e); } };
 function needsRecovery(j){return ['interrupted','timed_out'].includes(j.status)&&(!j.recovery||j.recovery==='pending');}
-function saveDraft(){if(draftRoom)sessionStorage.setItem('room-draft-'+draftRoom,$('message').value);}
+function saveDraft(){if(draftRoom){sessionStorage.setItem('room-draft-'+draftRoom,$('message').value);if(replyTo)sessionStorage.setItem('room-reply-'+draftRoom,replyTo);else sessionStorage.removeItem('room-reply-'+draftRoom);sessionStorage.setItem('room-route-'+draftRoom,JSON.stringify({sender:$('sender').value,targets:[...$('targets').selectedOptions].map(option=>option.value)}));}}
+$('cancel-reply').onclick=()=>{replyTo=null;saveDraft();render();};
+$('message').onkeydown=event=>{if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)&&!event.isComposing){event.preventDefault();$('message-form').requestSubmit();}};
 function saveDialog(){if(!modalKey)return;const values={};for(const el of $('dialog-fields').querySelectorAll('input,select,textarea'))if(el.type!=='checkbox')values[el.name]=el.value;sessionStorage.setItem(modalKey,JSON.stringify(values));}
 $('message').oninput=saveDraft;
+$('sender').onchange=saveDraft;$('targets').onchange=saveDraft;
 $('reload').onclick=()=>{saveDraft();saveDialog();location.reload();};
 async function reconnectError(e){
   $('connection').textContent='연결 끊김';error(e);

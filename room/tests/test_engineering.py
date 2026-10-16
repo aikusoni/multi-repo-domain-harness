@@ -99,7 +99,7 @@ class EngineeringTest(unittest.TestCase):
             p.write_text(json.dumps(content))
             with self.assertRaises(ValueError):
                 load_cases(p)
-        self.assertEqual(len(load_cases(CASES)),9)
+        self.assertEqual(len(load_cases(CASES)),12)
 
     def test_baseline_detects_regression_and_removed_case(self):
         case={"id":"a","scenario":"verification_required","status":"PASS","checks":{"expected":True}}

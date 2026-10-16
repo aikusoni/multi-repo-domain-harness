@@ -21,17 +21,22 @@ from urllib.parse import urlsplit
 
 if __package__:
     from .drivers import command as cli_command
-    from . import skills, tracing
+    from . import gitdiff, skills, tracing
 else:
     from drivers import command as cli_command
     import skills
     import tracing
+    import gitdiff
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB = Path(__file__).resolve().parent / "web"
 ASSETS = {"/": ("index.html", "text/html; charset=utf-8"),
           "/app.js": ("app.js", "text/javascript; charset=utf-8"),
           "/style.css": ("style.css", "text/css; charset=utf-8"),
+          "/compare.js": ("compare.js", "text/javascript; charset=utf-8"),
+          "/compare.css": ("compare.css", "text/css; charset=utf-8"),
+          "/theme.js": ("theme.js", "text/javascript; charset=utf-8"),
+          "/theme.css": ("theme.css", "text/css; charset=utf-8"),
           "/board": ("board.html", "text/html; charset=utf-8"),
           "/board.js": ("board.js", "text/javascript; charset=utf-8"),
           "/board.css": ("board.css", "text/css; charset=utf-8")}
@@ -146,6 +151,7 @@ class Hub:
         # The public view needs logical IDs, not private configured paths or argv.
         result["projects"] = list(self.config["projects"])
         result["drivers"] = list(self.config["drivers"])
+        result['driver_modes'] = {key: driver.get('mode', 'unspecified') for key, driver in self.config['drivers'].items()}
         result["stamp"] = self.stamp()
         result["capabilities"] = {"auto_dispatch": False, "canonical_write": False}
         return result
@@ -198,6 +204,14 @@ class Hub:
             raise ValueError("방을 찾을 수 없습니다.")
         return room
 
+    def diff(self, room_id, project, base='HEAD', head='', comparison='working', path=''):
+        with self.store.lock:
+            room = self.room(room_id)
+            if project not in self.config['projects'] or not any(m['project'] == project for m in room['members'].values()):
+                raise ValueError('이 방에 연결된 등록 프로젝트만 비교할 수 있습니다.')
+            root = self.config['projects'][project]
+        return {'project': project, **gitdiff.compare(root, base, head, comparison, path)}
+
     def member(self, room, member_id):
         member = room["members"].get(member_id)
         if member is None or not member["active"]:
@@ -246,7 +260,18 @@ class Hub:
         if action == "message":
             sender = data.get("sender", "owner")
             body = text(data.get("text"))
-            targets = data.get("targets", [])
+            reply_to = data.get('reply_to')
+            original = None
+            if reply_to is not None:
+                if not isinstance(reply_to, str):
+                    raise ValueError('원문 메시지 ID가 필요합니다.')
+                original = next((m for m in room['messages'] if m['id'] == reply_to), None)
+                if original is None:
+                    raise ValueError('같은 방의 메시지에만 답글을 연결할 수 있습니다.')
+            targets = data.get("targets")
+            if targets is None:
+                author = room['members'].get(original['sender']) if original else None
+                targets = [author['id']] if author and author['active'] and author['id'] != sender else []
             if not isinstance(targets, list) or len(targets) != len(set(targets)):
                 raise ValueError("수신자 ID 배열이 필요하며 중복은 허용하지 않습니다.")
             members = [self.member(room, t) for t in targets]
@@ -271,6 +296,7 @@ class Hub:
                 room["paused"] = any(m["active"] and m["received"] >= 5 for m in room["members"].values())
             room["messages"].append({"id": identifier("msg-"), "at": now(), "sender": sender,
                                       "targets": targets, "text": body, "tx": room["tx"],
+                                      "reply_to": reply_to,
                                       "tx_count": room["tx_count"]})
         elif action == "note":
             author = data.get("author", "owner")
@@ -298,6 +324,24 @@ class Hub:
                     tracing.record(job, "approval", "rejected")
             room["closed"] = True
             self.event(room, "close", text(data.get("summary")))
+        elif action == 'request_diff_question':
+            member = self.member(room, data.get('member_id'))
+            if member['project'] != data.get('project'):
+                raise ValueError('비교 프로젝트와 질문 담당이 일치해야 합니다.')
+            driver = self.config['drivers'].get(data.get('driver'), {})
+            if driver.get('mode') != 'read-only':
+                raise ValueError('코드 질문에는 read-only 실행기만 사용할 수 있습니다.')
+            question = text(data.get('question'), 2000)
+            result = self.diff(room['id'], data.get('project'), data.get('base', 'HEAD'), data.get('head', ''),
+                               data.get('comparison', 'working'), data.get('path', ''))
+            if not result.get('digest') or result['digest'] != data.get('digest'):
+                raise ValueError('비교 내용이 바뀌었습니다. 파일을 다시 불러온 뒤 질문하세요.')
+            references = gitdiff.question_references(result, data.get('selection'))
+            requested = self.room_action(room, 'request_run', {'member_id': member['id'], 'driver': data.get('driver'),
+                'skill': 'investigate', 'prompt': '코드 비교 질문: ' + question + '\n주어진 코드 범위에서만 답하고 추론·미검증 사항을 구분하세요.',
+                'references': references})
+            room['jobs'][requested['job_id']]['diff_context'] = {k: result[k] for k in ('project', 'path', 'base', 'head', 'digest')}
+            return requested
         elif action == "request_run":
             member = self.member(room, data.get("member_id"))
             if room["paused"] or member["received"] >= 5:
@@ -532,6 +576,8 @@ class Hub:
         lines.append("\n## 대화")
         for m in room["messages"]:
             lines.append(f"\n### {m['at']} · {m['sender']} → {', '.join(m['targets']) or '표시만'}\n\n{m['text']}")
+            if m.get('reply_to'):
+                lines.append(f"\n↪ 원문: {m['reply_to']}")
         lines.append("\n## 노트")
         for n in room["notes"]:
             lines.append(f"\n### {n['title']} · {n['at']} · {n['author']}\n\n{n['text']}")
@@ -598,6 +644,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.send(200, {"version": self.server.version})
             elif path == "/api/skills":
                 self.send(200, {"skills": skills.SKILLS})
+            elif path == '/api/diff':
+                from urllib.parse import parse_qs
+                query = parse_qs(urlsplit(self.path).query)
+                values = {k: query[k][0] for k in ('base', 'head', 'comparison', 'path') if k in query}
+                self.send(200, self.server.hub.diff(query.get('room_id', [''])[0], query.get('project', [''])[0], **values))
             elif path.startswith("/api/runs/"):
                 from urllib.parse import parse_qs
                 room_id = parse_qs(urlsplit(self.path).query).get("room_id", [""])[0]
@@ -636,6 +687,9 @@ class Handler(BaseHTTPRequestHandler):
                 from urllib.parse import urlencode
                 location = "/api/runs/" + result["job_id"] + "?" + urlencode({"room_id": data["room_id"]})
                 self.send(202, {**result, "status": "pending", "status_url": location}, headers={"Location": location})
+            elif self.path == '/api/diff/question':
+                result = self.server.hub.action({**data, 'action': 'request_diff_question'})
+                self.send(202, {**result, 'status': 'pending'})
             else:
                 self.send(404, {"error": "찾을 수 없습니다."})
         except (ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
@@ -657,7 +711,7 @@ def make_server(hub, port=8765, web_dir=WEB):
     digest = hashlib.sha256()
     for url in sorted(assets):
         digest.update(url.encode() + b"\0" + assets[url][0])
-    for source in (Path(__file__), *(Path(__file__).with_name(name) for name in ("drivers.py", "skills.py", "tracing.py"))):
+    for source in (Path(__file__), *(Path(__file__).with_name(name) for name in ("drivers.py", "skills.py", "tracing.py", "gitdiff.py"))):
         digest.update(source.read_bytes())
     server = LocalServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True

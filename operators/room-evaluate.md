@@ -9,7 +9,7 @@ related_initiatives: []
 
 # Operator: room-evaluate
 
-룸의 API·skill·품질 판정·trace·권한·복구를 fixture로 평가한다. Python 3.10+, Git, loopback socket
+룸의 API·skill·품질 판정·trace·권한·복구·인용 답글·코드 비교·선택 줄 질문을 fixture로 평가한다. Python 3.10+, Git, loopback socket
 권한이 필요하다. 자동 스케줄·모델·계정·외부 서비스 호출·Git 변경은 없다.
 
 ```text

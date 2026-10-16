@@ -167,8 +167,63 @@ def trace_lineage(f):
             "model_scope_disclosed": "no model tokens" in trace["scope"]}
 
 
+def chat_reply(f):
+    f.act('message', sender=f.mid, text='Fixture source')
+    source = f.hub.room(f.rid)['messages'][-1]['id']
+    f.act('message', reply_to=source, text='Fixture answer')
+    reply = f.hub.room(f.rid)['messages'][-1]
+    peer = f.act('add_member', name='Fixture peer', project='product')['member_id']
+    for _ in range(5):
+        f.act('message', sender=peer, reply_to=source, text='Fixture peer answer')
+    return {'linked': reply['reply_to'] == source, 'author_targeted': reply['targets'] == [f.mid],
+            'invalid_source_denied': denied(lambda: f.act('message', reply_to='missing', text='Invalid')),
+            'budget_preserved': denied(lambda: f.act('message', sender=peer, reply_to=source, text='Blocked'))}
+
+
+def comparison_fixture(f):
+    project = Path(f.config['projects']['product'])
+    def git(*args):
+        subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+                        '-C', str(project), *args], check=True, capture_output=True)
+    git('init', '-q')
+    (project / 'sample.txt').write_text('before\n')
+    git('add', 'sample.txt')
+    git('commit', '-qm', 'Fixture baseline')
+    (project / 'sample.txt').write_text('after\n')
+    (project / 'untracked.txt').write_text('excluded\n')
+    return f.hub.diff(f.rid, 'product', path='sample.txt')
+
+
+def code_comparison(f):
+    result = comparison_fixture(f)
+    with http_server(f) as server:
+        from urllib.parse import urlencode
+        route = '/api/diff?' + urlencode({'room_id': f.rid, 'project': 'product', 'path': 'sample.txt'})
+        code, body, _ = http(server, route)
+        viewer, _, _ = http(server, route, viewer=True)
+    return {'old_new_observed': result['rows'][0]['old'] == 'before' and result['rows'][0]['new'] == 'after',
+            'http_owner': code == 200 and bool(body['digest']), 'viewer_denied': viewer == 403,
+            'untracked_excluded': all(item['path'] != 'untracked.txt' for item in result['files'])}
+
+
+def diff_question(f):
+    result = comparison_fixture(f)
+    data = {'project': 'product', 'path': 'sample.txt', 'digest': result['digest'],
+            'member_id': f.mid, 'question': 'Explain fixture change'}
+    write_denied = denied(lambda: f.act('request_diff_question', driver='write', **data))
+    jid = f.act('request_diff_question', driver='read', **data)['job_id']
+    job = f.hub.room(f.rid)['jobs'][jid]
+    pending = job['status'] == 'pending' and not f.hub.processes
+    f.act('approve', job_id=jid)
+    final = f.wait(jid)
+    return {'write_denied': write_denied, 'new_approval_required': pending,
+            'references_prepared': 'after' in ''.join(job['references']),
+            'fixture_finishes': final['status'] == 'finished', 'verification_separate': final['verification'] == 'NOT_RUN'}
+
+
 SCENARIOS = {name: globals()[name] for name in ("async_run", "reviewer_boundary", "untrusted_reference", "private_trace",
-             "verification_required", "verification_evidence", "timeout", "recovery", "trace_lineage")}
+             "verification_required", "verification_evidence", "timeout", "recovery", "trace_lineage",
+             "chat_reply", "code_comparison", "diff_question")}
 
 
 def load_cases(path):
@@ -205,7 +260,7 @@ def evaluate(cases):
                         "checks": checks, "error_type": error_type,
                         "duration_ms": round((time.perf_counter() - started) * 1000, 3)})
     digest = hashlib.sha256()
-    for name in ("server.py", "skills.py", "tracing.py", "evaluate.py", "evals/cases.json"):
+    for name in ("server.py", "skills.py", "tracing.py", "gitdiff.py", "evaluate.py", "evals/cases.json"):
         digest.update(Path(__file__).with_name(name).read_bytes() if "/" not in name else (Path(__file__).parent / name).read_bytes())
     manifest_digest = hashlib.sha256(json.dumps(cases, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return {"schema_version": 1, "scope": "fixture-contract", "recorded_at": now(), "source_digest": digest.hexdigest(),

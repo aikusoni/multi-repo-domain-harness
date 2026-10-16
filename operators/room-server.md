@@ -36,6 +36,12 @@ python3 -B room/server.py --config local/room-config.json
 - 화면: 시작 시 정적 파일을 고정하고 `/api/version`은 파일·코드 지문만 반환. 폼 초안은 탭의 로컬 저장소.
 - 오너 POST /api/runs: 202·Location으로 승인 대기 요청 접수; GET /api/runs/<id>: 상태와 제한된 trace.
 - skill은 요청·승인에서 역할·mode·version을 재검사하며 검증은 근거·owner-recorded source로 별도 기록.
+- 오너 GET /api/diff: room_id·project·base·head·comparison과 선택적 path. 해당 방의 등록 프로젝트만 조회한다.
+  일반 파일·ref·경로·크기·시간을 검사하고 외부 diff/textconv/fsmonitor·작업 파일 filter 호출을 막는다.
+- 오너 POST /api/diff/question: 파일 지문·선택 줄·질문을 read-only investigate pending 요청으로 준비한다.
+  자동 승인·자동 모델 호출이 없고 원문은 로컬 job에만 보관한다. 관찰 token은 두 API 모두 거부된다.
+- message action의 reply_to는 같은 방 원문 ID다. API의 targets 생략과 명시한 빈 배열을 구분한다.
+- 테마는 브라우저 mode·palette 선호다. 서버 저장·권한 변경이나 관찰 projection 확장이 아니다.
 
 ## 성공·실패와 복구
 

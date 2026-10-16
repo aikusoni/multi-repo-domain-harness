@@ -21,6 +21,7 @@
 - 여러 세션이 최신 하네스 기록을 다시 읽는 공유 working-directory 가시성과 통신 계층 경계
 - 선택적 로컬 룸 서버·웹 뷰, 통신 예산·승인 실행과 Claude·Codex의 독립 실행기 설정
 - 역할·mode·version을 갖는 workflow skill, 비동기 실행 API, 원문 없는 control-plane trace와 fixture 평가
+- 룸 인용 답글·원문 이동, 오너 전용 Git 코드 비교·승인 기반 질문, 브라우저 밝기·색상 테마
 
 ## 제공 계약
 

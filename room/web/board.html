@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Rooms · 관찰 보드</title>
-  <link rel="stylesheet" href="/board.css"><script src="/board.js" defer></script>
+  <link rel="stylesheet" href="/board.css"><link rel="stylesheet" href="/theme.css"><script src="/theme.js"></script><script src="/board.js" defer></script>
 </head>
 <body>
-  <header><div><p class="eyebrow">LOCAL · READ ONLY</p><h1>작업이 흐르는 곳</h1></div><span id="connection" role="status">연결 중</span></header>
+  <header><div><p class="eyebrow">LOCAL · READ ONLY</p><h1>작업이 흐르는 곳</h1></div><details class="theme-picker"><summary>테마</summary><div class="theme-panel"><label>화면 밝기<select data-theme-mode><option value="system">시스템 설정</option><option value="light">밝게</option><option value="dark">어둡게</option></select></label><label>색상 테마<select data-theme-palette><option value="forest">숲 · Forest</option><option value="ocean">바다 · Ocean</option><option value="sand">모래 · Sand</option></select></label><small>이 브라우저에 보관하며 오너·관찰 화면에 함께 적용합니다.</small></div></details><span id="connection" role="status">연결 중</span></header>
   <p class="intro">방의 흐름만 살펴봅니다. 이름, 방 제목, 레포, 대화와 실행 출력은 이 화면에 전달되지 않습니다.</p>
   <p id="notice" role="alert" hidden></p>
   <section id="totals" aria-label="전체 작업 현황"></section>

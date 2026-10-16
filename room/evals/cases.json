@@ -9,6 +9,9 @@
     {"id": "quality-check-evidence", "category": "quality", "scenario": "verification_evidence"},
     {"id": "reliability-timeout", "category": "reliability", "scenario": "timeout"},
     {"id": "reliability-recovery", "category": "reliability", "scenario": "recovery"},
-    {"id": "observability-lineage", "category": "observability", "scenario": "trace_lineage"}
+    {"id": "observability-lineage", "category": "observability", "scenario": "trace_lineage"},
+    {"id": "api-chat-reply", "category": "api", "scenario": "chat_reply"},
+    {"id": "api-code-comparison", "category": "api", "scenario": "code_comparison"},
+    {"id": "security-diff-question", "category": "security", "scenario": "diff_question"}
   ]
 }
